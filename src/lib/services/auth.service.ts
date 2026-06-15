@@ -2,10 +2,10 @@ import { api } from '../api';
 
 export const authService = {
   register: (data: { firstName: string; lastName: string; email: string; phone: string; password: string }) =>
-    api.post<{ data: { user: any; requiresVerification: boolean } }>('/auth/register', data),
+    api.post<{ data: { token: string; user: any; requiresVerification: boolean } }>('/auth/register', data),
 
   login: (data: { email: string; password: string }) =>
-    api.post<{ data: { user: any } }>('/auth/login', data),
+    api.post<{ data: { token: string; user: any } }>('/auth/login', data),
 
   me: () => api.get<{ data: any }>('/auth/me'),
 

@@ -7,9 +7,17 @@ export class ApiError extends Error {
   }
 }
 
-async function fetchAPI<T>(endpoint: string, options: RequestInit = {}, _retry = true): Promise<T> {
+function getToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem('qotn_token');
+}
+
+async function fetchAPI<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  const token = getToken();
+
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...(options.headers as Record<string, string>),
   };
 
@@ -35,27 +43,12 @@ async function fetchAPI<T>(endpoint: string, options: RequestInit = {}, _retry =
   }
 
   if (!response.ok) {
-    if (
-      response.status === 401 &&
-      _retry &&
-      endpoint !== '/auth/refresh' &&
-      endpoint !== '/auth/login' &&
-      endpoint !== '/auth/me'
-    ) {
-      try {
-        const refreshRes = await fetch(`${BASE_URL}/auth/refresh`, {
-          method: 'POST',
-          credentials: 'include',
-        });
-        if (refreshRes.ok) {
-          return fetchAPI<T>(endpoint, options, false);
-        }
-      } catch {}
-      if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/account')) {
+    if (response.status === 401 && !endpoint.includes('/auth/')) {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('qotn_token');
         window.location.href = '/account';
       }
     }
-
     const message = typeof data.message === 'string' ? data.message : `HTTP ${response.status}`;
     if (process.env.NODE_ENV === 'development') {
       console.warn(`[API] ${endpoint} → ${response.status}:`, message);
@@ -79,8 +72,7 @@ export async function fetchPublic<T>(path: string, revalidate = 60): Promise<T |
   try {
     const res = await fetch(`${BASE_URL}${path}`, { next: { revalidate } });
     if (!res.ok) return null;
-    const data = await res.json();
-    return data;
+    return await res.json();
   } catch {
     return null;
   }

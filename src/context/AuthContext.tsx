@@ -39,16 +39,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('qotn_token') : null;
+    if (!token) {
+      setIsLoading(false);
+      return;
+    }
+
+    // Check JWT expiry before hitting the network
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      if (payload.exp * 1000 < Date.now()) {
+        localStorage.removeItem('qotn_token');
+        setIsLoading(false);
+        return;
+      }
+    } catch {
+      localStorage.removeItem('qotn_token');
+      setIsLoading(false);
+      return;
+    }
+
     authService
       .me()
-      .then((res: any) => {
-        setUser(res.data ?? null);
-      })
+      .then((res: any) => setUser(res.data ?? null))
       .catch((err: unknown) => {
         const status = err instanceof ApiError ? err.status : 0;
         if (process.env.NODE_ENV === 'development') {
           console.warn('[Auth] /auth/me failed — status:', status);
         }
+        localStorage.removeItem('qotn_token');
         setUser(null);
       })
       .finally(() => setIsLoading(false));
@@ -56,7 +75,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     const res: any = await authService.login({ email, password });
-    const { user: newUser } = res.data;
+    const { token, user: newUser } = res.data;
+    if (token) localStorage.setItem('qotn_token', token);
     setUser(newUser);
   };
 
@@ -68,16 +88,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     password: string;
   }): Promise<{ requiresVerification?: boolean }> => {
     const res: any = await authService.register(data);
-    const { user: newUser, requiresVerification } = res.data;
+    const { token, user: newUser, requiresVerification } = res.data;
+    if (token) localStorage.setItem('qotn_token', token);
     setUser(newUser);
     return { requiresVerification };
   };
 
   const logout = async () => {
-    try {
-      await authService.logout();
-    } catch {}
+    localStorage.removeItem('qotn_token');
     setUser(null);
+    authService.logout().catch(() => {});
     router.push('/');
   };
 
