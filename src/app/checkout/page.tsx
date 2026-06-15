@@ -1,0 +1,693 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { motion } from 'framer-motion';
+import { Check } from 'lucide-react';
+import { useCart } from '@/context/CartContext';
+import { useIsMobile } from '@/hooks/useIsMobile';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
+import { ordersService } from '@/lib/services/orders.service';
+import { couponsService } from '@/lib/services/coupons.service';
+import { usersService } from '@/lib/services/users.service';
+import { cartService } from '@/lib/services/cart.service';
+import { paymentsService } from '@/lib/services/payments.service';
+import { formatPrice } from '@/lib/utils';
+
+declare global {
+  interface Window { Razorpay: any; }
+}
+
+type Step = 1 | 2 | 3;
+type Delivery = 'standard' | 'express' | 'cod';
+
+const indianStates = [
+  'Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa','Gujarat',
+  'Haryana','Himachal Pradesh','Jharkhand','Karnataka','Kerala','Madhya Pradesh',
+  'Maharashtra','Manipur','Meghalaya','Mizoram','Nagaland','Odisha','Punjab',
+  'Rajasthan','Sikkim','Tamil Nadu','Telangana','Tripura','Uttar Pradesh',
+  'Uttarakhand','West Bengal','Delhi','Jammu & Kashmir','Ladakh',
+];
+
+const inp: React.CSSProperties = {
+  width: '100%', padding: '11px 14px', border: '1px solid var(--border)',
+  background: 'var(--cream)', fontSize: 13, outline: 'none', color: 'var(--black)',
+  fontFamily: 'DM Sans, sans-serif', boxSizing: 'border-box',
+};
+const lbl: React.CSSProperties = {
+  fontSize: 10, letterSpacing: '0.10em', textTransform: 'uppercase',
+  color: 'var(--dust)', display: 'block', marginBottom: 6, fontWeight: 500,
+};
+
+async function loadRazorpay(): Promise<void> {
+  if (window.Razorpay) return;
+  await new Promise<void>((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    s.onload = () => resolve();
+    s.onerror = () => reject(new Error('Failed to load payment gateway. Please check your internet connection.'));
+    document.body.appendChild(s);
+  });
+}
+
+// ─── Cart sync helper ───────────────────────────────────────────────────────
+async function syncCartToBackend(items: any[]): Promise<number> {
+  await cartService.clearCart().catch(() => {});
+  let count = 0;
+  for (const item of items) {
+    let vid = item.variantId;
+    if (!vid) {
+      const vs = (item.product as any)._variants;
+      if (Array.isArray(vs)) {
+        const m = vs.find((v: any) => v.size === item.size && v.color === item.color);
+        vid = m?.id;
+      }
+    }
+    if (!vid) continue;
+    try {
+      await cartService.addItem(item.product.id, vid, item.quantity, item.customStitchingId);
+      count++;
+    } catch {}
+  }
+  return count;
+}
+
+export default function CheckoutPage() {
+  const { items, totalPrice, clearCart } = useCart();
+  const isMobile = useIsMobile();
+  const router = useRouter();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
+
+  // ── Steps & flow ────────────────────────────────────────────────────────
+  const [step, setStep] = useState<Step>(1);
+  const [delivery, setDelivery] = useState<Delivery>('standard');
+
+  // ── Address ─────────────────────────────────────────────────────────────
+  const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
+  const [selectedAddr, setSelectedAddr] = useState<any>(null);
+  const [showNewForm, setShowNewForm] = useState(false);
+  const [addrForm, setAddrForm] = useState({
+    firstName: '', lastName: '', phone: '', line1: '', line2: '', city: '', state: '', pincode: '',
+  });
+  const [addrErrors, setAddrErrors] = useState<Record<string, string>>({});
+  const [savingAddr, setSavingAddr] = useState(false);
+
+  // ── Coupon ───────────────────────────────────────────────────────────────
+  const [couponInput, setCouponInput] = useState('');
+  const [couponData, setCouponData] = useState<any>(null);
+  const [couponError, setCouponError] = useState('');
+  const [couponLoading, setCouponLoading] = useState(false);
+
+  // ── Payment ──────────────────────────────────────────────────────────────
+  const [loading, setLoading] = useState(false);
+  const [orderError, setOrderError] = useState('');
+
+  // ── Computed prices (all in paise) ───────────────────────────────────────
+  const stitchingCharge = items.filter(i => i.customStitchingId).length * 24900;
+  const shippingPaise = delivery === 'standard'
+    ? (totalPrice + stitchingCharge >= 99900 ? 0 : 9900)
+    : delivery === 'express' ? 19900 : 5000;
+  const discountPaise = couponData?.discount ?? 0;
+  const subtotalWithStitching = totalPrice + stitchingCharge;
+  const grandTotal = Math.max(0, subtotalWithStitching + shippingPaise - discountPaise);
+  const isCOD = delivery === 'cod';
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    usersService.getAddresses().then((res: any) => {
+      const addrs: any[] = res.data || [];
+      setSavedAddresses(addrs);
+      if (addrs.length === 0) {
+        setShowNewForm(true);
+      } else {
+        const def = addrs.find(a => a.isDefault) || addrs[0];
+        setSelectedAddr(def);
+      }
+    }).catch(() => {});
+  }, [isAuthenticated]);
+
+  // ── Coupon ───────────────────────────────────────────────────────────────
+  const applyCoupon = async () => {
+    if (!couponInput.trim()) return;
+    setCouponError(''); setCouponLoading(true);
+    try {
+      const res: any = await couponsService.validate(couponInput.trim(), subtotalWithStitching);
+      const d = res.data;
+      if (d?.valid) { setCouponData(d); }
+      else { setCouponData(null); setCouponError(d?.message || 'Invalid coupon code.'); }
+    } catch (err: any) {
+      setCouponData(null); setCouponError(err.message || 'Could not validate coupon.');
+    } finally { setCouponLoading(false); }
+  };
+
+  const removeCoupon = () => { setCouponData(null); setCouponInput(''); setCouponError(''); };
+
+  // ── Address continue ─────────────────────────────────────────────────────
+  const handleAddrContinue = async () => {
+    if (!showNewForm && selectedAddr) { setStep(2); return; }
+
+    // Validate new address form
+    const errs: Record<string, string> = {};
+    if (!addrForm.firstName.trim()) errs.firstName = 'Required';
+    if (!addrForm.lastName.trim()) errs.lastName = 'Required';
+    if (!/^\d{10}$/.test(addrForm.phone.trim())) errs.phone = 'Enter a valid 10-digit number';
+    if (!addrForm.line1.trim()) errs.line1 = 'Required';
+    if (!addrForm.city.trim()) errs.city = 'Required';
+    if (!addrForm.state) errs.state = 'Select a state';
+    if (!/^\d{6}$/.test(addrForm.pincode.trim())) errs.pincode = 'Enter a valid 6-digit pincode';
+    if (Object.keys(errs).length) { setAddrErrors(errs); return; }
+
+    setSavingAddr(true); setAddrErrors({});
+    try {
+      const res: any = await usersService.createAddress({
+        firstName: addrForm.firstName.trim(), lastName: addrForm.lastName.trim(),
+        phone: addrForm.phone.trim(), addressLine1: addrForm.line1.trim(),
+        addressLine2: addrForm.line2.trim() || undefined,
+        city: addrForm.city.trim(), state: addrForm.state, pincode: addrForm.pincode.trim(),
+      });
+      const saved = res.data;
+      setSavedAddresses(p => [...p, saved]);
+      setSelectedAddr(saved);
+      setShowNewForm(false);
+      setStep(2);
+    } catch (err: any) {
+      setAddrErrors({ general: err.message || 'Failed to save address. Please try again.' });
+    } finally { setSavingAddr(false); }
+  };
+
+  // ── COD order ────────────────────────────────────────────────────────────
+  const handleCODOrder = async () => {
+    setLoading(true); setOrderError('');
+    try {
+      if (items.length === 0) throw new Error('Your cart is empty.');
+      const synced = await syncCartToBackend(items);
+      if (synced === 0) throw new Error('Could not process cart. Please re-add your items.');
+
+      const res: any = await ordersService.createOrder({
+        addressId: selectedAddr.id,
+        deliveryMethod: 'COD',
+        paymentMethod: 'COD',
+        couponCode: couponData?.coupon?.code,
+      });
+      clearCart();
+      router.push(`/order-confirmation?order=${res.data.order.orderNumber}`);
+    } catch (err: any) {
+      setOrderError(err.message || 'Failed to place order. Please try again.');
+      setLoading(false);
+    }
+  };
+
+  // ── Online payment ────────────────────────────────────────────────────────
+  const handleProceedToPayment = async () => {
+    setLoading(true); setOrderError('');
+    try {
+      if (items.length === 0) throw new Error('Your cart is empty.');
+      const synced = await syncCartToBackend(items);
+      if (synced === 0) throw new Error('Could not process cart. Please re-add your items.');
+
+      // 1. Create order in our system
+      const orderRes: any = await ordersService.createOrder({
+        addressId: selectedAddr.id,
+        deliveryMethod: delivery.toUpperCase() as any,
+        paymentMethod: 'UPI',
+        couponCode: couponData?.coupon?.code,
+      });
+      const order = orderRes.data.order;
+
+      // 2. Create Razorpay order
+      const rpRes: any = await paymentsService.createRazorpayOrder(order.id);
+      const { razorpayOrderId, amount, key } = rpRes.data;
+
+      // 3. Load Razorpay script
+      await loadRazorpay();
+
+      // 4. Open Razorpay modal
+      await new Promise<void>((resolve, reject) => {
+        const rzp = new window.Razorpay({
+          key,
+          amount,
+          currency: 'INR',
+          name: 'QOTN',
+          description: 'Pure Cotton. Nothing Else.',
+          order_id: razorpayOrderId,
+          prefill: {
+            name: `${selectedAddr.firstName} ${selectedAddr.lastName}`,
+            contact: selectedAddr.phone,
+          },
+          theme: { color: '#1A1A1A', backdrop_color: 'rgba(0,0,0,0.7)' },
+          modal: {
+            ondismiss: () => {
+              setLoading(false);
+              reject(new Error('__dismissed__'));
+            },
+          },
+          handler: async (response: any) => {
+            try {
+              await paymentsService.verifyPayment({
+                razorpayOrderId: response.razorpay_order_id,
+                razorpayPaymentId: response.razorpay_payment_id,
+                razorpaySignature: response.razorpay_signature,
+                orderId: order.id,
+              });
+              clearCart();
+              router.push(`/order-confirmation?order=${order.orderNumber}`);
+              resolve();
+            } catch (err: any) {
+              reject(new Error(err.message || 'Payment verification failed. Contact support.'));
+            }
+          },
+        });
+        rzp.on('payment.failed', (resp: any) => {
+          reject(new Error(resp?.error?.description || 'Payment failed.'));
+        });
+        rzp.open();
+      });
+
+    } catch (err: any) {
+      if (err.message === '__dismissed__') return; // user closed modal — don't show error
+      setOrderError(err.message || 'Something went wrong. Please try again.');
+      setLoading(false);
+    }
+  };
+
+  // ────────────────────────────────────────────────────────────────────────
+  // GUARDS
+  // ────────────────────────────────────────────────────────────────────────
+  if (authLoading) return (
+    <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--cream)' }}>
+      <div style={{ width: 28, height: 28, border: '2px solid #1A1A1A', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+    </div>
+  );
+
+  if (!isAuthenticated) return (
+    <div style={{ backgroundColor: 'var(--cream)', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+      <div style={{ textAlign: 'center' }}>
+        <p style={{ fontSize: 15, marginBottom: 20, color: 'var(--dust)' }}>Please sign in to checkout.</p>
+        <Link href="/account">
+          <button style={{ padding: '14px 32px', background: 'var(--black)', color: 'var(--cream)', border: 'none', fontSize: 12, letterSpacing: '0.10em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>Sign In</button>
+        </Link>
+      </div>
+    </div>
+  );
+
+  if (items.length === 0) return (
+    <div style={{ backgroundColor: 'var(--cream)', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+      <div style={{ textAlign: 'center' }}>
+        <p style={{ fontSize: 15, marginBottom: 20, color: 'var(--dust)' }}>Your cart is empty.</p>
+        <Link href="/men">
+          <button style={{ padding: '14px 32px', background: 'var(--black)', color: 'var(--cream)', border: 'none', fontSize: 12, letterSpacing: '0.10em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>Shop Now</button>
+        </Link>
+      </div>
+    </div>
+  );
+
+  // ────────────────────────────────────────────────────────────────────────
+  // STEP INDICATOR
+  // ────────────────────────────────────────────────────────────────────────
+  const StepIndicator = () => {
+    const steps = [{ n: 1, label: 'Address' }, { n: 2, label: 'Delivery' }, { n: 3, label: 'Review' }];
+    if (isMobile) {
+      return (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 28 }}>
+          {steps.map(({ n, label }) => (
+            <div key={n} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ width: 8, height: 8, borderRadius: '50%', background: step >= n ? '#1A1A1A' : '#D4CFC6', transition: 'background 0.2s' }} />
+              {step === n && <span style={{ fontSize: 11, letterSpacing: '0.08em', color: '#1A1A1A' }}>{label}</span>}
+            </div>
+          ))}
+        </div>
+      );
+    }
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0, marginBottom: 48 }}>
+        {steps.map(({ n, label }, i) => (
+          <div key={n} style={{ display: 'flex', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ width: 28, height: 28, borderRadius: '50%', background: step >= n ? '#1A1A1A' : 'transparent', border: step >= n ? 'none' : '1px solid #D4CFC6', color: step >= n ? '#F5F0E8' : '#9E9987', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 500, transition: 'all 0.2s' }}>
+                {step > n ? <Check size={12} strokeWidth={2.5} /> : n}
+              </div>
+              <span style={{ fontSize: 12, letterSpacing: '0.08em', color: step >= n ? '#1A1A1A' : '#9E9987', fontWeight: step === n ? 500 : 400 }}>{label}</span>
+            </div>
+            {i < steps.length - 1 && <div style={{ width: 40, height: 1, background: '#D4CFC6', margin: '0 12px' }} />}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  // ────────────────────────────────────────────────────────────────────────
+  // STEP 1 — ADDRESS
+  // ────────────────────────────────────────────────────────────────────────
+  const AddressStep = () => (
+    <motion.div key="addr" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+      <h2 style={{ fontSize: 13, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 24 }}>Delivery Address</h2>
+
+      {/* Saved address cards */}
+      {savedAddresses.length > 0 && !showNewForm && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 16 }}>
+          {savedAddresses.map((addr: any) => {
+            const selected = selectedAddr?.id === addr.id;
+            return (
+              <button key={addr.id} onClick={() => { setSelectedAddr(addr); setShowNewForm(false); }}
+                style={{ display: 'flex', alignItems: 'flex-start', gap: 14, padding: 18, border: selected ? '1.5px solid #1A1A1A' : '1px solid var(--border)', background: selected ? 'rgba(26,26,26,0.02)' : 'transparent', cursor: 'pointer', textAlign: 'left', fontFamily: 'DM Sans, sans-serif', width: '100%' }}>
+                {/* Radio circle */}
+                <div style={{ width: 18, height: 18, borderRadius: '50%', border: selected ? '5px solid #1A1A1A' : '1.5px solid #C8C3BA', flexShrink: 0, marginTop: 1, transition: 'all 0.15s' }} />
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontSize: 14, fontWeight: 500, marginBottom: 3 }}>
+                    {addr.firstName} {addr.lastName}
+                    {addr.isDefault && <span style={{ fontSize: 10, letterSpacing: '0.08em', background: '#1A1A1A', color: '#F5F0E8', padding: '2px 6px', marginLeft: 8 }}>DEFAULT</span>}
+                  </p>
+                  <p style={{ fontSize: 13, color: 'var(--dust)', lineHeight: 1.6 }}>
+                    {addr.addressLine1}{addr.addressLine2 ? `, ${addr.addressLine2}` : ''}<br />
+                    {addr.city}, {addr.state} – {addr.pincode}
+                  </p>
+                  {addr.phone && <p style={{ fontSize: 12, color: 'var(--dust)', marginTop: 4 }}>{addr.phone}</p>}
+                </div>
+                {selected && <Check size={16} strokeWidth={2.5} color="#1A1A1A" style={{ flexShrink: 0, marginTop: 1 }} />}
+              </button>
+            );
+          })}
+          {/* Add new */}
+          <button onClick={() => { setShowNewForm(true); setSelectedAddr(null); }}
+            style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 18px', border: '1px dashed #C8C3BA', background: 'transparent', cursor: 'pointer', fontSize: 13, color: 'var(--dust)', fontFamily: 'DM Sans, sans-serif', textAlign: 'left' }}>
+            <span style={{ fontSize: 18, fontWeight: 300, lineHeight: 1 }}>+</span> Add New Address
+          </button>
+        </div>
+      )}
+
+      {/* New address form */}
+      {(showNewForm || savedAddresses.length === 0) && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {savedAddresses.length > 0 && (
+            <button onClick={() => { setShowNewForm(false); setSelectedAddr(savedAddresses.find(a => a.isDefault) || savedAddresses[0]); }}
+              style={{ alignSelf: 'flex-start', background: 'none', border: 'none', fontSize: 12, color: 'var(--dust)', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'DM Sans, sans-serif', padding: 0, marginBottom: 4 }}>
+              ← Use saved address
+            </button>
+          )}
+          {addrErrors.general && <p style={{ fontSize: 12, color: '#DC2626', background: '#FEF2F2', padding: '10px 14px', borderLeft: '3px solid #DC2626' }}>{addrErrors.general}</p>}
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 14 }}>
+            {[['firstName', 'First Name *'], ['lastName', 'Last Name *']].map(([k, l]) => (
+              <div key={k}>
+                <label style={lbl}>{l}</label>
+                <input style={{ ...inp, borderColor: addrErrors[k] ? '#DC2626' : undefined }}
+                  value={(addrForm as any)[k]} onChange={e => { setAddrForm(f => ({ ...f, [k]: e.target.value })); setAddrErrors(f => ({ ...f, [k]: '' })); }} />
+                {addrErrors[k] && <p style={{ fontSize: 11, color: '#DC2626', marginTop: 4 }}>{addrErrors[k]}</p>}
+              </div>
+            ))}
+          </div>
+          <div>
+            <label style={lbl}>Phone * (10 digits)</label>
+            <input type="tel" maxLength={10} style={{ ...inp, borderColor: addrErrors.phone ? '#DC2626' : undefined }}
+              value={addrForm.phone} onChange={e => { setAddrForm(f => ({ ...f, phone: e.target.value })); setAddrErrors(f => ({ ...f, phone: '' })); }} />
+            {addrErrors.phone && <p style={{ fontSize: 11, color: '#DC2626', marginTop: 4 }}>{addrErrors.phone}</p>}
+          </div>
+          <div>
+            <label style={lbl}>Address Line 1 *</label>
+            <input style={{ ...inp, borderColor: addrErrors.line1 ? '#DC2626' : undefined }}
+              value={addrForm.line1} onChange={e => { setAddrForm(f => ({ ...f, line1: e.target.value })); setAddrErrors(f => ({ ...f, line1: '' })); }} />
+            {addrErrors.line1 && <p style={{ fontSize: 11, color: '#DC2626', marginTop: 4 }}>{addrErrors.line1}</p>}
+          </div>
+          <div>
+            <label style={lbl}>Address Line 2 (Optional)</label>
+            <input style={inp} value={addrForm.line2} onChange={e => setAddrForm(f => ({ ...f, line2: e.target.value }))} />
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 1fr 1fr', gap: 14 }}>
+            <div>
+              <label style={lbl}>City *</label>
+              <input style={{ ...inp, borderColor: addrErrors.city ? '#DC2626' : undefined }}
+                value={addrForm.city} onChange={e => { setAddrForm(f => ({ ...f, city: e.target.value })); setAddrErrors(f => ({ ...f, city: '' })); }} />
+              {addrErrors.city && <p style={{ fontSize: 11, color: '#DC2626', marginTop: 4 }}>{addrErrors.city}</p>}
+            </div>
+            <div>
+              <label style={lbl}>State *</label>
+              <select style={{ ...inp, cursor: 'pointer', borderColor: addrErrors.state ? '#DC2626' : undefined }}
+                value={addrForm.state} onChange={e => { setAddrForm(f => ({ ...f, state: e.target.value })); setAddrErrors(f => ({ ...f, state: '' })); }}>
+                <option value="">Select</option>
+                {indianStates.map(s => <option key={s}>{s}</option>)}
+              </select>
+              {addrErrors.state && <p style={{ fontSize: 11, color: '#DC2626', marginTop: 4 }}>{addrErrors.state}</p>}
+            </div>
+            <div style={{ gridColumn: isMobile ? '1 / -1' : undefined }}>
+              <label style={lbl}>Pincode * (6 digits)</label>
+              <input maxLength={6} style={{ ...inp, borderColor: addrErrors.pincode ? '#DC2626' : undefined }}
+                value={addrForm.pincode} onChange={e => { setAddrForm(f => ({ ...f, pincode: e.target.value })); setAddrErrors(f => ({ ...f, pincode: '' })); }} />
+              {addrErrors.pincode && <p style={{ fontSize: 11, color: '#DC2626', marginTop: 4 }}>{addrErrors.pincode}</p>}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <button onClick={handleAddrContinue} disabled={savingAddr}
+        style={{ marginTop: 28, padding: '14px', width: isMobile ? '100%' : 200, background: '#1A1A1A', color: '#F5F0E8', border: 'none', fontSize: 12, letterSpacing: '0.12em', textTransform: 'uppercase', cursor: savingAddr ? 'wait' : 'pointer', fontWeight: 500, fontFamily: 'DM Sans, sans-serif', opacity: savingAddr ? 0.7 : 1 }}>
+        {savingAddr ? 'Saving...' : 'Continue →'}
+      </button>
+    </motion.div>
+  );
+
+  // ────────────────────────────────────────────────────────────────────────
+  // STEP 2 — DELIVERY METHOD
+  // ────────────────────────────────────────────────────────────────────────
+  const DeliveryStep = () => {
+    const options: { id: Delivery; label: string; sub: string; badge?: string; price: string }[] = [
+      {
+        id: 'standard', label: 'Standard Delivery', sub: '5–7 business days',
+        badge: totalPrice + stitchingCharge >= 99900 ? 'FREE SHIPPING' : undefined,
+        price: totalPrice + stitchingCharge >= 99900 ? 'FREE' : '₹99',
+      },
+      { id: 'express', label: 'Express Delivery', sub: '2–3 business days', price: '₹199' },
+      { id: 'cod', label: 'Cash on Delivery', sub: '5–7 business days', price: '+₹50' },
+    ];
+    return (
+      <motion.div key="delivery" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+        <h2 style={{ fontSize: 13, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 24 }}>Delivery Method</h2>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {options.map(opt => {
+            const sel = delivery === opt.id;
+            return (
+              <button key={opt.id} onClick={() => setDelivery(opt.id)}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 20px', border: sel ? '1.5px solid #1A1A1A' : '1px solid var(--border)', background: sel ? 'rgba(26,26,26,0.02)' : 'transparent', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', textAlign: 'left', width: '100%' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                  <div style={{ width: 18, height: 18, borderRadius: '50%', border: sel ? '5px solid #1A1A1A' : '1.5px solid #C8C3BA', flexShrink: 0, transition: 'all 0.15s' }} />
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <p style={{ fontSize: 14, fontWeight: 500, color: '#1A1A1A' }}>{opt.label}</p>
+                      {opt.badge && <span style={{ fontSize: 9, letterSpacing: '0.08em', background: '#065F46', color: '#fff', padding: '2px 6px' }}>{opt.badge}</span>}
+                    </div>
+                    <p style={{ fontSize: 12, color: 'var(--dust)', marginTop: 3 }}>{opt.sub}</p>
+                  </div>
+                </div>
+                <span style={{ fontSize: 15, fontWeight: 500, color: '#1A1A1A', flexShrink: 0, marginLeft: 16 }}>{opt.price}</span>
+              </button>
+            );
+          })}
+        </div>
+        <div style={{ display: 'flex', gap: 10, marginTop: 28 }}>
+          <button onClick={() => setStep(1)} style={{ padding: '14px 20px', background: 'transparent', color: 'var(--black)', border: '1px solid var(--border)', fontSize: 12, letterSpacing: '0.08em', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>← Back</button>
+          <button onClick={() => setStep(3)} style={{ flex: 1, padding: '14px', background: '#1A1A1A', color: '#F5F0E8', border: 'none', fontSize: 12, letterSpacing: '0.12em', textTransform: 'uppercase', cursor: 'pointer', fontWeight: 500, fontFamily: 'DM Sans, sans-serif' }}>
+            Review Order →
+          </button>
+        </div>
+      </motion.div>
+    );
+  };
+
+  // ────────────────────────────────────────────────────────────────────────
+  // STEP 3 — REVIEW & PAY
+  // ────────────────────────────────────────────────────────────────────────
+  const ReviewStep = () => (
+    <motion.div key="review" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+      <h2 style={{ fontSize: 13, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 24 }}>Order Summary</h2>
+
+      {/* Items */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 24 }}>
+        {items.map(item => (
+          <div key={`${item.product.id}-${item.size}-${item.color}`} style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+            <div style={{ position: 'relative', width: 64, height: 80, flexShrink: 0, background: 'var(--raw-cotton)' }}>
+              <Image src={item.product.images[0]} alt={item.product.name} fill style={{ objectFit: 'cover' }} />
+              <span style={{ position: 'absolute', top: -6, right: -6, width: 20, height: 20, borderRadius: '50%', background: '#1A1A1A', color: '#F5F0E8', fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600 }}>{item.quantity}</span>
+            </div>
+            <div style={{ flex: 1 }}>
+              <p style={{ fontSize: 14, fontWeight: 400, marginBottom: 3 }}>{item.product.name}</p>
+              <p style={{ fontSize: 12, color: 'var(--dust)' }}>{item.size} · {item.color}</p>
+              {item.customStitchingId && <p style={{ fontSize: 11, color: 'var(--dust)', marginTop: 2 }}>✂ Custom Stitched +₹249</p>}
+            </div>
+            <p style={{ fontSize: 14, fontWeight: 500, flexShrink: 0 }}>{formatPrice(item.product.price * item.quantity)}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Price breakdown */}
+      <div style={{ borderTop: '1px solid var(--border)', paddingTop: 16, display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <span style={{ fontSize: 13, color: 'var(--dust)' }}>Subtotal</span>
+          <span style={{ fontSize: 13 }}>{formatPrice(totalPrice)}</span>
+        </div>
+        {stitchingCharge > 0 && (
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ fontSize: 13, color: 'var(--dust)' }}>Custom Stitching ({items.filter(i => i.customStitchingId).length}× ₹249)</span>
+            <span style={{ fontSize: 13 }}>+{formatPrice(stitchingCharge)}</span>
+          </div>
+        )}
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <span style={{ fontSize: 13, color: 'var(--dust)' }}>{isCOD ? 'COD Charge' : 'Delivery'}</span>
+          <span style={{ fontSize: 13, color: shippingPaise === 0 ? '#065F46' : undefined }}>{shippingPaise === 0 ? 'FREE' : formatPrice(shippingPaise)}</span>
+        </div>
+        {couponData && discountPaise > 0 && (
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ fontSize: 13, color: '#065F46' }}>Coupon ({couponData?.coupon?.code})</span>
+            <span style={{ fontSize: 13, color: '#065F46' }}>−{formatPrice(discountPaise)}</span>
+          </div>
+        )}
+        <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--border)', paddingTop: 12, marginTop: 4 }}>
+          <span style={{ fontSize: 16, fontWeight: 600 }}>Total</span>
+          <span style={{ fontSize: 16, fontWeight: 600 }}>{formatPrice(grandTotal)}</span>
+        </div>
+      </div>
+
+      {/* Coupon */}
+      <div style={{ marginBottom: 20 }}>
+        <p style={{ fontSize: 10, letterSpacing: '0.10em', textTransform: 'uppercase', color: 'var(--dust)', marginBottom: 8, fontWeight: 500 }}>Coupon Code</p>
+        {couponData ? (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: '#F0FDF4', border: '1px solid #BBF7D0' }}>
+            <span style={{ fontSize: 13, color: '#065F46', fontWeight: 500 }}>✓ {couponData?.coupon?.code} — saving {formatPrice(discountPaise)}</span>
+            <button onClick={removeCoupon} style={{ background: 'none', border: 'none', fontSize: 13, color: '#065F46', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', padding: 0 }}>✕</button>
+          </div>
+        ) : (
+          <>
+            <div style={{ display: 'flex', gap: 0 }}>
+              <input style={{ ...inp, flex: 1, textTransform: 'uppercase' }} placeholder="ENTER CODE"
+                value={couponInput} onChange={e => { setCouponInput(e.target.value.toUpperCase()); setCouponError(''); }} onKeyDown={e => e.key === 'Enter' && applyCoupon()} />
+              <button onClick={applyCoupon} disabled={couponLoading || !couponInput.trim()}
+                style={{ padding: '0 18px', background: '#1A1A1A', color: '#F5F0E8', border: 'none', fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', whiteSpace: 'nowrap', opacity: !couponInput.trim() ? 0.5 : 1 }}>
+                {couponLoading ? '...' : 'Apply'}
+              </button>
+            </div>
+            {couponError && <p style={{ fontSize: 12, color: '#DC2626', marginTop: 6 }}>{couponError}</p>}
+          </>
+        )}
+      </div>
+
+      {/* Delivery summary */}
+      <div style={{ padding: '14px 16px', background: 'rgba(26,26,26,0.03)', borderLeft: '2px solid #1A1A1A', marginBottom: 20, display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {selectedAddr && (
+          <p style={{ fontSize: 12, color: 'var(--dust)', lineHeight: 1.6 }}>
+            <strong style={{ color: '#1A1A1A' }}>Delivering to:</strong>{' '}
+            {selectedAddr.firstName} {selectedAddr.lastName} · {selectedAddr.addressLine1}, {selectedAddr.city} – {selectedAddr.pincode}
+          </p>
+        )}
+        <p style={{ fontSize: 12, color: 'var(--dust)' }}>
+          <strong style={{ color: '#1A1A1A' }}>Method:</strong>{' '}
+          {delivery === 'standard' ? 'Standard (5–7 days)' : delivery === 'express' ? 'Express (2–3 days)' : 'Cash on Delivery (5–7 days)'}
+        </p>
+      </div>
+
+      {/* Error */}
+      {orderError && (
+        <div style={{ padding: '12px 16px', background: '#FEF2F2', border: '1px solid #FECACA', borderLeft: '4px solid #DC2626', marginBottom: 20 }}>
+          <p style={{ fontSize: 13, color: '#DC2626', fontWeight: 500 }}>{orderError}</p>
+        </div>
+      )}
+
+      {/* Action buttons */}
+      <div style={{ display: 'flex', gap: 10 }}>
+        <button onClick={() => setStep(2)} style={{ padding: '14px 20px', background: 'transparent', color: 'var(--black)', border: '1px solid var(--border)', fontSize: 12, letterSpacing: '0.08em', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>← Back</button>
+        <button
+          onClick={isCOD ? handleCODOrder : handleProceedToPayment}
+          disabled={loading}
+          style={{ flex: 1, height: 52, background: loading ? '#9E9987' : '#1A1A1A', color: '#F5F0E8', border: 'none', fontSize: 13, letterSpacing: '0.12em', textTransform: 'uppercase', cursor: loading ? 'not-allowed' : 'pointer', fontWeight: 600, fontFamily: 'DM Sans, sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, transition: 'background 0.2s' }}>
+          {loading ? (
+            <>
+              <div style={{ width: 16, height: 16, border: '2px solid #F5F0E8', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+              {isCOD ? 'Placing Order...' : 'Opening Payment...'}
+            </>
+          ) : (
+            isCOD ? 'Place Order →' : `Proceed to Payment · ${formatPrice(grandTotal)}`
+          )}
+          <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+        </button>
+      </div>
+
+      <p style={{ fontSize: 11, color: 'var(--dust)', textAlign: 'center', marginTop: 16, lineHeight: 1.6 }}>
+        🔒 Secured by Razorpay · 256-bit SSL · Pay with UPI, Card, Net Banking or Wallets
+      </p>
+    </motion.div>
+  );
+
+  // ────────────────────────────────────────────────────────────────────────
+  // RENDER — MOBILE
+  // ────────────────────────────────────────────────────────────────────────
+  if (isMobile) {
+    return (
+      <div style={{ backgroundColor: 'var(--cream)', minHeight: '100vh', paddingBottom: 100 }}>
+        <div style={{ padding: '20px 16px 0' }}>
+          <StepIndicator />
+          {/* Mini order total */}
+          {step > 1 && (
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', background: 'rgba(26,26,26,0.04)', marginBottom: 20 }}>
+              <span style={{ fontSize: 12, color: 'var(--dust)' }}>{items.length} item{items.length > 1 ? 's' : ''}</span>
+              <span style={{ fontSize: 14, fontWeight: 600 }}>{formatPrice(grandTotal)}</span>
+            </div>
+          )}
+          {step === 1 && <AddressStep />}
+          {step === 2 && <DeliveryStep />}
+          {step === 3 && <ReviewStep />}
+        </div>
+      </div>
+    );
+  }
+
+  // ────────────────────────────────────────────────────────────────────────
+  // RENDER — DESKTOP
+  // ────────────────────────────────────────────────────────────────────────
+  return (
+    <div style={{ backgroundColor: 'var(--cream)', minHeight: '100vh', padding: '60px 40px' }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+        <StepIndicator />
+        <div style={{ display: 'grid', gridTemplateColumns: step === 3 ? '1fr' : '60% 40%', gap: 48, alignItems: 'start' }}>
+          <div style={{ maxWidth: step === 3 ? 680 : undefined, margin: step === 3 ? '0 auto' : undefined, width: step === 3 ? '100%' : undefined }}>
+            {step === 1 && <AddressStep />}
+            {step === 2 && <DeliveryStep />}
+            {step === 3 && <ReviewStep />}
+          </div>
+          {/* Right sidebar — only shown on steps 1 and 2 */}
+          {step !== 3 && (
+            <div style={{ border: '1px solid var(--border)', padding: 24, position: 'sticky', top: 80 }}>
+              <h3 style={{ fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 20, color: 'var(--dust)' }}>Order Summary</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
+                {items.map(item => (
+                  <div key={`${item.product.id}-${item.size}`} style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                    <div style={{ position: 'relative', width: 44, height: 56, flexShrink: 0, background: 'var(--raw-cotton)' }}>
+                      <Image src={item.product.images[0]} alt={item.product.name} fill style={{ objectFit: 'cover' }} />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <p style={{ fontSize: 12 }}>{item.product.name}</p>
+                      <p style={{ fontSize: 11, color: 'var(--dust)' }}>{item.size} · ×{item.quantity}</p>
+                    </div>
+                    <span style={{ fontSize: 13, fontWeight: 500 }}>{formatPrice(item.product.price * item.quantity)}</span>
+                  </div>
+                ))}
+              </div>
+              <div style={{ borderTop: '1px solid var(--border)', paddingTop: 14, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: 12, color: 'var(--dust)' }}>Subtotal</span>
+                  <span style={{ fontSize: 12 }}>{formatPrice(totalPrice)}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: 12, color: 'var(--dust)' }}>{isCOD ? 'COD Charge' : 'Delivery'}</span>
+                  <span style={{ fontSize: 12 }}>{shippingPaise === 0 ? 'FREE' : formatPrice(shippingPaise)}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--border)', paddingTop: 10, marginTop: 4 }}>
+                  <span style={{ fontSize: 14, fontWeight: 600 }}>Total</span>
+                  <span style={{ fontSize: 14, fontWeight: 600 }}>{formatPrice(grandTotal)}</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
