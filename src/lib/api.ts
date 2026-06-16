@@ -1,6 +1,7 @@
-const BASE_URL =
+const BASE_URL = (
   process.env.NEXT_PUBLIC_API_URL ||
-  'https://qotn-backend-production.up.railway.app/api';
+  'https://qotn-backend-production.up.railway.app/api'
+).replace(/^﻿/, '');
 
 export class ApiError extends Error {
   constructor(public readonly status: number, message: string) {
