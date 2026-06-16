@@ -15,6 +15,31 @@ function getToken(): string | null {
   return localStorage.getItem('qotn_token');
 }
 
+// Refresh the access token using the httpOnly refresh_token cookie.
+// Returns true if a new access token was stored in localStorage.
+let _refreshing: Promise<boolean> | null = null;
+async function tryRefresh(): Promise<boolean> {
+  if (_refreshing) return _refreshing;
+  _refreshing = (async () => {
+    try {
+      const res = await fetch(`${BASE_URL}/auth/refresh`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      if (!res.ok) return false;
+      const data = await res.json();
+      const token: string | undefined = data?.data?.token ?? data?.token;
+      if (token) { localStorage.setItem('qotn_token', token); return true; }
+      return false;
+    } catch {
+      return false;
+    } finally {
+      _refreshing = null;
+    }
+  })();
+  return _refreshing;
+}
+
 async function fetchAPI<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const token = getToken();
 
@@ -38,6 +63,35 @@ async function fetchAPI<T>(endpoint: string, options: RequestInit = {}): Promise
     throw new ApiError(0, 'Network error — is the backend running?');
   }
 
+  // On 401, attempt a silent token refresh then retry once
+  if (response.status === 401 && !endpoint.includes('/auth/')) {
+    const refreshed = await tryRefresh();
+    if (refreshed) {
+      const newToken = getToken();
+      const retryHeaders: HeadersInit = {
+        'Content-Type': 'application/json',
+        ...(newToken ? { Authorization: `Bearer ${newToken}` } : {}),
+        ...(options.headers as Record<string, string>),
+      };
+      try {
+        const retryRes = await fetch(`${BASE_URL}${endpoint}`, {
+          ...options,
+          headers: retryHeaders,
+          credentials: 'include',
+        });
+        if (retryRes.ok) {
+          try { return await retryRes.json() as T; } catch { return {} as T; }
+        }
+      } catch {}
+    }
+    // Refresh failed or retry still 401 — log out only if there was a token
+    if (typeof window !== 'undefined') {
+      const hadToken = !!localStorage.getItem('qotn_token');
+      localStorage.removeItem('qotn_token');
+      if (hadToken) window.location.href = '/account';
+    }
+  }
+
   let data: any = {};
   try {
     data = await response.json();
@@ -46,13 +100,6 @@ async function fetchAPI<T>(endpoint: string, options: RequestInit = {}): Promise
   }
 
   if (!response.ok) {
-    if (response.status === 401 && !endpoint.includes('/auth/')) {
-      if (typeof window !== 'undefined') {
-        const hadToken = !!localStorage.getItem('qotn_token');
-        localStorage.removeItem('qotn_token');
-        if (hadToken) window.location.href = '/account';
-      }
-    }
     const message = typeof data.message === 'string' ? data.message : `HTTP ${response.status}`;
     if (process.env.NODE_ENV === 'development') {
       console.warn(`[API] ${endpoint} → ${response.status}:`, message);
