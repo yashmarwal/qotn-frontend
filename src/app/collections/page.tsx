@@ -7,8 +7,10 @@ export const metadata: Metadata = {
   description: 'Explore our curated collections of pure cotton apparel.',
 };
 
-const _rawApi = process.env.NEXT_PUBLIC_API_URL || 'https://qotn-backend-production.up.railway.app/api';
-const API = _rawApi.includes('http') ? _rawApi.slice(_rawApi.indexOf('http')) : _rawApi;
+const API =
+  process.env.NODE_ENV === 'production'
+    ? 'https://qotn-backend-production.up.railway.app/api'
+    : 'http://localhost:3001/api';
 
 async function getCollections() {
   try {

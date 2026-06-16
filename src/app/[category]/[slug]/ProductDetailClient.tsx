@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
@@ -84,7 +84,7 @@ export default function ProductDetailClient({ product }: Props) {
     if (!product) return;
     const sessionId = localStorage.getItem('qotn_session') || Math.random().toString(36).slice(2);
     localStorage.setItem('qotn_session', sessionId);
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}/recommendations/track-view`, {
+    fetch(`${typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'http://localhost:3001/api' : '/api'}/recommendations/track-view`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',

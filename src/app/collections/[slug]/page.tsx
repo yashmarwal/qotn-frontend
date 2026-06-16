@@ -3,7 +3,10 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const API =
+  process.env.NODE_ENV === 'production'
+    ? 'https://qotn-backend-production.up.railway.app/api'
+    : 'http://localhost:3001/api';
 
 async function getCollection(slug: string) {
   try {

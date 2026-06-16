@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -25,7 +25,7 @@ export default function PromoBanner({ isMobile = false }: Props) {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}/banners?position=HERO`)
+    fetch(`${typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'http://localhost:3001/api' : '/api'}/banners?position=HERO`)
       .then(r => r.ok ? r.json() : null)
       .then(d => {
         const list: Banner[] = d?.data ?? [];

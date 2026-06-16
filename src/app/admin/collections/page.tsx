@@ -9,7 +9,10 @@ import { adminService } from '@/lib/services/admin.service';
 import { productsService } from '@/lib/services/products.service';
 import { adaptApiProductList } from '@/lib/adapters';
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const API =
+  typeof window !== 'undefined' && window.location.hostname === 'localhost'
+    ? 'http://localhost:3001/api'
+    : '/api';
 
 const empty = () => ({ name: '', slug: '', description: '', thumbnail: '', isActive: true, sortOrder: 0 });
 

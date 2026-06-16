@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -13,7 +13,7 @@ export default function RecentlyViewed({ currentProductId }: { currentProductId?
     const sessionId = localStorage.getItem('qotn_session') || Math.random().toString(36).slice(2);
     localStorage.setItem('qotn_session', sessionId);
 
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}/recommendations/recently-viewed?sessionId=${sessionId}`)
+    fetch(`${typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'http://localhost:3001/api' : '/api'}/recommendations/recently-viewed?sessionId=${sessionId}`)
       .then(r => r.json())
       .then(d => {
         const adapted = adaptApiProductList(d.data || []);

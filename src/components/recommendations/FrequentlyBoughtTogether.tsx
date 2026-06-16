@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -14,7 +14,7 @@ export default function FrequentlyBoughtTogether({ productId }: Props) {
   const { addItem } = useCart();
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}/recommendations/product/${productId}`)
+    fetch(`${typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'http://localhost:3001/api' : '/api'}/recommendations/product/${productId}`)
       .then(r => r.json())
       .then(d => setProducts(adaptApiProductList(d.data || [])))
       .catch(() => {});

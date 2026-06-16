@@ -1,8 +1,7 @@
 const BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL ||
-  (typeof window !== 'undefined' && window.location.hostname === 'localhost'
+  typeof window !== 'undefined' && window.location.hostname === 'localhost'
     ? 'http://localhost:3001/api'
-    : '/api');
+    : '/api';
 
 export class ApiError extends Error {
   constructor(public readonly status: number, message: string) {
@@ -49,8 +48,9 @@ async function fetchAPI<T>(endpoint: string, options: RequestInit = {}): Promise
   if (!response.ok) {
     if (response.status === 401 && !endpoint.includes('/auth/')) {
       if (typeof window !== 'undefined') {
+        const hadToken = !!localStorage.getItem('qotn_token');
         localStorage.removeItem('qotn_token');
-        window.location.href = '/account';
+        if (hadToken) window.location.href = '/account';
       }
     }
     const message = typeof data.message === 'string' ? data.message : `HTTP ${response.status}`;
