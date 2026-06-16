@@ -26,7 +26,7 @@ function ContactInfo() {
         </p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
           {[
-            { icon: Mail, label: 'Email', value: 'hello@qotn.in' },
+            { icon: Mail, label: 'Email', value: 'Helloqotn@gmail.com' },
             { icon: AtSign, label: 'Instagram', value: '@shopqotn' },
           ].map(({ icon: Icon, label, value }) => (
             <div key={label} style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
@@ -111,7 +111,7 @@ function ContactForm({ name, setName, email, setEmail, subject, setSubject, mess
       {status === 'error' && (
         <p style={{ fontSize: 12, color: '#991B1B' }}>
           Something went wrong. Please email us at{' '}
-          <a href="mailto:hello@qotn.in" style={{ color: '#991B1B' }}>hello@qotn.in</a>
+          <a href="mailto:Helloqotn@gmail.com" style={{ color: '#991B1B' }}>Helloqotn@gmail.com</a>
         </p>
       )}
       <button type="submit" disabled={status === 'sending'}
