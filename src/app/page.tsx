@@ -6,7 +6,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight, Leaf, Droplets, MapPin, ChevronDown } from 'lucide-react';
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 const FALLBACK_IMAGES = [
   'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800',
   'https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?w=800',
@@ -55,12 +54,12 @@ export default function HomePage() {
       setApiCategories(catRes.data || []);
     }).catch(console.error);
 
-    fetch(`${API}/collections`, { credentials: 'include' })
+    fetch('/api/collections', { credentials: 'include' })
       .then(r => r.json())
       .then(d => setCollections(Array.isArray(d.data) ? d.data : []))
       .catch(() => {});
 
-    fetch(`${API}/recommendations/trending`, { credentials: 'include' })
+    fetch('/api/recommendations/trending', { credentials: 'include' })
       .then(r => r.json())
       .then(d => setTrending(adaptApiProductList(d.data || [])))
       .catch(() => {});
@@ -68,7 +67,7 @@ export default function HomePage() {
 
   // Fetch hero banner images (runs unconditionally)
   useEffect(() => {
-    fetch(`${API}/banners?position=HERO`, { credentials: 'include' })
+    fetch('/api/banners?position=HERO', { credentials: 'include' })
       .then(r => r.ok ? r.json() : null)
       .then(d => {
         const imgs = (d?.data ?? [])
@@ -161,26 +160,7 @@ export default function HomePage() {
 
         <Marquee />
 
-        {/* Stats — 2×2 grid */}
-        <section style={{ padding: '0' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
-            {[
-              { num: '10,000+', label: 'Happy Customers' },
-              { num: '100%', label: 'Pure Cotton' },
-              { num: '₹249', label: 'Custom Stitching' },
-              { num: '₹999', label: 'Free Shipping Above' },
-            ].map((s, i) => (
-              <div key={i} style={{
-                textAlign: 'center', padding: '20px 8px',
-                borderRight: i % 2 === 0 ? '1px solid var(--border)' : 'none',
-                borderBottom: i < 2 ? '1px solid var(--border)' : 'none',
-              }}>
-                <p style={{ fontSize: 22, fontWeight: 500, marginBottom: 4 }}>{s.num}</p>
-                <p style={{ fontSize: 10, color: 'var(--dust)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>{s.label}</p>
-              </div>
-            ))}
-          </div>
-        </section>
+        <StatsBanner />
 
         {/* Shop by Category + Collections — merged 2×2 grid */}
         {(() => {
@@ -192,7 +172,7 @@ export default function HomePage() {
             id: col.id, name: col.name, href: `/collections/${col.slug}`,
             image: col.thumbnail || '', subtitle: col._count?.products !== undefined ? `${col._count.products} products` : '', isCollection: true,
           }));
-          const merged = [...catItems, ...colItems].slice(0, 4);
+          const merged = [...catItems, ...colItems].slice(0, 6);
           const hasMore = collections.length > 0;
           return (
             <section style={{ padding: '20px 12px 8px' }}>

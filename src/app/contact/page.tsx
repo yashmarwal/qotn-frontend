@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Mail, Phone, AtSign, MapPin, CheckCircle } from 'lucide-react';
+import { Mail, AtSign, MapPin, CheckCircle } from 'lucide-react';
 import { useIsMobile } from '@/hooks/useIsMobile';
 
 const inputStyle: React.CSSProperties = {
@@ -27,7 +27,6 @@ function ContactInfo() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
           {[
             { icon: Mail, label: 'Email', value: 'hello@qotn.in' },
-            { icon: Phone, label: 'Phone', value: '+91 80000 12345' },
             { icon: AtSign, label: 'Instagram', value: '@shopqotn' },
           ].map(({ icon: Icon, label, value }) => (
             <div key={label} style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
@@ -46,7 +45,7 @@ function ContactInfo() {
           <div>
             <p style={{ fontSize: 10, letterSpacing: '0.10em', textTransform: 'uppercase', color: 'var(--dust)', marginBottom: 6 }}>Office</p>
             <p style={{ fontSize: 14, lineHeight: 1.8, color: 'var(--black)' }}>
-              Qotn India Pvt. Ltd.<br />42, Cotton House, Koramangala<br />Bengaluru, Karnataka – 560034<br />India
+              Ward No. 36, Saipura<br />Behind Homeopathic University<br />Sanganer, Jaipur (Rajasthan)<br />Pincode: 302029
             </p>
           </div>
         </div>
