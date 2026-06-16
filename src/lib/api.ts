@@ -1,4 +1,6 @@
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  'https://qotn-backend-production.up.railway.app/api';
 
 export class ApiError extends Error {
   constructor(public readonly status: number, message: string) {
