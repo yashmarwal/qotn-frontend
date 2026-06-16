@@ -1,25 +1,40 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useAuth } from '@/context/AuthContext';
 
 export default function AdminLoginPage() {
   const router = useRouter();
+  const { isAdmin, isLoading } = useAuth();
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState('');
-  const [email, setEmail] = useState('');
+  const [adminId, setAdminId] = useState('');
   const [pass, setPass] = useState('');
+
+  useEffect(() => {
+    if (isLoading) return;
+    // Any non-admin (guest or customer) is silently sent home
+    if (!isAdmin) {
+      router.replace('/');
+    }
+  }, [isAdmin, isLoading, router]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (email === 'Admin#qotN@qotn.in' && pass === 'Qotn#pun2006it') {
+    if (adminId === 'Admin#qotN@qotn.in' && pass === 'Qotn#pun2006it') {
       router.push('/admin/dashboard');
     } else {
       setError('Invalid credentials.');
     }
   };
+
+  // Show nothing while auth is resolving or while redirecting non-admins
+  if (isLoading || !isAdmin) {
+    return <div style={{ backgroundColor: 'var(--black)', minHeight: '100vh' }} />;
+  }
 
   return (
     <div
@@ -54,9 +69,8 @@ export default function AdminLoginPage() {
             </label>
             <input
               type="text"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Admin#qotN@qotn.in"
+              value={adminId}
+              onChange={(e) => setAdminId(e.target.value)}
               style={{
                 width: '100%',
                 padding: '12px 14px',
@@ -68,6 +82,7 @@ export default function AdminLoginPage() {
                 fontFamily: 'DM Sans, sans-serif',
               }}
               required
+              autoComplete="username"
             />
           </div>
 
@@ -92,6 +107,7 @@ export default function AdminLoginPage() {
                   fontFamily: 'DM Sans, sans-serif',
                 }}
                 required
+                autoComplete="current-password"
               />
               <button
                 type="button"
