@@ -1,5 +1,8 @@
-const _rawUrl = process.env.NEXT_PUBLIC_API_URL || 'https://qotn-backend-production.up.railway.app/api';
-const BASE_URL = _rawUrl.includes('http') ? _rawUrl.slice(_rawUrl.indexOf('http')) : _rawUrl;
+const BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  (typeof window !== 'undefined' && window.location.hostname === 'localhost'
+    ? 'http://localhost:3001/api'
+    : '/api');
 
 export class ApiError extends Error {
   constructor(public readonly status: number, message: string) {
