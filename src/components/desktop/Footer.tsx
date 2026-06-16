@@ -69,16 +69,6 @@ export default function DesktopFooter() {
             <AtSign size={14} strokeWidth={1.5} /> @shopqotn
           </a>
           <span style={{ fontSize: 14, opacity: 0.8 }}>qotn.in</span>
-          <div style={{ marginTop: 16 }}>
-            <p style={{ fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(245,240,232,0.5)', marginBottom: 10 }}>Newsletter</p>
-            <div style={{ display: 'flex' }}>
-              <input type="email" placeholder="your@email.com"
-                style={{ flex: 1, padding: '10px 14px', background: 'rgba(245,240,232,0.1)', border: '1px solid rgba(245,240,232,0.2)', borderRight: 'none', color: 'var(--cream)', fontSize: 12, outline: 'none' }} />
-              <button style={{ padding: '10px 14px', background: 'var(--cream)', color: 'var(--black)', border: 'none', fontSize: 11, letterSpacing: '0.08em', fontWeight: 500, cursor: 'pointer' }}>
-                JOIN
-              </button>
-            </div>
-          </div>
         </div>
       </div>
 

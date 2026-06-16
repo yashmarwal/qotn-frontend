@@ -39,10 +39,10 @@ export default function AdminDashboardPage() {
 
 
   const statCards = [
-    { label: 'Total Orders', value: stats?.totalOrders ?? '...', icon: ShoppingBag, change: '+12% this month' },
-    { label: 'Revenue', value: stats ? formatPrice(stats.totalRevenue) : '...', icon: TrendingUp, change: '+8% this month' },
-    { label: 'Products', value: stats?.totalProducts ?? '...', icon: Package, change: '12 new this month' },
-    { label: 'Customers', value: stats?.totalCustomers ?? '...', icon: Users, change: '+56 this month' },
+    { label: 'Total Orders', value: stats?.totalOrders ?? '...', icon: ShoppingBag, change: stats ? `Today: ${stats.todayOrders} new` : '...' },
+    { label: 'Revenue (Paid)', value: stats ? formatPrice(stats.totalRevenue) : '...', icon: TrendingUp, change: stats ? `Today: ${formatPrice(stats.todayRevenue)}` : '...' },
+    { label: 'Active Products', value: stats?.totalProducts ?? '...', icon: Package, change: stats ? `${stats.lowStockVariants?.length ?? 0} variants low stock` : '...' },
+    { label: 'Customers', value: stats?.totalCustomers ?? '...', icon: Users, change: 'Total registered' },
   ];
 
   const recentOrders = stats?.recentOrders ?? [];
@@ -111,7 +111,9 @@ export default function AdminDashboardPage() {
                       </td>
                       <td style={{ padding: '13px 20px', color: 'var(--dust)' }}>{formatDate(order.createdAt)}</td>
                       <td style={{ padding: '13px 20px' }}>
-                        <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--dust)' }}><Eye size={14} strokeWidth={1.5} /></button>
+                        <Link href="/admin/orders" style={{ color: 'var(--dust)', display: 'inline-flex' }}>
+                          <Eye size={14} strokeWidth={1.5} />
+                        </Link>
                       </td>
                     </tr>
                   );

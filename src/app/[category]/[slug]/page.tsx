@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import { fetchPublic } from '@/lib/api';
 import { adaptApiProduct } from '@/lib/adapters';
 import ProductDetailClient from './ProductDetailClient';
@@ -31,5 +32,6 @@ export default async function ProductPage({
   const { slug } = await params;
   const res = await fetchPublic<any>(`/products/${slug}`, 30);
   const product = res?.data ? adaptApiProduct(res.data) : null;
+  if (!product) notFound();
   return <ProductDetailClient product={product} />;
 }

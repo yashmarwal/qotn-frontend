@@ -119,9 +119,15 @@ export const api = {
   delete: <T>(endpoint: string) => fetchAPI<T>(endpoint, { method: 'DELETE' }),
 };
 
+// Server-side RSC fetch always needs an absolute URL (relative URLs break during ISR revalidation).
+const SERVER_URL =
+  process.env.NODE_ENV === 'production'
+    ? 'https://qotn-backend-production.up.railway.app/api'
+    : 'http://localhost:3001/api';
+
 export async function fetchPublic<T>(path: string, revalidate = 60): Promise<T | null> {
   try {
-    const res = await fetch(`${BASE_URL}${path}`, { next: { revalidate } });
+    const res = await fetch(`${SERVER_URL}${path}`, { next: { revalidate } });
     if (!res.ok) return null;
     return await res.json();
   } catch {

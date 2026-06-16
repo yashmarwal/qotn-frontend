@@ -348,7 +348,7 @@ export default function AdminProductsPage() {
                   <div>
                     <label style={labelStyle}>Product Name *</label>
                     <input style={inputStyle} value={form.name}
-                      onChange={e => setForm(f => ({ ...f, name: e.target.value, slug: f.slug || makeSlug(e.target.value) }))}
+                      onChange={e => setForm(f => ({ ...f, name: e.target.value, slug: editProduct ? f.slug : makeSlug(e.target.value) }))}
                       placeholder="Pure Cotton Kurta" />
                   </div>
                   <div>

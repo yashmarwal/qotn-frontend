@@ -14,10 +14,10 @@ export default function AdminLoginPage() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (email === 'admin@qotn.in' && pass === 'qotn2025') {
+    if (email === 'Admin#qotN@qotn.in' && pass === 'Qotn#pun2006it') {
       router.push('/admin/dashboard');
     } else {
-      setError('Invalid credentials. Try admin@qotn.in / qotn2025');
+      setError('Invalid credentials.');
     }
   };
 
@@ -50,13 +50,13 @@ export default function AdminLoginPage() {
         <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div>
             <label style={{ fontSize: 11, letterSpacing: '0.10em', textTransform: 'uppercase', color: 'rgba(245,240,232,0.5)', display: 'block', marginBottom: 8, fontWeight: 500 }}>
-              Email
+              Admin ID
             </label>
             <input
-              type="email"
+              type="text"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@qotn.in"
+              placeholder="Admin#qotN@qotn.in"
               style={{
                 width: '100%',
                 padding: '12px 14px',
