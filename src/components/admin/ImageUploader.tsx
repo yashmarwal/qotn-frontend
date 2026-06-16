@@ -4,7 +4,10 @@ import { useRef, useState, useCallback } from 'react';
 import { Upload, Trash2, Loader } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const API_BASE =
+  typeof window !== 'undefined' && window.location.hostname === 'localhost'
+    ? 'http://localhost:3001/api'
+    : '/api';
 
 interface Props {
   images: string[];
@@ -49,12 +52,14 @@ export default function ImageUploader({ images, onChange, maxImages = 6, minImag
     setError('');
     setSlotLoading(slotIndex);
     try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('qotn_token') : null;
       const formData = new FormData();
       formData.append('file', file);
 
       const res = await fetch(`${API_BASE}/upload/image`, {
         method: 'POST',
         credentials: 'include',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
         body: formData,
       });
       const data = await res.json();
@@ -82,9 +87,13 @@ export default function ImageUploader({ images, onChange, maxImages = 6, minImag
 
     if (publicId) {
       try {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('qotn_token') : null;
         await fetch(`${API_BASE}/upload/image`, {
           method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
           credentials: 'include' as const,
           body: JSON.stringify({ publicId }),
         });
