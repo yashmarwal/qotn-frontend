@@ -20,6 +20,7 @@ import StatsBanner from '@/components/shared/StatsBanner';
 import TrustStrip from '@/components/shared/TrustStrip';
 import TrustBadges from '@/components/shared/TrustBadges';
 import PromoBanner from '@/components/shared/PromoBanner';
+import ShopTheLook from '@/components/ShopTheLook';
 import { categories } from '@/lib/dummy-data';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { productsService } from '@/lib/services/products.service';
@@ -292,6 +293,8 @@ export default function HomePage() {
           </div>
         </section>
 
+        <ShopTheLook />
+
         {/* Trust badges — horizontal scroll */}
         <section style={{ padding: '16px', overflowX: 'auto', scrollbarWidth: 'none' }}>
           <div style={{ display: 'flex', gap: 8, width: 'max-content' }}>
@@ -525,6 +528,8 @@ export default function HomePage() {
           </div>
         </section>
       )}
+
+      <ShopTheLook />
 
       <TrustStrip />
     </div>

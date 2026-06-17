@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { Product } from '@/types';
 import { useCart } from '@/context/CartContext';
+import { formatPrice } from '@/lib/utils';
 
 interface BottomBarProps {
   product: Product;
@@ -34,11 +35,11 @@ export default function MobileBottomBar({ product, selectedSize, onAddToBag, add
         <p style={{ fontSize: 10, color: 'rgba(245,240,232,0.5)', letterSpacing: '0.08em', marginBottom: 2 }}>Price</p>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
           <span style={{ fontSize: 16, fontWeight: 600, color: 'var(--cream)' }}>
-            ₹{product.price.toLocaleString('en-IN')}
+            {formatPrice(product.price)}
           </span>
           {product.originalPrice && (
             <span style={{ fontSize: 11, color: 'rgba(245,240,232,0.4)', textDecoration: 'line-through' }}>
-              ₹{product.originalPrice.toLocaleString('en-IN')}
+              {formatPrice(product.originalPrice)}
             </span>
           )}
         </div>
@@ -65,7 +66,7 @@ export default function MobileBottomBar({ product, selectedSize, onAddToBag, add
         disabled={!selectedSize}
         style={{
           flex: 1, height: 48,
-          background: selectedSize ? 'transparent' : 'transparent',
+          background: 'transparent',
           color: selectedSize ? 'var(--cream)' : 'rgba(245,240,232,0.4)',
           border: selectedSize ? '1px solid rgba(245,240,232,0.4)' : '1px solid rgba(245,240,232,0.15)',
           borderRadius: 2,

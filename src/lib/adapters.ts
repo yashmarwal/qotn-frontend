@@ -1,4 +1,5 @@
 import { Product } from '@/types';
+import { sortSizes } from './sizeOrder';
 
 // Raw shape from the backend API
 export interface ApiVariant {
@@ -60,7 +61,7 @@ export function adaptApiProduct(p: ApiProduct): Product {
     : null;
 
   // Stock per size (sum across all colors)
-  const uniqueSizes = [...new Set(variants.map(v => v.size))];
+  const uniqueSizes = sortSizes([...new Set(variants.map(v => v.size))]);
   const stockBySize: Record<string, number> = {};
   for (const size of uniqueSizes) {
     stockBySize[size] = variants
