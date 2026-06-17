@@ -13,6 +13,7 @@ import {
   Bell,
   Layers,
   Tag,
+  Video,
 } from 'lucide-react';
 
 const navItems = [
@@ -26,6 +27,7 @@ const navItems = [
   { href: '/admin/waitlist', label: 'Waitlist', icon: Bell },
   { href: '/admin/banners', label: 'Banners', icon: Image },
   { href: '/admin/collections', label: 'Collections', icon: Layers },
+  { href: '/admin/look-videos', label: 'Look Videos', icon: Video },
 ];
 
 export default function AdminSidebar() {

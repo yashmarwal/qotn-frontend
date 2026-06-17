@@ -56,6 +56,12 @@ export const adminService = {
   notifyWaitlist: (variantId: string) =>
     api.post<{ data: any }>(`/waitlist/notify/${variantId}`, {}),
 
+  // Look Videos
+  getLookVideos: () => api.get<{ data: any[] }>('/look-videos?all=true'),
+  createLookVideo: (data: any) => api.post<{ data: any }>('/look-videos', data),
+  updateLookVideo: (id: string, data: any) => api.patch<{ data: any }>(`/look-videos/${id}`, data),
+  deleteLookVideo: (id: string) => api.delete<{ data: any }>(`/look-videos/${id}`),
+
   // Collections
   getCollections: () => api.get<{ data: any[] }>('/collections/admin'),
   createCollection: (data: any) => api.post<{ data: any }>('/collections', data),
