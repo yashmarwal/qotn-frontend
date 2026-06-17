@@ -39,6 +39,7 @@ export const adminService = {
   getCoupons: () => api.get<{ data: any[] }>('/coupons'),
   createCoupon: (data: any) => api.post<{ data: any }>('/coupons', data),
   updateCoupon: (id: string, data: any) => api.patch<{ data: any }>(`/coupons/${id}`, data),
+  deleteCoupon: (id: string) => api.delete<{ data: any }>(`/coupons/${id}`),
 
   // Custom stitching
   getCustomStitching: (status?: string) => {

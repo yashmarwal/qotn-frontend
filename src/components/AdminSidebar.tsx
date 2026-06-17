@@ -14,6 +14,7 @@ import {
   Layers,
   Tag,
   Video,
+  Percent,
 } from 'lucide-react';
 
 const navItems = [
@@ -28,6 +29,7 @@ const navItems = [
   { href: '/admin/banners', label: 'Banners', icon: Image },
   { href: '/admin/collections', label: 'Collections', icon: Layers },
   { href: '/admin/look-videos', label: 'Look Videos', icon: Video },
+  { href: '/admin/coupons', label: 'Offers', icon: Percent },
 ];
 
 export default function AdminSidebar() {

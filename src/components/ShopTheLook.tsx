@@ -14,9 +14,10 @@ interface LookVideo {
 
 export default function ShopTheLook() {
   const [videos, setVideos] = useState<LookVideo[]>([]);
-  const [hovered, setHovered] = useState<string | null>(null);
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const rafRef = useRef<number | null>(null);
+  const pausedRef = useRef(false);
 
   useEffect(() => {
     fetch('/api/look-videos', { credentials: 'include' })
@@ -28,24 +29,24 @@ export default function ShopTheLook() {
       .catch(() => {});
   }, []);
 
-  // Auto-scroll when not hovered
+  // Continuous pixel-by-pixel auto-scroll via requestAnimationFrame
   useEffect(() => {
-    if (videos.length === 0 || hovered) return;
+    if (videos.length === 0) return;
     const el = scrollRef.current;
     if (!el) return;
 
-    timerRef.current = setInterval(() => {
-      if (!el) return;
-      const maxScroll = el.scrollWidth - el.clientWidth;
-      if (el.scrollLeft >= maxScroll - 4) {
-        el.scrollTo({ left: 0, behavior: 'smooth' });
-      } else {
-        el.scrollBy({ left: 220, behavior: 'smooth' });
+    const animate = () => {
+      if (!pausedRef.current) {
+        el.scrollLeft += 0.5;
+        if (el.scrollLeft >= el.scrollWidth - el.clientWidth - 1) {
+          el.scrollLeft = 0;
+        }
       }
-    }, 2800);
-
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [videos.length, hovered]);
+      rafRef.current = requestAnimationFrame(animate);
+    };
+    rafRef.current = requestAnimationFrame(animate);
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+  }, [videos.length]);
 
   if (videos.length === 0) return null;
 
@@ -57,8 +58,8 @@ export default function ShopTheLook() {
 
       <div
         ref={scrollRef}
-        onMouseEnter={() => setHovered('yes')}
-        onMouseLeave={() => setHovered(null)}
+        onMouseEnter={() => { pausedRef.current = true; }}
+        onMouseLeave={() => { pausedRef.current = false; }}
         style={{
           display: 'flex',
           gap: 12,
@@ -72,7 +73,7 @@ export default function ShopTheLook() {
         }}
       >
         {videos.map(video => {
-          const isHovered = hovered === video.id;
+          const isHovered = hoveredId === video.id;
           const productHref = video.productCategory && video.productSlug
             ? `/${video.productCategory}/${video.productSlug}`
             : null;
@@ -80,8 +81,8 @@ export default function ShopTheLook() {
           return (
             <div
               key={video.id}
-              onMouseEnter={() => setHovered(video.id)}
-              onMouseLeave={() => setHovered(null)}
+              onMouseEnter={() => { pausedRef.current = true; setHoveredId(video.id); }}
+              onMouseLeave={() => { pausedRef.current = false; setHoveredId(null); }}
               style={{
                 flexShrink: 0,
                 width: 180,
