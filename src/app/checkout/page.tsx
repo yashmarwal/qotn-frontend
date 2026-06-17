@@ -623,7 +623,7 @@ export default function CheckoutPage() {
     return (
       <div style={{ backgroundColor: 'var(--cream)', minHeight: '100vh', paddingBottom: 100 }}>
         <div style={{ padding: '20px 16px 0' }}>
-          <StepIndicator />
+          {StepIndicator()}
           {/* Mini order total */}
           {step > 1 && (
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', background: 'rgba(26,26,26,0.04)', marginBottom: 20 }}>
@@ -631,9 +631,9 @@ export default function CheckoutPage() {
               <span style={{ fontSize: 14, fontWeight: 600 }}>{formatPrice(grandTotal)}</span>
             </div>
           )}
-          {step === 1 && <AddressStep />}
-          {step === 2 && <DeliveryStep />}
-          {step === 3 && <ReviewStep />}
+          {step === 1 && AddressStep()}
+          {step === 2 && DeliveryStep()}
+          {step === 3 && ReviewStep()}
         </div>
       </div>
     );
@@ -645,12 +645,12 @@ export default function CheckoutPage() {
   return (
     <div style={{ backgroundColor: 'var(--cream)', minHeight: '100vh', padding: '60px 40px' }}>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-        <StepIndicator />
+        {StepIndicator()}
         <div style={{ display: 'grid', gridTemplateColumns: step === 3 ? '1fr' : '60% 40%', gap: 48, alignItems: 'start' }}>
           <div style={{ maxWidth: step === 3 ? 680 : undefined, margin: step === 3 ? '0 auto' : undefined, width: step === 3 ? '100%' : undefined }}>
-            {step === 1 && <AddressStep />}
-            {step === 2 && <DeliveryStep />}
-            {step === 3 && <ReviewStep />}
+            {step === 1 && AddressStep()}
+            {step === 2 && DeliveryStep()}
+            {step === 3 && ReviewStep()}
           </div>
           {/* Right sidebar — only shown on steps 1 and 2 */}
           {step !== 3 && (

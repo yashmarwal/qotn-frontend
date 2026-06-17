@@ -220,6 +220,8 @@ export default function HomePage() {
           );
         })()}
 
+        <ShopTheLook />
+
         {/* New Arrivals */}
         <section id="new-arrivals" style={{ padding: '0 12px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
@@ -292,8 +294,6 @@ export default function HomePage() {
             ))}
           </div>
         </section>
-
-        <ShopTheLook />
 
         {/* Trust badges — horizontal scroll */}
         <section style={{ padding: '16px', overflowX: 'auto', scrollbarWidth: 'none' }}>
@@ -425,6 +425,8 @@ export default function HomePage() {
         );
       })()}
 
+      <ShopTheLook />
+
       <TrustBadges />
 
       {/* New Arrivals */}
@@ -528,8 +530,6 @@ export default function HomePage() {
           </div>
         </section>
       )}
-
-      <ShopTheLook />
 
       <TrustStrip />
     </div>
