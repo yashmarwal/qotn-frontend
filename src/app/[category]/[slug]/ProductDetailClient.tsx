@@ -278,7 +278,7 @@ export default function ProductDetailClient({ product }: Props) {
                   const sel = selectedColor === color;
                   return (
                     <button key={color} onClick={() => setSelectedColor(color)} title={color}
-                      style={{ width: 28, height: 28, borderRadius: '50%', aspectRatio: '1/1', flexShrink: 0, backgroundColor: hex, border: sel ? '2px solid var(--black)' : (hex === '#FFFFFF' || hex === '#F5F0E8') ? '1px solid var(--border)' : '1px solid transparent', outline: sel ? '2px solid var(--cream)' : 'none', outlineOffset: '-3px', cursor: 'pointer', padding: 0, transition: 'transform 0.15s', transform: sel ? 'scale(1.15)' : 'scale(1)' }} />
+                      style={{ width: 28, height: 28, minHeight: 'unset', borderRadius: '50%', aspectRatio: '1/1', flexShrink: 0, backgroundColor: hex, border: sel ? '2px solid var(--black)' : (hex === '#FFFFFF' || hex === '#F5F0E8') ? '1px solid var(--border)' : '1px solid transparent', outline: sel ? '2px solid var(--cream)' : 'none', outlineOffset: '-3px', cursor: 'pointer', padding: 0, transition: 'transform 0.15s', transform: sel ? 'scale(1.15)' : 'scale(1)' }} />
                   );
                 })}
               </div>
@@ -496,7 +496,7 @@ export default function ProductDetailClient({ product }: Props) {
                     const sel = selectedColor === color;
                     return (
                       <button key={color} onClick={() => setSelectedColor(color)} title={color}
-                        style={{ width: 28, height: 28, borderRadius: '50%', aspectRatio: '1/1', flexShrink: 0, backgroundColor: hex, border: sel ? '2px solid var(--black)' : (hex === '#FFFFFF' || hex === '#F5F0E8' || hex === '#FFFFF0') ? '1px solid var(--border)' : '1px solid transparent', outline: sel ? '2px solid var(--cream)' : 'none', outlineOffset: '-4px', cursor: 'pointer', padding: 0, transition: 'transform 0.15s', transform: sel ? 'scale(1.1)' : 'scale(1)' }} />
+                        style={{ width: 28, height: 28, minHeight: 'unset', borderRadius: '50%', aspectRatio: '1/1', flexShrink: 0, backgroundColor: hex, border: sel ? '2px solid var(--black)' : (hex === '#FFFFFF' || hex === '#F5F0E8' || hex === '#FFFFF0') ? '1px solid var(--border)' : '1px solid transparent', outline: sel ? '2px solid var(--cream)' : 'none', outlineOffset: '-4px', cursor: 'pointer', padding: 0, transition: 'transform 0.15s', transform: sel ? 'scale(1.1)' : 'scale(1)' }} />
                     );
                   })}
                 </div>
