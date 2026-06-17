@@ -83,13 +83,13 @@ export default function HomePage() {
   // Auto-advance slideshow + Page Visibility pause (runs unconditionally)
   useEffect(() => {
     if (heroImages.length <= 1) return;
-    heroTimer.current = setInterval(() => setHeroIndex(i => (i + 1) % heroImages.length), 2000);
+    heroTimer.current = setInterval(() => setHeroIndex(i => (i + 1) % heroImages.length), 3000);
     const onVisibility = () => {
       if (document.hidden && heroTimer.current) {
         clearInterval(heroTimer.current);
         heroTimer.current = null;
       } else if (!document.hidden && !heroTimer.current) {
-        heroTimer.current = setInterval(() => setHeroIndex(i => (i + 1) % heroImages.length), 2000);
+        heroTimer.current = setInterval(() => setHeroIndex(i => (i + 1) % heroImages.length), 3000);
       }
     };
     document.addEventListener('visibilitychange', onVisibility);
