@@ -65,7 +65,7 @@ export default function ProductDetailClient({ product }: Props) {
   const [customStitchingId, setCustomStitchingId] = useState<string | undefined>();
   const [waitlistEmail, setWaitlistEmail] = useState('');
   const [waitlistSubmitted, setWaitlistSubmitted] = useState(false);
-  const [liveVariants, setLiveVariants] = useState<Array<{ id: string; size: string; color: string; stock: number }>>(product._variants ?? []);
+  const [liveVariants, setLiveVariants] = useState<Array<{ id: string; size: string; color: string; stock: number }>>(product?._variants ?? []);
   const [stockError, setStockError] = useState('');
   const galleryRef = useRef<HTMLDivElement>(null);
 
