@@ -38,6 +38,9 @@ export default function HomePage() {
   const [apiCategories, setApiCategories] = useState<any[]>([]);
   const [trending, setTrending] = useState<Product[]>([]);
   const [collections, setCollections] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState<'men' | 'women' | 'kids'>('men');
+  const [tabProducts, setTabProducts] = useState<Product[]>([]);
+  const [tabLoading, setTabLoading] = useState(false);
 
   // Hero slideshow state — always declared, only used by mobile branch
   const [heroImages, setHeroImages] = useState<string[]>([]);
@@ -65,6 +68,14 @@ export default function HomePage() {
       .then(d => setTrending(adaptApiProductList(d.data || [])))
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    setTabLoading(true);
+    productsService.getAll({ category: activeTab, limit: 6, sortBy: 'newest' })
+      .then((res: any) => setTabProducts(adaptApiProductList(res.data || [])))
+      .catch(() => setTabProducts([]))
+      .finally(() => setTabLoading(false));
+  }, [activeTab]);
 
   // Fetch hero banner images (runs unconditionally)
   useEffect(() => {
@@ -163,64 +174,72 @@ export default function HomePage() {
 
         <StatsBanner />
 
-        {/* Shop by Category + Collections — merged 2×2 grid */}
-        {(() => {
-          const catItems = displayCategories.map((cat: any) => ({
-            id: cat.id, name: cat.name, href: `/${cat.slug}`,
-            image: cat.image, subtitle: cat.count ? `${cat.count} styles` : 'Shop →', isCollection: false,
-          }));
-          const colItems = collections.map((col: any) => ({
-            id: col.id, name: col.name, href: `/collections/${col.slug}`,
-            image: col.thumbnail || '', subtitle: col._count?.products !== undefined ? `${col._count.products} products` : '', isCollection: true,
-          }));
-          const merged = [...catItems, ...colItems].slice(0, 6);
-          const hasMore = collections.length > 0;
-          return (
-            <section style={{ padding: '20px 12px 8px' }}>
-              <p style={{ fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--dust)', textAlign: 'center', marginBottom: 12 }}>SHOP BY CATEGORY</p>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                {merged.map(item => (
-                  <Link key={item.id} href={item.href} style={{ textDecoration: 'none', color: 'inherit', minHeight: 'unset', display: 'block' }}>
-                    <div style={{ position: 'relative', aspectRatio: '1/1', overflow: 'hidden', backgroundColor: 'var(--raw-cotton)', borderRadius: 4 }}>
-                      {item.image ? (
-                        <Image src={item.image} alt={item.name} fill style={{ objectFit: 'cover' }} sizes="50vw" loading="lazy" />
-                      ) : (
-                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--raw-cotton)' }}>
-                          <span style={{ fontSize: 24, fontWeight: 300, letterSpacing: '0.08em', color: 'var(--dust)' }}>
-                            {item.name.split(' ').slice(0, 2).map((w: string) => w[0].toUpperCase()).join('')}
-                          </span>
-                        </div>
-                      )}
-                      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 50%)' }} />
-                      <div style={{ position: 'absolute', bottom: 10, left: 10 }}>
-                        <p style={{ color: '#F5F0E8', fontSize: 13, letterSpacing: '0.08em', fontWeight: 400, textTransform: 'uppercase', lineHeight: 1, marginBottom: 3 }}>{item.name}</p>
-                        <p style={{ color: 'rgba(245,240,232,0.7)', fontSize: 10 }}>{item.subtitle}</p>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-              {hasMore && (
-                <motion.div whileHover="hover" whileTap={{ scale: 0.97 }} style={{ marginTop: 10 }}>
-                  <Link href="/collections" style={{ display: 'block', textDecoration: 'none', minHeight: 'unset' }}>
-                    <motion.button
-                      style={{ width: '100%', height: 48, minHeight: 'unset', background: 'transparent', color: 'var(--black)', border: '1px solid var(--black)', fontSize: 11, letterSpacing: '0.10em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
-                      variants={{ hover: { backgroundColor: 'var(--black)', color: 'var(--cream)' } }}
-                      transition={{ duration: 0.25 }}
-                    >
-                      VIEW ALL
-                      <motion.span variants={{ hover: { x: 4 } }} transition={{ duration: 0.2 }}>
-                        <ArrowRight size={11} />
-                      </motion.span>
-                    </motion.button>
-                  </Link>
-                </motion.div>
-              )}
-            </section>
-          );
-        })()}
+        {/* Shop by Category — pill tabs + product grid */}
+        <section style={{ padding: '20px 12px 8px' }}>
+          <p style={{ fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--dust)', textAlign: 'center', marginBottom: 16 }}>SHOP BY CATEGORY</p>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
+            <div style={{ display: 'inline-flex', gap: 4, padding: 6, background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 999, boxShadow: '0 1px 1px rgba(0,0,0,0.04), 0 20px 40px -24px rgba(0,0,0,0.1)' }}>
+              {(['men', 'women', 'kids'] as const).map((tab) => (
+                <button key={tab} onClick={() => setActiveTab(tab)}
+                  style={{ height: 40, padding: '0 20px', borderRadius: 999, border: 'none', fontSize: 12, fontWeight: 500, letterSpacing: '0.06em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', minHeight: 'unset', transition: 'background-color 220ms ease, color 220ms ease', background: activeTab === tab ? 'var(--black)' : 'transparent', color: activeTab === tab ? 'var(--cream)' : 'var(--dust)', boxShadow: activeTab === tab ? '0 8px 18px -10px rgba(0,0,0,0.4)' : 'none' }}
+                >
+                  {tab.toUpperCase()}
+                </button>
+              ))}
+            </div>
+          </div>
+          <AnimatePresence mode="wait">
+            <motion.div key={activeTab} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+              {(tabLoading || tabProducts.length === 0 ? Array.from({ length: 6 }) : tabProducts.slice(0, 6)).map((p, i) => (
+                p ? <ProductCard key={(p as any).id} product={p as any} variant="mobile" /> : <ProductCardSkeleton key={i} variant="mobile" />
+              ))}
+            </motion.div>
+          </AnimatePresence>
+          <Link href={`/${activeTab}`} style={{ display: 'block', marginTop: 10, minHeight: 'unset' }}>
+            <button style={{ width: '100%', height: 48, minHeight: 'unset', background: 'transparent', color: 'var(--black)', border: '1px solid var(--black)', fontSize: 11, letterSpacing: '0.10em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
+              VIEW ALL {activeTab.toUpperCase()} →
+            </button>
+          </Link>
+        </section>
 
         <ShopTheLook />
+
+        {collections.length > 0 && (
+          <section style={{ padding: '20px 12px 8px' }}>
+            <p style={{ fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--dust)', textAlign: 'center', marginBottom: 12 }}>COLLECTIONS</p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              {collections.map((col: any) => (
+                <Link key={col.id} href={`/collections/${col.slug}`} style={{ textDecoration: 'none', color: 'inherit', minHeight: 'unset', display: 'block' }}>
+                  <div style={{ position: 'relative', aspectRatio: '1/1', overflow: 'hidden', backgroundColor: 'var(--raw-cotton)', borderRadius: 4 }}>
+                    {col.thumbnail ? (
+                      <Image src={col.thumbnail} alt={col.name} fill style={{ objectFit: 'cover' }} sizes="50vw" loading="lazy" />
+                    ) : (
+                      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--raw-cotton)' }}>
+                        <span style={{ fontSize: 24, fontWeight: 300, letterSpacing: '0.08em', color: 'var(--dust)' }}>
+                          {col.name.split(' ').slice(0, 2).map((w: string) => w[0].toUpperCase()).join('')}
+                        </span>
+                      </div>
+                    )}
+                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 50%)' }} />
+                    <div style={{ position: 'absolute', bottom: 10, left: 10 }}>
+                      <p style={{ color: '#F5F0E8', fontSize: 13, letterSpacing: '0.08em', fontWeight: 400, textTransform: 'uppercase', lineHeight: 1, marginBottom: 3 }}>{col.name}</p>
+                      {col._count?.products !== undefined && <p style={{ color: 'rgba(245,240,232,0.7)', fontSize: 10 }}>{col._count.products} products</p>}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+            <motion.div whileHover="hover" whileTap={{ scale: 0.97 }} style={{ marginTop: 10 }}>
+              <Link href="/collections" style={{ display: 'block', textDecoration: 'none', minHeight: 'unset' }}>
+                <motion.button style={{ width: '100%', height: 48, minHeight: 'unset', background: 'transparent', color: 'var(--black)', border: '1px solid var(--black)', fontSize: 11, letterSpacing: '0.10em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                  variants={{ hover: { backgroundColor: 'var(--black)', color: 'var(--cream)' } }} transition={{ duration: 0.25 }}>
+                  VIEW ALL COLLECTIONS
+                  <motion.span variants={{ hover: { x: 4 } }} transition={{ duration: 0.2 }}><ArrowRight size={11} /></motion.span>
+                </motion.button>
+              </Link>
+            </motion.div>
+          </section>
+        )}
 
         {/* New Arrivals */}
         <section id="new-arrivals" style={{ padding: '0 12px' }}>
@@ -354,78 +373,91 @@ export default function HomePage() {
 
       <StatsBanner />
 
-      {/* Shop by Category + Collections — merged 3×3 grid */}
-      {(() => {
-        const catItems = displayCategories.map((cat: any) => ({
-          id: cat.id, name: cat.name, href: `/${cat.slug}`,
-          image: cat.image, subtitle: cat.count ? `${cat.count} styles` : 'Explore →', isCollection: false,
-        }));
-        const colItems = collections.map((col: any) => ({
-          id: col.id, name: col.name, href: `/collections/${col.slug}`,
-          image: col.thumbnail || '', subtitle: col._count?.products !== undefined ? `${col._count.products} products` : '', isCollection: true,
-        }));
-        const merged = [...catItems, ...colItems].slice(0, 9);
-        const hasCollections = collections.length > 0;
-        return (
-          <section style={{ padding: '100px 40px', backgroundColor: 'var(--cream)' }}>
-            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} style={{ textAlign: 'center', marginBottom: 56 }}>
-              <p style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--dust)' }}>Shop by Category</p>
-            </motion.div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24, maxWidth: 1200, margin: '0 auto' }}>
-              {merged.map((item, i) => (
-                <motion.div key={item.id} initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: Math.min(i * 0.08, 0.4) }}>
-                  <Link href={item.href} style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}
-                    onMouseEnter={e => { const img = (e.currentTarget as HTMLElement).querySelector('img') as HTMLImageElement | null; if (img) img.style.transform = 'scale(1.03)'; }}
-                    onMouseLeave={e => { const img = (e.currentTarget as HTMLElement).querySelector('img') as HTMLImageElement | null; if (img) img.style.transform = 'scale(1)'; }}>
-                    <div style={{ position: 'relative', aspectRatio: '3/4', overflow: 'hidden', backgroundColor: 'var(--raw-cotton)' }}>
-                      {item.image ? (
-                        <Image src={item.image} alt={item.name} fill style={{ objectFit: 'cover', transition: 'transform 0.4s ease' }} sizes="33vw" />
-                      ) : (
-                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <span style={{ fontSize: 48, fontWeight: 300, letterSpacing: '0.10em', color: 'var(--dust)' }}>
-                            {item.name.split(' ').slice(0, 2).map((w: string) => w[0].toUpperCase()).join('')}
-                          </span>
-                        </div>
-                      )}
-                      {item.isCollection && (
-                        <div style={{ position: 'absolute', top: 12, right: 12, background: 'rgba(26,26,26,0.7)', color: '#F5F0E8', fontSize: 9, letterSpacing: '0.10em', textTransform: 'uppercase', padding: '3px 8px' }}>Collection</div>
-                      )}
-                    </div>
-                    <div style={{ paddingTop: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                      <div>
-                        <p style={{ fontSize: 18, fontWeight: 400, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{item.name}</p>
-                        <p style={{ fontSize: 12, color: 'var(--dust)', marginTop: 4 }}>{item.subtitle}</p>
-                      </div>
-                      <span style={{ fontSize: 12, color: 'var(--dust)', display: 'flex', alignItems: 'center', gap: 4 }}>Explore <ArrowRight size={12} /></span>
-                    </div>
-                  </Link>
+      {/* Shop by Category — pill tabs + product grid */}
+      <section style={{ padding: '100px 40px', backgroundColor: 'var(--cream)' }}>
+        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} style={{ textAlign: 'center', marginBottom: 40 }}>
+          <p style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--dust)' }}>Shop by Category</p>
+        </motion.div>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 56 }}>
+          <div style={{ display: 'inline-flex', gap: 4, padding: 6, background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 999, boxShadow: '0 1px 1px rgba(0,0,0,0.04), 0 20px 40px -24px rgba(0,0,0,0.1)' }}>
+            {(['men', 'women', 'kids'] as const).map((tab) => (
+              <button key={tab} onClick={() => setActiveTab(tab)}
+                style={{ height: 40, padding: '0 24px', borderRadius: 999, border: 'none', fontSize: 12, fontWeight: 500, letterSpacing: '0.06em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', transition: 'background-color 220ms ease, color 220ms ease', background: activeTab === tab ? 'var(--black)' : 'transparent', color: activeTab === tab ? 'var(--cream)' : 'var(--dust)', boxShadow: activeTab === tab ? '0 8px 18px -10px rgba(0,0,0,0.4)' : 'none' }}
+              >
+                {tab.toUpperCase()}
+              </button>
+            ))}
+          </div>
+        </div>
+        <AnimatePresence mode="wait">
+          <motion.div key={activeTab} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }} style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24, maxWidth: 1200, margin: '0 auto' }}>
+            {(tabLoading || tabProducts.length === 0 ? Array.from({ length: 6 }) : tabProducts.slice(0, 6)).map((p, i) => (
+              p ? (
+                <motion.div key={(p as any).id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}>
+                  <ProductCard product={p as any} variant="desktop" />
                 </motion.div>
-              ))}
-            </div>
-            {hasCollections && (
-              <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.3 }} style={{ textAlign: 'center', marginTop: 48 }}>
-                <Link href="/collections" style={{ display: 'inline-block', textDecoration: 'none' }}>
-                  <motion.button
-                    whileHover="hover"
-                    style={{ height: 52, padding: '0 40px', background: 'transparent', color: 'var(--black)', border: '1px solid var(--black)', fontSize: 12, letterSpacing: '0.12em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', display: 'inline-flex', alignItems: 'center', gap: 8 }}
-                  >
-                    VIEW ALL COLLECTIONS
-                    <motion.span
-                      variants={{ hover: { x: 4 } }}
-                      transition={{ duration: 0.2 }}
-                      style={{ display: 'flex', alignItems: 'center' }}
-                    >
-                      <ArrowRight size={12} strokeWidth={2} />
-                    </motion.span>
-                  </motion.button>
-                </Link>
-              </motion.div>
-            )}
-          </section>
-        );
-      })()}
+              ) : <ProductCardSkeleton key={i} variant="desktop" />
+            ))}
+          </motion.div>
+        </AnimatePresence>
+        <div style={{ textAlign: 'center', marginTop: 48 }}>
+          <Link href={`/${activeTab}`} style={{ display: 'inline-block', textDecoration: 'none' }}>
+            <motion.button whileHover={{ backgroundColor: 'var(--black)', color: 'var(--cream)' }} transition={{ duration: 0.2 }}
+              style={{ height: 48, padding: '0 40px', background: 'transparent', color: 'var(--black)', border: '1px solid var(--black)', fontSize: 12, letterSpacing: '0.12em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+              VIEW ALL {activeTab.toUpperCase()} <ArrowRight size={12} strokeWidth={2} />
+            </motion.button>
+          </Link>
+        </div>
+      </section>
 
       <ShopTheLook />
+
+      {collections.length > 0 && (
+        <section style={{ padding: '80px 40px', backgroundColor: 'var(--cream)' }}>
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} style={{ textAlign: 'center', marginBottom: 56 }}>
+            <p style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--dust)' }}>Collections</p>
+          </motion.div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24, maxWidth: 1200, margin: '0 auto' }}>
+            {collections.map((col: any, i: number) => (
+              <motion.div key={col.id} initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: Math.min(i * 0.08, 0.4) }}>
+                <Link href={`/collections/${col.slug}`} style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}
+                  onMouseEnter={e => { const img = (e.currentTarget as HTMLElement).querySelector('img') as HTMLImageElement | null; if (img) img.style.transform = 'scale(1.03)'; }}
+                  onMouseLeave={e => { const img = (e.currentTarget as HTMLElement).querySelector('img') as HTMLImageElement | null; if (img) img.style.transform = 'scale(1)'; }}>
+                  <div style={{ position: 'relative', aspectRatio: '3/4', overflow: 'hidden', backgroundColor: 'var(--raw-cotton)' }}>
+                    {col.thumbnail ? (
+                      <Image src={col.thumbnail} alt={col.name} fill style={{ objectFit: 'cover', transition: 'transform 0.4s ease' }} sizes="33vw" />
+                    ) : (
+                      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <span style={{ fontSize: 48, fontWeight: 300, letterSpacing: '0.10em', color: 'var(--dust)' }}>
+                          {col.name.split(' ').slice(0, 2).map((w: string) => w[0].toUpperCase()).join('')}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ paddingTop: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                    <div>
+                      <p style={{ fontSize: 18, fontWeight: 400, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{col.name}</p>
+                      {col._count?.products !== undefined && <p style={{ fontSize: 12, color: 'var(--dust)', marginTop: 4 }}>{col._count.products} products</p>}
+                    </div>
+                    <span style={{ fontSize: 12, color: 'var(--dust)', display: 'flex', alignItems: 'center', gap: 4 }}>Explore <ArrowRight size={12} /></span>
+                  </div>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+          <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.3 }} style={{ textAlign: 'center', marginTop: 48 }}>
+            <Link href="/collections" style={{ display: 'inline-block', textDecoration: 'none' }}>
+              <motion.button whileHover="hover"
+                style={{ height: 52, padding: '0 40px', background: 'transparent', color: 'var(--black)', border: '1px solid var(--black)', fontSize: 12, letterSpacing: '0.12em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                VIEW ALL COLLECTIONS
+                <motion.span variants={{ hover: { x: 4 } }} transition={{ duration: 0.2 }} style={{ display: 'flex', alignItems: 'center' }}>
+                  <ArrowRight size={12} strokeWidth={2} />
+                </motion.span>
+              </motion.button>
+            </Link>
+          </motion.div>
+        </section>
+      )}
 
       <TrustBadges />
 

@@ -243,6 +243,7 @@ export default function AdminBannersPage() {
                     maxImages={1}
                     minImages={0}
                   />
+                  <p style={{ fontSize: 11, color: 'var(--dust)', marginTop: 6 }}>If left empty, desktop image will be used on mobile too.</p>
                 </div>
 
                 {/* Link + Position */}
