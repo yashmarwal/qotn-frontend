@@ -104,6 +104,8 @@ export default function ProductCard({ product, variant = 'desktop' }: ProductCar
     );
   }
 
+  const hasSecondImage = product.images.length > 1;
+
   // Desktop variant
   return (
     <Link
@@ -112,14 +114,32 @@ export default function ProductCard({ product, variant = 'desktop' }: ProductCar
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      <div style={{ position: 'relative', aspectRatio: '3/4', overflow: 'hidden', backgroundColor: 'var(--raw-cotton)' }}>
+      <div style={{ position: 'relative', aspectRatio: '4/5', overflow: 'hidden', backgroundColor: 'var(--raw-cotton)' }}>
         <Image
           src={product.images[0]}
           alt={product.name}
           fill
-          style={{ objectFit: 'cover', transform: hovered ? 'scale(1.03)' : 'scale(1)', transition: 'transform 0.4s ease' }}
+          style={{
+            objectFit: 'cover',
+            transition: hasSecondImage ? 'opacity 0.45s ease' : 'transform 0.4s ease',
+            opacity: hasSecondImage && hovered ? 0 : 1,
+            transform: !hasSecondImage && hovered ? 'scale(1.03)' : 'scale(1)',
+          }}
           sizes="(max-width: 1200px) 33vw, 25vw"
         />
+        {hasSecondImage && (
+          <Image
+            src={product.images[1]}
+            alt={product.name}
+            fill
+            style={{
+              objectFit: 'cover',
+              transition: 'opacity 0.45s ease',
+              opacity: hovered ? 1 : 0,
+            }}
+            sizes="(max-width: 1200px) 33vw, 25vw"
+          />
+        )}
         {(product.isNew || product.isBestseller) && (
           <span
             style={{
@@ -127,6 +147,7 @@ export default function ProductCard({ product, variant = 'desktop' }: ProductCar
               background: 'var(--black)', color: 'var(--cream)',
               fontSize: 9, fontWeight: 500, letterSpacing: '0.12em',
               textTransform: 'uppercase', padding: '4px 8px',
+              zIndex: 1,
             }}
           >
             {product.isNew ? 'New' : 'Bestseller'}
@@ -139,6 +160,7 @@ export default function ProductCard({ product, variant = 'desktop' }: ProductCar
             position: 'absolute', top: 12, right: 12,
             background: 'none', border: 'none', padding: 6,
             cursor: 'pointer', opacity: hovered ? 1 : 0, transition: 'opacity 0.3s',
+            zIndex: 1,
           }}
         >
           <Heart size={18} strokeWidth={1.5} fill={inWishlist ? 'var(--black)' : 'none'} color="var(--black)" />
