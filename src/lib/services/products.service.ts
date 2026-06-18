@@ -31,4 +31,6 @@ export const productsService = {
   getBestsellers: () => api.get<{ data: ApiProduct[] }>('/products/bestsellers'),
 
   getBySlug: (slug: string) => api.get<{ data: ApiProduct & { relatedProducts?: ApiProduct[]; avgRating?: number; reviewCount?: number } }>(`/products/${slug}`),
+
+  getStock: (slug: string) => api.get<{ data: Array<{ id: string; size: string; color: string; stock: number }> }>(`/products/${slug}/stock`),
 };

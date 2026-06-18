@@ -10,14 +10,15 @@ interface BottomBarProps {
   selectedSize: string;
   onAddToBag: () => void;
   added: boolean;
+  isOOS?: boolean;
 }
 
-export default function MobileBottomBar({ product, selectedSize, onAddToBag, added }: BottomBarProps) {
+export default function MobileBottomBar({ product, selectedSize, onAddToBag, added, isOOS }: BottomBarProps) {
   const router = useRouter();
   const { addItem } = useCart();
 
   const handleBuyNow = () => {
-    if (!selectedSize) return;
+    if (!selectedSize || isOOS) return;
     addItem(product, selectedSize, product.colors[0] || '', 1);
     router.push('/checkout');
   };
@@ -47,31 +48,31 @@ export default function MobileBottomBar({ product, selectedSize, onAddToBag, add
 
       <button
         onClick={onAddToBag}
-        disabled={!selectedSize}
+        disabled={!selectedSize || !!isOOS}
         style={{
           flex: 1, height: 48,
-          background: selectedSize ? 'var(--cream)' : 'rgba(245,240,232,0.25)',
-          color: selectedSize ? 'var(--black)' : 'rgba(245,240,232,0.4)',
+          background: (selectedSize && !isOOS) ? 'var(--cream)' : 'rgba(245,240,232,0.25)',
+          color: (selectedSize && !isOOS) ? 'var(--black)' : 'rgba(245,240,232,0.4)',
           border: 'none', borderRadius: 2,
           fontSize: 11, letterSpacing: '0.10em', textTransform: 'uppercase',
-          fontWeight: 600, cursor: selectedSize ? 'pointer' : 'default',
+          fontWeight: 600, cursor: (selectedSize && !isOOS) ? 'pointer' : 'default',
           fontFamily: 'DM Sans, sans-serif', transition: 'all 0.15s',
         }}
       >
-        {!selectedSize ? 'Select Size' : added ? 'Added ✓' : 'Add to Bag'}
+        {!selectedSize ? 'Select Size' : isOOS ? 'Out of Stock' : added ? 'Added ✓' : 'Add to Bag'}
       </button>
 
       <button
         onClick={handleBuyNow}
-        disabled={!selectedSize}
+        disabled={!selectedSize || !!isOOS}
         style={{
           flex: 1, height: 48,
           background: 'transparent',
-          color: selectedSize ? 'var(--cream)' : 'rgba(245,240,232,0.4)',
-          border: selectedSize ? '1px solid rgba(245,240,232,0.4)' : '1px solid rgba(245,240,232,0.15)',
+          color: (selectedSize && !isOOS) ? 'var(--cream)' : 'rgba(245,240,232,0.4)',
+          border: (selectedSize && !isOOS) ? '1px solid rgba(245,240,232,0.4)' : '1px solid rgba(245,240,232,0.15)',
           borderRadius: 2,
           fontSize: 11, letterSpacing: '0.10em', textTransform: 'uppercase',
-          fontWeight: 500, cursor: selectedSize ? 'pointer' : 'default',
+          fontWeight: 500, cursor: (selectedSize && !isOOS) ? 'pointer' : 'default',
           fontFamily: 'DM Sans, sans-serif', transition: 'all 0.15s',
         }}
       >

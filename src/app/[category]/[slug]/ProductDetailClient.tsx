@@ -65,6 +65,8 @@ export default function ProductDetailClient({ product }: Props) {
   const [customStitchingId, setCustomStitchingId] = useState<string | undefined>();
   const [waitlistEmail, setWaitlistEmail] = useState('');
   const [waitlistSubmitted, setWaitlistSubmitted] = useState(false);
+  const [liveVariants, setLiveVariants] = useState<Array<{ id: string; size: string; color: string; stock: number }>>(product._variants ?? []);
+  const [stockError, setStockError] = useState('');
   const galleryRef = useRef<HTMLDivElement>(null);
 
   const { addItem, openCart } = useCart();
@@ -92,6 +94,20 @@ export default function ProductDetailClient({ product }: Props) {
     }).catch(() => {});
   }, [product?.id]);
 
+  // Re-fetch live stock on mount and whenever the tab regains focus
+  useEffect(() => {
+    if (!product?.slug) return;
+    const refresh = async () => {
+      try {
+        const res: any = await productsService.getStock(product.slug);
+        if (Array.isArray(res?.data) && res.data.length > 0) setLiveVariants(res.data);
+      } catch {}
+    };
+    refresh();
+    window.addEventListener('focus', refresh);
+    return () => window.removeEventListener('focus', refresh);
+  }, [product?.slug]);
+
   if (!product) {
     return (
       <div style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 24 }}>
@@ -104,9 +120,32 @@ export default function ProductDetailClient({ product }: Props) {
   const inWishlist = isInWishlist(product.id);
   const discount = product.originalPrice ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : null;
 
+  // Returns live stock for a specific size+color combination
+  const getVariantStock = (size: string, color: string): number => {
+    const v = liveVariants.find(v => v.size === size && v.color === color);
+    if (v !== undefined) return v.stock ?? 0;
+    const fv = product._variants?.find(v => v.size === size && v.color === color);
+    return fv?.stock ?? 0;
+  };
+
+  // A size is OOS when the selected color variant is OOS, or the aggregate is 0 if no color selected
+  const sizeIsOOS = (size: string): boolean => {
+    if (selectedColor) return getVariantStock(size, selectedColor) === 0;
+    return liveVariants.filter(v => v.size === size).reduce((s, v) => s + (v.stock ?? 0), 0) === 0;
+  };
+
+  // True when the currently selected size (+ color if chosen) is out of stock
+  const isCurrentVariantOOS = selectedSize ? sizeIsOOS(selectedSize) : false;
+
   const handleAddToBag = () => {
     if (!selectedSize) return;
-    addItem(product, selectedSize, selectedColor || product.colors[0], 1, customStitchingId);
+    const color = selectedColor || product.colors[0];
+    if (getVariantStock(selectedSize, color) === 0) {
+      setStockError('Sorry, this item is out of stock. Try a different size or color.');
+      return;
+    }
+    setStockError('');
+    addItem(product, selectedSize, color, 1, customStitchingId);
     setAdded(true);
     setTimeout(() => {
       setAdded(false);
@@ -116,7 +155,13 @@ export default function ProductDetailClient({ product }: Props) {
 
   const handleBuyNow = () => {
     if (!selectedSize) return;
-    addItem(product, selectedSize, selectedColor || product.colors[0], 1, customStitchingId);
+    const color = selectedColor || product.colors[0];
+    if (getVariantStock(selectedSize, color) === 0) {
+      setStockError('Sorry, this item is out of stock. Try a different size or color.');
+      return;
+    }
+    setStockError('');
+    addItem(product, selectedSize, color, 1, customStitchingId);
     router.push('/checkout');
   };
 
@@ -134,7 +179,7 @@ export default function ProductDetailClient({ product }: Props) {
     }
   };
 
-  const sizeOutOfStock = (size: string) => (product.stock[size] ?? 0) === 0;
+  const sizeOutOfStock = (size: string) => sizeIsOOS(size);
 
   /* ── MOBILE ── */
   if (isMobile) {
@@ -228,14 +273,17 @@ export default function ProductDetailClient({ product }: Props) {
                   );
                 })}
               </div>
-              {selectedSize && product.stock[selectedSize] > 0 && product.stock[selectedSize] < 5 && (
-                <p style={{ fontSize: 12, color: '#D97706', margin: '8px 0 0', fontWeight: 500 }}>
-                  ⚠ Only {product.stock[selectedSize]} left in {selectedSize}!
-                </p>
-              )}
-              {selectedSize && product.stock[selectedSize] === 0 && (
+              {selectedSize && !isCurrentVariantOOS && (() => {
+                const cnt = selectedColor
+                  ? getVariantStock(selectedSize, selectedColor)
+                  : liveVariants.filter(v => v.size === selectedSize).reduce((s, v) => s + (v.stock ?? 0), 0);
+                return cnt > 0 && cnt < 5 ? (
+                  <p style={{ fontSize: 12, color: '#D97706', margin: '8px 0 0', fontWeight: 500 }}>⚠ Only {cnt} left in {selectedSize}!</p>
+                ) : null;
+              })()}
+              {selectedSize && isCurrentVariantOOS && (
                 <div style={{ marginTop: 12, padding: 16, background: '#F9F8F6', borderRadius: 8, border: '1px solid var(--border)' }}>
-                  <p style={{ fontSize: 12, margin: '0 0 10px', color: 'var(--dust)' }}>This size is out of stock. Get notified when it&apos;s back:</p>
+                  <p style={{ fontSize: 12, margin: '0 0 10px', color: 'var(--dust)' }}>This item is out of stock. Get notified when it&apos;s back:</p>
                   {waitlistSubmitted ? (
                     <p style={{ fontSize: 13, color: '#065F46', fontWeight: 500, margin: 0 }}>✓ You&apos;re on the waitlist!</p>
                   ) : (
@@ -249,8 +297,9 @@ export default function ProductDetailClient({ product }: Props) {
                       />
                       <button
                         onClick={async () => {
-                          if (!waitlistEmail || !product._variants) return;
-                          const variant = product._variants.find(v => v.size === selectedSize);
+                          if (!waitlistEmail) return;
+                          const variant = liveVariants.find(v => v.size === selectedSize && (!selectedColor || v.color === selectedColor))
+                            ?? liveVariants.find(v => v.size === selectedSize);
                           if (!variant) return;
                           try {
                             await waitlistService.join({ email: waitlistEmail, productId: product.id, variantId: variant.id });
@@ -265,6 +314,7 @@ export default function ProductDetailClient({ product }: Props) {
                   )}
                 </div>
               )}
+              {stockError && <p style={{ fontSize: 12, color: '#DC2626', margin: '8px 0 0', fontWeight: 500 }}>⚠ {stockError}</p>}
             </div>
 
             {/* Colors */}
@@ -362,7 +412,7 @@ export default function ProductDetailClient({ product }: Props) {
           </div>
         </div>
 
-        <MobileBottomBar product={product} selectedSize={selectedSize} onAddToBag={handleAddToBag} added={added} />
+        <MobileBottomBar product={product} selectedSize={selectedSize} onAddToBag={handleAddToBag} added={added} isOOS={isCurrentVariantOOS} />
         <SizeGuide isOpen={sizeGuideOpen} onClose={() => setSizeGuideOpen(false)} />
       </>
     );
@@ -448,14 +498,17 @@ export default function ProductDetailClient({ product }: Props) {
                   })}
                 </div>
                 {!selectedSize && <p style={{ fontSize: 11, color: 'var(--dust)', marginTop: 8 }}>Please select a size.</p>}
-                {selectedSize && product.stock[selectedSize] > 0 && product.stock[selectedSize] < 5 && (
-                  <p style={{ fontSize: 12, color: '#D97706', margin: '8px 0 0', fontWeight: 500 }}>
-                    ⚠ Only {product.stock[selectedSize]} left in {selectedSize}!
-                  </p>
-                )}
-                {selectedSize && product.stock[selectedSize] === 0 && (
+                {selectedSize && !isCurrentVariantOOS && (() => {
+                  const cnt = selectedColor
+                    ? getVariantStock(selectedSize, selectedColor)
+                    : liveVariants.filter(v => v.size === selectedSize).reduce((s, v) => s + (v.stock ?? 0), 0);
+                  return cnt > 0 && cnt < 5 ? (
+                    <p style={{ fontSize: 12, color: '#D97706', margin: '8px 0 0', fontWeight: 500 }}>⚠ Only {cnt} left in {selectedSize}!</p>
+                  ) : null;
+                })()}
+                {selectedSize && isCurrentVariantOOS && (
                   <div style={{ marginTop: 12, padding: 16, background: '#F9F8F6', borderRadius: 8, border: '1px solid var(--border)' }}>
-                    <p style={{ fontSize: 12, margin: '0 0 10px', color: 'var(--dust)' }}>This size is out of stock. Get notified when it&apos;s back:</p>
+                    <p style={{ fontSize: 12, margin: '0 0 10px', color: 'var(--dust)' }}>This item is out of stock. Get notified when it&apos;s back:</p>
                     {waitlistSubmitted ? (
                       <p style={{ fontSize: 13, color: '#065F46', fontWeight: 500, margin: 0 }}>✓ You&apos;re on the waitlist!</p>
                     ) : (
@@ -469,8 +522,9 @@ export default function ProductDetailClient({ product }: Props) {
                         />
                         <button
                           onClick={async () => {
-                            if (!waitlistEmail || !product._variants) return;
-                            const variant = product._variants.find(v => v.size === selectedSize);
+                            if (!waitlistEmail) return;
+                            const variant = liveVariants.find(v => v.size === selectedSize && (!selectedColor || v.color === selectedColor))
+                              ?? liveVariants.find(v => v.size === selectedSize);
                             if (!variant) return;
                             try {
                               await waitlistService.join({ email: waitlistEmail, productId: product.id, variantId: variant.id });
@@ -485,6 +539,7 @@ export default function ProductDetailClient({ product }: Props) {
                     )}
                   </div>
                 )}
+                {stockError && <p style={{ fontSize: 12, color: '#DC2626', margin: '8px 0 0', fontWeight: 500 }}>⚠ {stockError}</p>}
               </div>
 
               {/* Colors */}
@@ -504,12 +559,12 @@ export default function ProductDetailClient({ product }: Props) {
 
               {/* Add to Bag + Buy Now */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
-                <button onClick={handleAddToBag} disabled={!selectedSize}
-                  style={{ height: 52, background: selectedSize ? 'var(--black)' : 'var(--border)', color: selectedSize ? 'var(--cream)' : 'var(--dust)', border: 'none', fontSize: 12, letterSpacing: '0.12em', textTransform: 'uppercase', cursor: selectedSize ? 'pointer' : 'default', fontWeight: 500, fontFamily: 'DM Sans, sans-serif', transition: 'background 0.2s' }}>
-                  {added ? 'Added ✓' : 'Add to Bag'}
+                <button onClick={handleAddToBag} disabled={!selectedSize || isCurrentVariantOOS}
+                  style={{ height: 52, background: (selectedSize && !isCurrentVariantOOS) ? 'var(--black)' : 'var(--border)', color: (selectedSize && !isCurrentVariantOOS) ? 'var(--cream)' : 'var(--dust)', border: 'none', fontSize: 12, letterSpacing: '0.12em', textTransform: 'uppercase', cursor: (selectedSize && !isCurrentVariantOOS) ? 'pointer' : 'default', fontWeight: 500, fontFamily: 'DM Sans, sans-serif', transition: 'background 0.2s' }}>
+                  {added ? 'Added ✓' : isCurrentVariantOOS ? 'Out of Stock' : 'Add to Bag'}
                 </button>
-                <button onClick={handleBuyNow} disabled={!selectedSize}
-                  style={{ height: 52, background: selectedSize ? 'var(--cream)' : 'var(--border)', color: selectedSize ? 'var(--black)' : 'var(--dust)', border: selectedSize ? '1px solid var(--black)' : 'none', fontSize: 12, letterSpacing: '0.12em', textTransform: 'uppercase', cursor: selectedSize ? 'pointer' : 'default', fontWeight: 500, fontFamily: 'DM Sans, sans-serif', transition: 'all 0.15s' }}>
+                <button onClick={handleBuyNow} disabled={!selectedSize || isCurrentVariantOOS}
+                  style={{ height: 52, background: (selectedSize && !isCurrentVariantOOS) ? 'var(--cream)' : 'var(--border)', color: (selectedSize && !isCurrentVariantOOS) ? 'var(--black)' : 'var(--dust)', border: (selectedSize && !isCurrentVariantOOS) ? '1px solid var(--black)' : 'none', fontSize: 12, letterSpacing: '0.12em', textTransform: 'uppercase', cursor: (selectedSize && !isCurrentVariantOOS) ? 'pointer' : 'default', fontWeight: 500, fontFamily: 'DM Sans, sans-serif', transition: 'all 0.15s' }}>
                   Buy Now
                 </button>
               </div>
