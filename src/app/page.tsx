@@ -71,7 +71,7 @@ export default function HomePage() {
 
   useEffect(() => {
     setTabLoading(true);
-    productsService.getAll({ category: activeTab, limit: 6, sortBy: 'newest' })
+    productsService.getAll({ category: activeTab, limit: 8, sortBy: 'newest' })
       .then((res: any) => setTabProducts(adaptApiProductList(res.data || [])))
       .catch(() => setTabProducts([]))
       .finally(() => setTabLoading(false));
@@ -390,8 +390,8 @@ export default function HomePage() {
           </div>
         </div>
         <AnimatePresence mode="wait">
-          <motion.div key={activeTab} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }} style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24, maxWidth: 1200, margin: '0 auto' }}>
-            {(tabLoading || tabProducts.length === 0 ? Array.from({ length: 6 }) : tabProducts.slice(0, 6)).map((p, i) => (
+          <motion.div key={activeTab} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }} style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20, maxWidth: 1000, margin: '0 auto' }}>
+            {(tabLoading || tabProducts.length === 0 ? Array.from({ length: 8 }) : tabProducts.slice(0, 8)).map((p, i) => (
               p ? (
                 <motion.div key={(p as any).id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}>
                   <ProductCard product={p as any} variant="desktop" />
@@ -466,7 +466,7 @@ export default function HomePage() {
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} style={{ textAlign: 'center', marginBottom: 48 }}>
           <p style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--dust)' }}>New Arrivals</p>
         </motion.div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 24, maxWidth: 1200, margin: '0 auto 48px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20, maxWidth: 1000, margin: '0 auto 48px' }}>
           {newArrivals.length === 0
             ? Array.from({ length: 4 }).map((_, i) => <ProductCardSkeleton key={i} variant="desktop" />)
             : newArrivals.map((p, i) => (
@@ -525,7 +525,7 @@ export default function HomePage() {
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} style={{ textAlign: 'center', marginBottom: 48 }}>
           <p style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--dust)' }}>Bestsellers</p>
         </motion.div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 24, maxWidth: 1200, margin: '0 auto 48px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20, maxWidth: 1000, margin: '0 auto 48px' }}>
           {bestsellers.length === 0
             ? Array.from({ length: 4 }).map((_, i) => <ProductCardSkeleton key={i} variant="desktop" />)
             : bestsellers.map((p, i) => (
@@ -548,7 +548,7 @@ export default function HomePage() {
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} style={{ textAlign: 'center', marginBottom: 48 }}>
             <p style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--dust)' }}>🔥 Trending Now</p>
           </motion.div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 24, maxWidth: 1200, margin: '0 auto 48px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20, maxWidth: 1000, margin: '0 auto 48px' }}>
             {trending.map((p, i) => (
               <motion.div key={p.id} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.08 }}>
                 <ProductCard product={p} variant="desktop" />
