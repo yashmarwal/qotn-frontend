@@ -289,7 +289,7 @@ export default function HomePage() {
           {[
             { icon: '🛡', title: 'Purity Guaranteed', desc: 'Every fabric is tested. 100% cotton, zero blends. We certify every batch.' },
             { icon: '✂', title: 'Custom Stitched', desc: 'Your measurements. Perfect fit, every time. Just ₹249 extra.' },
-            { icon: '🚚', title: 'Free Delivery', desc: 'Free shipping on orders above ₹999. Express delivery available.' },
+            { icon: '🚚', title: 'Free Delivery', desc: 'Free delivery on orders above ₹1499. COD available with small surcharge.' },
           ].map((item, i) => (
             <div key={i} style={{ display: 'flex', gap: 14, paddingTop: 16, paddingBottom: 16, borderBottom: '1px solid var(--border)', alignItems: 'flex-start' }}>
               <span style={{ fontSize: 24, flexShrink: 0 }}>{item.icon}</span>

@@ -29,8 +29,8 @@ export default function ProductCard({ product, variant = 'desktop' }: ProductCar
         style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}
       >
         <div style={{ overflow: 'hidden', backgroundColor: 'transparent' }}>
-          {/* Image */}
-          <div style={{ position: 'relative', aspectRatio: '3/4', backgroundColor: 'var(--raw-cotton)', overflow: 'hidden', borderRadius: 4 }}>
+          {/* Image — paddingBottom maintains 3:4 ratio reliably across all mobile browsers */}
+          <div style={{ position: 'relative', paddingBottom: '133.33%', backgroundColor: 'var(--raw-cotton)', overflow: 'hidden', borderRadius: 4 }}>
             <Image
               src={product.images[0]}
               alt={product.name}
