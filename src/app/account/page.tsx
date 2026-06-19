@@ -285,14 +285,14 @@ export default function AccountPage() {
                     <div>
                       <label style={labelStyle}>First Name</label>
                       <input type="text" value={firstName} onChange={e => setFirstName(e.target.value)}
-                        placeholder="Yash" autoComplete="given-name" autoFocus style={inputStyle}
+                        placeholder="" autoComplete="given-name" autoFocus style={inputStyle}
                         onFocus={e => (e.target.style.borderBottomColor = '#1A1A1A')}
                         onBlur={e => (e.target.style.borderBottomColor = 'rgba(26,26,26,0.22)')} />
                     </div>
                     <div>
                       <label style={labelStyle}>Last Name</label>
                       <input type="text" value={lastName} onChange={e => setLastName(e.target.value)}
-                        placeholder="Marwal" autoComplete="family-name" style={inputStyle}
+                        placeholder="" autoComplete="family-name" style={inputStyle}
                         onFocus={e => (e.target.style.borderBottomColor = '#1A1A1A')}
                         onBlur={e => (e.target.style.borderBottomColor = 'rgba(26,26,26,0.22)')} />
                     </div>
