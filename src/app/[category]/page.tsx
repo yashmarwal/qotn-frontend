@@ -167,7 +167,7 @@ export default function CategoryPage({ params }: { params: Promise<{ category: s
         {/* Product grid */}
         <div style={{ padding: '12px 12px 24px' }}>
           {loading ? (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, alignItems: 'start' }}>
               {Array.from({ length: 8 }).map((_, i) => <ProductCardSkeleton key={i} variant="mobile" />)}
             </div>
           ) : filtered.length === 0 ? (
@@ -182,9 +182,9 @@ export default function CategoryPage({ params }: { params: Promise<{ category: s
           ) : (
             <>
               <p style={{ fontSize: 11, color: 'var(--dust)', marginBottom: 12, letterSpacing: '0.04em' }}>Showing {filtered.length} of {total} products</p>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, alignItems: 'start' }}>
                 {filtered.map((p, i) => (
-                  <motion.div key={p.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25, delay: Math.min(i * 0.03, 0.3) }}>
+                  <motion.div key={p.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25, delay: Math.min(i * 0.03, 0.3) }} style={{ minWidth: 0, overflow: 'hidden' }}>
                     <ProductCard product={p} variant="mobile" />
                   </motion.div>
                 ))}

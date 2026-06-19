@@ -26,9 +26,9 @@ export default function ProductCard({ product, variant = 'desktop' }: ProductCar
     return (
       <Link
         href={`/${product.category}/${product.slug}`}
-        style={{ display: 'block', textDecoration: 'none', color: 'inherit', minWidth: 0, overflow: 'hidden' }}
+        style={{ display: 'block', textDecoration: 'none', color: 'inherit', minWidth: 0, width: '100%', overflow: 'hidden' }}
       >
-        <div style={{ overflow: 'hidden', backgroundColor: 'transparent', width: '100%' }}>
+        <div style={{ overflow: 'hidden', backgroundColor: 'transparent', width: '100%', minWidth: 0 }}>
           {/* Image — paddingBottom maintains 3:4 ratio reliably across all mobile browsers */}
           <div style={{ position: 'relative', paddingBottom: '133.33%', backgroundColor: 'var(--raw-cotton)', overflow: 'hidden', borderRadius: 4 }}>
             <Image
