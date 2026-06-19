@@ -3,14 +3,14 @@ import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Shipping Policy | QOTN',
-  description: 'QOTN shipping policy — free shipping above ₹999, standard and express delivery across India.',
+  description: 'QOTN shipping policy — free shipping above ₹1499, standard and express delivery across India.',
 };
 
 const deliveryCards = [
   {
     name: 'Standard Delivery',
-    price: 'FREE above ₹999',
-    priceAlt: '₹99 below ₹999',
+    price: 'FREE above ₹1499',
+    priceAlt: '₹99 below ₹1499',
     time: '5–7 business days',
     area: 'Pan India',
     highlight: true,

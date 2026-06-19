@@ -164,11 +164,11 @@ export default function CartDrawer() {
             )}
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
               <span style={{ fontSize: 13, color: 'var(--dust)' }}>Shipping</span>
-              <span style={{ fontSize: 13 }}>{grandTotal >= 99900 ? 'FREE' : formatPrice(9900)}</span>
+              <span style={{ fontSize: 13 }}>{grandTotal >= 149900 ? 'FREE' : formatPrice(9900)}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20, paddingTop: 8, borderTop: '1px solid var(--border)', marginTop: 6 }}>
               <span style={{ fontSize: 14, fontWeight: 500 }}>Total</span>
-              <span style={{ fontSize: 14, fontWeight: 500 }}>{formatPrice(grandTotal + (grandTotal >= 99900 ? 0 : 9900))}</span>
+              <span style={{ fontSize: 14, fontWeight: 500 }}>{formatPrice(grandTotal + (grandTotal >= 149900 ? 0 : 9900))}</span>
             </div>
             <Link href="/checkout" onClick={closeCart}>
               <button

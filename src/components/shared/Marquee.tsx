@@ -1,5 +1,5 @@
 export default function Marquee() {
-  const text = '100% COTTON   ·   MADE IN INDIA   ·   PURE COTTON   ·   NOTHING ELSE   ·   FREE SHIPPING ABOVE ₹999   ·   CUSTOM STITCHING AVAILABLE   ·   ';
+  const text = '100% COTTON   ·   MADE IN INDIA   ·   PURE COTTON   ·   NOTHING ELSE   ·   FREE SHIPPING ABOVE ₹1499   ·   CUSTOM STITCHING AVAILABLE   ·   ';
   const repeated = text.repeat(4);
 
   return (

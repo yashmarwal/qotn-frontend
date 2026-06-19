@@ -4,12 +4,12 @@ const meta: Record<string, { title: string; description: string }> = {
   men: {
     title: "Men's Pure Cotton Clothing — Shirts, Kurtas, T-Shirts | QOTN",
     description:
-      "Shop men's 100% pure cotton clothing. Cotton shirts, kurtas, t-shirts and more. No synthetic blends. Free shipping above ₹999.",
+      "Shop men's 100% pure cotton clothing. Cotton shirts, kurtas, t-shirts and more. No synthetic blends. Free shipping above ₹1499.",
   },
   women: {
     title: "Women's Pure Cotton Clothing — Kurtis, Dresses, Tops | QOTN",
     description:
-      "Shop women's 100% pure cotton clothing. Cotton kurtis, dresses, tops and co-ord sets. Breathable, soft, pure. Free shipping above ₹999.",
+      "Shop women's 100% pure cotton clothing. Cotton kurtis, dresses, tops and co-ord sets. Breathable, soft, pure. Free shipping above ₹1499.",
   },
   kids: {
     title: 'Kids Pure Cotton Clothing — Safe & Soft | QOTN',

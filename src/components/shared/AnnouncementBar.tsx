@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 
 const DEFAULT_MESSAGES = [
-  'Free shipping on orders above ₹999',
+  'Free shipping on orders above ₹1499',
   'Pure Cotton. Nothing Else.',
   'Custom stitching available — ₹249 only',
   'Made in India · 100% Cotton',

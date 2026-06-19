@@ -17,7 +17,7 @@ const items = [
   {
     icon: Truck,
     title: 'Free Delivery',
-    desc: 'Free shipping on orders above ₹999. Express delivery available.',
+    desc: 'Free delivery on orders above ₹1499. COD available with small surcharge.',
   },
 ];
 

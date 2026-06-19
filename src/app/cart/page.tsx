@@ -26,7 +26,7 @@ export default function CartPage() {
   // All values in paise
   const stitchingCharge = items.filter(i => i.customStitchingId).length * 24900;
   const subtotal = totalPrice; // already in paise from CartContext
-  const shipping = subtotal + stitchingCharge >= 99900 ? 0 : 9900;
+  const shipping = subtotal + stitchingCharge >= 149900 ? 0 : 9900;
   const discount = discountApplied ? Math.round((subtotal + stitchingCharge) * 0.1) : 0;
   const total = subtotal + stitchingCharge + shipping - discount;
 

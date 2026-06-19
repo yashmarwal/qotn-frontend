@@ -417,7 +417,7 @@ export default function ProductDetailClient({ product }: Props) {
               <p style={{ fontSize: 13, color: 'var(--dust)', lineHeight: 1.9 }}><strong style={{ fontWeight: 500 }}>Care:</strong> {product.care}</p>
             </AccordionItem>
             <AccordionItem title="Shipping & Returns">
-              <p style={{ fontSize: 13, color: 'var(--dust)', lineHeight: 1.9 }}>Free shipping on orders above ₹999. Standard delivery 5–7 business days. Easy 15-day returns.</p>
+              <p style={{ fontSize: 13, color: 'var(--dust)', lineHeight: 1.9 }}>Free delivery on orders above ₹1499. Standard delivery 5–7 business days. Easy 15-day returns.</p>
             </AccordionItem>
 
             <div style={{ padding: '0 0 16px' }}>
@@ -655,7 +655,7 @@ export default function ProductDetailClient({ product }: Props) {
                 <p style={{ fontSize: 13, color: 'var(--dust)', lineHeight: 1.9 }}><strong style={{ fontWeight: 500 }}>Care:</strong> {product.care}</p>
               </AccordionItem>
               <AccordionItem title="Shipping & Returns">
-                <p style={{ fontSize: 13, color: 'var(--dust)', lineHeight: 1.9 }}>Free shipping on orders above ₹999. Standard delivery: 5–7 business days. Express delivery available at checkout. Easy 15-day returns on unworn items.</p>
+                <p style={{ fontSize: 13, color: 'var(--dust)', lineHeight: 1.9 }}>Free delivery on orders above ₹1499. Standard delivery: 5–7 business days. Express delivery available at checkout. Easy 15-day returns on unworn items.</p>
               </AccordionItem>
 
               <FrequentlyBoughtTogether productId={product.id} />

@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     template: '%s | QOTN',
   },
   description:
-    'Shop 100% pure cotton clothing online. No blends, no shortcuts. Premium cotton kurtas, dresses, shirts and more for men, women and kids. Free shipping above ₹999. Made in India.',
+    'Shop 100% pure cotton clothing online. No blends, no shortcuts. Premium cotton kurtas, dresses, shirts and more for men, women and kids. Free shipping above ₹1499. Made in India.',
   keywords:
     'pure cotton clothing india, cotton kurta online, cotton dress women, cotton shirt men, D2C cotton brand, buy cotton clothes online india, handblock print cotton, QOTN',
 
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'QOTN — Pure Cotton Clothing for Men, Women & Kids | Made in India',
     description:
-      'Shop 100% pure cotton clothing. No blends, no shortcuts. Free shipping above ₹999. Made in India.',
+      'Shop 100% pure cotton clothing. No blends, no shortcuts. Free shipping above ₹1499. Made in India.',
     url: 'https://qotn.in',
     siteName: 'QOTN',
     type: 'website',
