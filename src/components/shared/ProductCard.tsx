@@ -26,9 +26,9 @@ export default function ProductCard({ product, variant = 'desktop' }: ProductCar
     return (
       <Link
         href={`/${product.category}/${product.slug}`}
-        style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}
+        style={{ display: 'block', textDecoration: 'none', color: 'inherit', minWidth: 0, overflow: 'hidden' }}
       >
-        <div style={{ overflow: 'hidden', backgroundColor: 'transparent' }}>
+        <div style={{ overflow: 'hidden', backgroundColor: 'transparent', width: '100%' }}>
           {/* Image — paddingBottom maintains 3:4 ratio reliably across all mobile browsers */}
           <div style={{ position: 'relative', paddingBottom: '133.33%', backgroundColor: 'var(--raw-cotton)', overflow: 'hidden', borderRadius: 4 }}>
             <Image
@@ -67,7 +67,7 @@ export default function ProductCard({ product, variant = 'desktop' }: ProductCar
           </div>
 
           {/* Info */}
-          <div style={{ padding: '8px 2px 4px' }}>
+          <div style={{ padding: '8px 2px 4px', minWidth: 0, width: '100%' }}>
             <p style={{ fontSize: 9, letterSpacing: '0.08em', color: 'var(--dust)', marginBottom: 2, textTransform: 'uppercase' }}>QOTN</p>
             <p style={{ fontSize: 12, fontWeight: 400, color: 'var(--black)', lineHeight: 1.3, marginBottom: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {product.name}
