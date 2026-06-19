@@ -10,7 +10,7 @@ type Mode = 'login' | 'register';
 type Step = 'form' | 'verify';
 
 export default function AccountPage() {
-  const { user, isLoading, isAuthenticated, login, register } = useAuth();
+  const { user, isLoading, isAuthenticated, login, register, logout } = useAuth();
   const router = useRouter();
 
   const [mode, setMode] = useState<Mode>('login');
@@ -36,9 +36,7 @@ export default function AccountPage() {
   const [error, setError] = useState('');
   const [done, setDone] = useState(false);
 
-  useEffect(() => {
-    if (!isLoading && isAuthenticated) router.replace('/');
-  }, [isLoading, isAuthenticated, router]);
+  // No redirect for authenticated users — they see the dashboard below
 
   useEffect(() => {
     if (resendSecs <= 0) return;
@@ -229,6 +227,62 @@ export default function AccountPage() {
           <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 10, letterSpacing: '0.14em', color: '#9E9987', textTransform: 'uppercase' }}>Loading</p>
         </motion.div>
       </div>
+    );
+  }
+
+  // ── Authenticated: account dashboard ──────────────────────────────────────
+  if (isAuthenticated && user) {
+    return (
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}
+        style={{ minHeight: '100vh', background: '#F5F0E8', fontFamily: 'DM Sans, sans-serif', padding: 'clamp(48px,8vw,80px) 24px' }}>
+        <div style={{ maxWidth: 560, margin: '0 auto' }}>
+
+          <p style={{ fontSize: 9, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#9E9987', marginBottom: 32 }}>My Account</p>
+
+          {/* Name + email */}
+          <div style={{ marginBottom: 40 }}>
+            <h1 style={{ fontSize: 28, fontWeight: 300, color: '#1A1A1A', letterSpacing: '-0.01em', marginBottom: 6 }}>
+              {user.firstName} {user.lastName}
+            </h1>
+            <p style={{ fontSize: 13, color: '#9E9987' }}>{user.email}</p>
+            {!user.isVerified && (
+              <p style={{ fontSize: 11, color: '#B45309', marginTop: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                ● Email not verified —{' '}
+                <button onClick={() => router.push('/verify-email')}
+                  style={{ background: 'none', border: 'none', padding: 0, fontSize: 11, color: '#B45309', textDecoration: 'underline', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', textUnderlineOffset: 3 }}>
+                  verify now
+                </button>
+              </p>
+            )}
+          </div>
+
+          {/* Quick links */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 0, borderTop: '1px solid rgba(26,26,26,0.1)' }}>
+            {[
+              { label: 'My Orders', href: '/orders' },
+              { label: 'Saved Addresses', href: '/addresses' },
+              { label: 'Wishlist', href: '/wishlist' },
+            ].map(link => (
+              <button key={link.href} onClick={() => router.push(link.href)}
+                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '18px 0', borderBottom: '1px solid rgba(26,26,26,0.1)', background: 'none', border: 'none', borderTop: 'none', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', width: '100%' }}
+                onMouseEnter={e => (e.currentTarget.style.paddingLeft = '8px')}
+                onMouseLeave={e => (e.currentTarget.style.paddingLeft = '0px')}>
+                <span style={{ fontSize: 14, color: '#1A1A1A', transition: 'padding 0.2s' }}>{link.label}</span>
+                <span style={{ fontSize: 16, color: '#9E9987' }}>›</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Logout */}
+          <button onClick={() => logout()}
+            style={{ marginTop: 40, background: 'none', border: '1px solid rgba(26,26,26,0.2)', padding: '13px 32px', fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#9E9987', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', transition: 'border-color 0.2s, color 0.2s' }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = '#1A1A1A'; e.currentTarget.style.color = '#1A1A1A'; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(26,26,26,0.2)'; e.currentTarget.style.color = '#9E9987'; }}>
+            Log out
+          </button>
+
+        </div>
+      </motion.div>
     );
   }
 
