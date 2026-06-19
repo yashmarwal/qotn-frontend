@@ -57,6 +57,8 @@ export default function AdminProductsPage() {
   const [variantPreviewOpen, setVariantPreviewOpen] = useState(false);
 
   // Size/Color state (outside form)
+  const [hasSizes, setHasSizes] = useState(true);
+  const [hasColors, setHasColors] = useState(true);
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [sizeStocks, setSizeStocks] = useState<Record<string, number>>({});
   const [colors, setColors] = useState<{ name: string; hex: string }[]>([{ name: 'White', hex: '#FFFFFF' }]);
@@ -112,6 +114,8 @@ export default function AdminProductsPage() {
   const openAdd = () => {
     setEditProduct(null);
     setForm({ ...emptyForm });
+    setHasSizes(true);
+    setHasColors(true);
     setSelectedSizes([]);
     setSizeStocks({});
     setColors([{ name: 'White', hex: '#FFFFFF' }]);
@@ -162,6 +166,8 @@ export default function AdminProductsPage() {
     setSelectedSizes(sizesFromVariants);
     setSizeStocks(stocksBySize);
     setColors(colorsForState.length > 0 ? colorsForState : [{ name: 'White', hex: '#FFFFFF' }]);
+    setHasSizes(sizesFromVariants.length !== 1 || sizesFromVariants[0] !== 'FREE SIZE');
+    setHasColors(colorNames.length !== 1 || colorNames[0] !== 'Default');
     setFormError('');
     setVariantPreviewOpen(false);
     setModalOpen(true);
@@ -428,18 +434,29 @@ export default function AdminProductsPage() {
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                     <label style={{ ...labelStyle, margin: 0 }}>Sizes * ({form.gender === 'KIDS' ? 'Kids' : 'Adult'})</label>
-                    <div style={{ display: 'flex', gap: 8 }}>
-                      <button type="button" onClick={() => setSelectedSizes([...sizePills])}
-                        style={{ fontSize: 11, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--black)', textDecoration: 'underline' }}>
-                        Select All
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <span style={{ fontSize: 11, color: 'var(--dust)' }}>{hasSizes ? 'Multiple sizes' : 'One size (FREE SIZE)'}</span>
+                      <button type="button" onClick={() => {
+                        const next = !hasSizes;
+                        setHasSizes(next);
+                        if (!next) { setSelectedSizes(['FREE SIZE']); setSizeStocks({ 'FREE SIZE': 0 }); }
+                        else { setSelectedSizes([]); setSizeStocks({}); }
+                      }} style={{ width: 40, height: 22, borderRadius: 11, background: hasSizes ? '#1A1A1A' : '#C8C3BA', border: 'none', cursor: 'pointer', position: 'relative', flexShrink: 0, transition: 'background 0.2s' }}>
+                        <span style={{ position: 'absolute', top: 3, left: hasSizes ? 20 : 4, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
                       </button>
-                      <button type="button" onClick={() => setSelectedSizes([])}
-                        style={{ fontSize: 11, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--dust)', textDecoration: 'underline' }}>
-                        Clear
-                      </button>
+                      {hasSizes && <>
+                        <button type="button" onClick={() => setSelectedSizes([...sizePills])}
+                          style={{ fontSize: 11, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--black)', textDecoration: 'underline' }}>
+                          All
+                        </button>
+                        <button type="button" onClick={() => setSelectedSizes([])}
+                          style={{ fontSize: 11, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--dust)', textDecoration: 'underline' }}>
+                          Clear
+                        </button>
+                      </>}
                     </div>
                   </div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {hasSizes && <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                     {sizePills.map(size => {
                       const sel = selectedSizes.includes(size);
                       return (
@@ -450,7 +467,7 @@ export default function AdminProductsPage() {
                         </button>
                       );
                     })}
-                  </div>
+                  </div>}
 
                   {/* Stock per size */}
                   {selectedSizes.length > 0 && (
@@ -483,13 +500,24 @@ export default function AdminProductsPage() {
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                     <label style={{ ...labelStyle, margin: 0 }}>Colors *</label>
-                    <button type="button"
-                      onClick={() => setColors(c => [...c, { name: '', hex: '#CCCCCC' }])}
-                      style={{ fontSize: 11, background: 'none', border: '1px solid var(--border)', cursor: 'pointer', padding: '4px 10px', color: 'var(--black)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <Plus size={11} /> Add Color
-                    </button>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <span style={{ fontSize: 11, color: 'var(--dust)' }}>{hasColors ? 'Multiple colors' : 'One color (Default)'}</span>
+                      <button type="button" onClick={() => {
+                        const next = !hasColors;
+                        setHasColors(next);
+                        if (!next) setColors([{ name: 'Default', hex: '#E8E2D8' }]);
+                        else setColors([{ name: '', hex: '#CCCCCC' }]);
+                      }} style={{ width: 40, height: 22, borderRadius: 11, background: hasColors ? '#1A1A1A' : '#C8C3BA', border: 'none', cursor: 'pointer', position: 'relative', flexShrink: 0, transition: 'background 0.2s' }}>
+                        <span style={{ position: 'absolute', top: 3, left: hasColors ? 20 : 4, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
+                      </button>
+                      {hasColors && <button type="button"
+                        onClick={() => setColors(c => [...c, { name: '', hex: '#CCCCCC' }])}
+                        style={{ fontSize: 11, background: 'none', border: '1px solid var(--border)', cursor: 'pointer', padding: '4px 10px', color: 'var(--black)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <Plus size={11} /> Add Color
+                      </button>}
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {hasColors && <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {colors.map((col, i) => (
                       <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                         <input type="color" value={col.hex}
@@ -506,7 +534,7 @@ export default function AdminProductsPage() {
                         )}
                       </div>
                     ))}
-                  </div>
+                  </div>}
                 </div>
 
                 {/* Variant Preview */}

@@ -38,7 +38,7 @@ export default function HomePage() {
   const [apiCategories, setApiCategories] = useState<any[]>([]);
   const [trending, setTrending] = useState<Product[]>([]);
   const [collections, setCollections] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<'men' | 'women' | 'kids'>('men');
+  const [activeTab, setActiveTab] = useState<'men' | 'women' | 'kids'>('women');
   const [tabProducts, setTabProducts] = useState<Product[]>([]);
   const [tabLoading, setTabLoading] = useState(false);
 
@@ -189,7 +189,7 @@ export default function HomePage() {
             </div>
           </div>
           <AnimatePresence mode="wait">
-            <motion.div key={activeTab} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            <motion.div key={activeTab} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, alignItems: 'start' }}>
               {(tabLoading || tabProducts.length === 0 ? Array.from({ length: 6 }) : tabProducts.slice(0, 6)).map((p, i) => (
                 p ? <ProductCard key={(p as any).id} product={p as any} variant="mobile" /> : <ProductCardSkeleton key={i} variant="mobile" />
               ))}
@@ -247,7 +247,7 @@ export default function HomePage() {
             <p style={{ fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--black)', fontWeight: 500 }}>NEW ARRIVALS</p>
             <Link href="/men" style={{ fontSize: 10, color: 'var(--dust)', letterSpacing: '0.08em', display: 'flex', alignItems: 'center', gap: 3, minHeight: 'unset' }}>VIEW ALL <ArrowRight size={10} /></Link>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, alignItems: 'start' }}>
             {(newArrivals.length === 0 ? Array.from({ length: 4 }) : newArrivals.slice(0, 4)).map((p, i) => (
               p ? <ProductCard key={(p as any).id} product={p as any} variant="mobile" /> : <ProductCardSkeleton key={i} variant="mobile" />
             ))}
@@ -307,7 +307,7 @@ export default function HomePage() {
             <p style={{ fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--black)', fontWeight: 500 }}>BESTSELLERS</p>
             <Link href="/women" style={{ fontSize: 10, color: 'var(--dust)', letterSpacing: '0.08em', display: 'flex', alignItems: 'center', gap: 3, minHeight: 'unset' }}>VIEW ALL <ArrowRight size={10} /></Link>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, paddingBottom: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, paddingBottom: 16, alignItems: 'start' }}>
             {(bestsellers.length === 0 ? Array.from({ length: 4 }) : bestsellers.slice(0, 4)).map((p, i) => (
               p ? <ProductCard key={(p as any).id} product={p as any} variant="mobile" /> : <ProductCardSkeleton key={i} variant="mobile" />
             ))}

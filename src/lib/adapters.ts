@@ -95,6 +95,7 @@ export function adaptApiProduct(p: ApiProduct): Product {
       id: v.id,
       size: v.size,
       color: v.color,
+      colorHex: v.colorHex,
       price: v.price,
       stock: v.stock,
     })),

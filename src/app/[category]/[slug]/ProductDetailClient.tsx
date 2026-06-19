@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Star, Heart, ChevronDown, ChevronUp } from 'lucide-react';
+import { Star, Heart, ChevronDown, ChevronUp, Share2 } from 'lucide-react';
 import { Product } from '@/types';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
@@ -67,6 +67,25 @@ export default function ProductDetailClient({ product }: Props) {
   const [waitlistSubmitted, setWaitlistSubmitted] = useState(false);
   const [liveVariants, setLiveVariants] = useState<Array<{ id: string; size: string; color: string; stock: number }>>(product?._variants ?? []);
   const [stockError, setStockError] = useState('');
+  const [shareCopied, setShareCopied] = useState(false);
+
+  const colorHexMap: Record<string, string> = Object.fromEntries(
+    (product?._variants ?? []).filter(v => v.colorHex).map(v => [v.color, v.colorHex as string])
+  );
+  const getColorHex = (color: string) => colorHexMap[color] || colorMap[color] || '#9E9E9E';
+
+  const handleShare = async () => {
+    const url = window.location.href;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: product?.name ?? 'QOTN', url });
+      } else {
+        await navigator.clipboard.writeText(url);
+        setShareCopied(true);
+        setTimeout(() => setShareCopied(false), 2000);
+      }
+    } catch {}
+  };
   const galleryRef = useRef<HTMLDivElement>(null);
 
   const { addItem, openCart } = useCart();
@@ -225,11 +244,17 @@ export default function ProductDetailClient({ product }: Props) {
 
           {/* Content */}
           <div style={{ padding: '20px 16px 16px' }}>
-            {/* Breadcrumb */}
-            <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
-              <Link href="/" style={{ fontSize: 10, color: 'var(--dust)', letterSpacing: '0.06em' }}>Home</Link>
-              <span style={{ fontSize: 10, color: 'var(--dust)' }}>/</span>
-              <Link href={`/${product.category}`} style={{ fontSize: 10, color: 'var(--dust)', letterSpacing: '0.06em', textTransform: 'capitalize' }}>{product.category}</Link>
+            {/* Breadcrumb + share */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <Link href="/" style={{ fontSize: 10, color: 'var(--dust)', letterSpacing: '0.06em' }}>Home</Link>
+                <span style={{ fontSize: 10, color: 'var(--dust)' }}>/</span>
+                <Link href={`/${product.category}`} style={{ fontSize: 10, color: 'var(--dust)', letterSpacing: '0.06em', textTransform: 'capitalize' }}>{product.category}</Link>
+              </div>
+              <button onClick={handleShare} title="Share" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 6, display: 'flex', alignItems: 'center', gap: 4, color: 'var(--dust)' }}>
+                <Share2 size={14} strokeWidth={1.5} />
+                {shareCopied && <span style={{ fontSize: 10, letterSpacing: '0.06em' }}>Copied!</span>}
+              </button>
             </div>
 
             <h1 style={{ fontSize: 20, fontWeight: 500, lineHeight: 1.3, marginBottom: 10 }}>{product.name}</h1>
@@ -324,7 +349,7 @@ export default function ProductDetailClient({ product }: Props) {
               </span>
               <div style={{ display: 'flex', gap: 8 }}>
                 {product.colors.map((color) => {
-                  const hex = colorMap[color] || '#CCC';
+                  const hex = getColorHex(color);
                   const sel = selectedColor === color;
                   return (
                     <button key={color} onClick={() => setSelectedColor(color)} title={color}
@@ -342,12 +367,19 @@ export default function ProductDetailClient({ product }: Props) {
               </p>
             </div>
 
-            {/* Wishlist */}
-            <button onClick={() => toggleItem(product)}
-              style={{ width: '100%', padding: '14px', background: 'none', border: '1px solid var(--border)', fontSize: 12, letterSpacing: '0.10em', textTransform: 'uppercase', cursor: 'pointer', color: 'var(--black)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'DM Sans, sans-serif', marginBottom: 12 }}>
-              <Heart size={14} strokeWidth={1.5} fill={inWishlist ? 'var(--black)' : 'none'} color="var(--black)" />
-              {inWishlist ? 'Saved to Wishlist' : 'Add to Wishlist'}
-            </button>
+            {/* Wishlist + Share */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 8, marginBottom: 12 }}>
+              <button onClick={() => toggleItem(product)}
+                style={{ padding: '14px', background: 'none', border: '1px solid var(--border)', fontSize: 12, letterSpacing: '0.10em', textTransform: 'uppercase', cursor: 'pointer', color: 'var(--black)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'DM Sans, sans-serif' }}>
+                <Heart size={14} strokeWidth={1.5} fill={inWishlist ? 'var(--black)' : 'none'} color="var(--black)" />
+                {inWishlist ? 'Saved to Wishlist' : 'Add to Wishlist'}
+              </button>
+              <button onClick={handleShare} title="Share product"
+                style={{ padding: '14px 16px', background: 'none', border: '1px solid var(--border)', cursor: 'pointer', color: 'var(--black)', display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'DM Sans, sans-serif', fontSize: 11, letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>
+                <Share2 size={14} strokeWidth={1.5} />
+                {shareCopied ? 'Copied!' : 'Share'}
+              </button>
+            </div>
 
             <CustomStitchingButton
               productId={product.id}
@@ -365,7 +397,7 @@ export default function ProductDetailClient({ product }: Props) {
 
             {/* Trust signals */}
             <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {['Free shipping above ₹999', '100% pure cotton certified', 'Secure checkout'].map(item => (
+              {['Free delivery above ₹1499', '100% pure cotton certified', 'Secure checkout'].map(item => (
                 <div key={item} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <span style={{ fontSize: 12, color: '#059669', fontWeight: 600 }}>✓</span>
                   <span style={{ fontSize: 12, color: 'var(--dust)' }}>{item}</span>
@@ -547,7 +579,7 @@ export default function ProductDetailClient({ product }: Props) {
                 <span style={{ fontSize: 11, letterSpacing: '0.10em', fontWeight: 500, textTransform: 'uppercase', display: 'block', marginBottom: 12 }}>Color{selectedColor && ` — ${selectedColor}`}</span>
                 <div style={{ display: 'flex', gap: 8 }}>
                   {product.colors.map((color) => {
-                    const hex = colorMap[color] || '#CCC';
+                    const hex = getColorHex(color);
                     const sel = selectedColor === color;
                     return (
                       <button key={color} onClick={() => setSelectedColor(color)} title={color}
@@ -585,7 +617,7 @@ export default function ProductDetailClient({ product }: Props) {
               {/* Trust signals — 2×2 grid */}
               <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
                 {[
-                  { icon: '✓', text: 'Free shipping above ₹999' },
+                  { icon: '✓', text: 'Free delivery above ₹1499' },
                   { icon: '✓', text: '100% pure cotton certified' },
                   { icon: '✓', text: 'Secure checkout — 256-bit SSL' },
                   { icon: '✓', text: 'Made in India' },
@@ -600,12 +632,19 @@ export default function ProductDetailClient({ product }: Props) {
                 24-hour return on damaged items only. No returns on custom stitched orders.
               </p>
 
-              {/* Wishlist */}
-              <button onClick={() => toggleItem(product)}
-                style={{ width: '100%', padding: '13px', background: 'none', border: 'none', fontSize: 12, letterSpacing: '0.10em', textTransform: 'uppercase', cursor: 'pointer', color: 'var(--black)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 32, marginTop: 16, fontFamily: 'DM Sans, sans-serif', borderBottom: '1px solid var(--border)', paddingBottom: 24 }}>
-                <Heart size={14} strokeWidth={1.5} fill={inWishlist ? 'var(--black)' : 'none'} color="var(--black)" />
-                {inWishlist ? 'Saved to Wishlist' : 'Add to Wishlist'}
-              </button>
+              {/* Wishlist + Share */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 8, marginTop: 16, marginBottom: 32, paddingBottom: 24, borderBottom: '1px solid var(--border)' }}>
+                <button onClick={() => toggleItem(product)}
+                  style={{ padding: '13px', background: 'none', border: '1px solid var(--border)', fontSize: 12, letterSpacing: '0.10em', textTransform: 'uppercase', cursor: 'pointer', color: 'var(--black)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'DM Sans, sans-serif' }}>
+                  <Heart size={14} strokeWidth={1.5} fill={inWishlist ? 'var(--black)' : 'none'} color="var(--black)" />
+                  {inWishlist ? 'Saved to Wishlist' : 'Add to Wishlist'}
+                </button>
+                <button onClick={handleShare} title="Share product"
+                  style={{ padding: '13px 16px', background: 'none', border: '1px solid var(--border)', cursor: 'pointer', color: 'var(--black)', display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'DM Sans, sans-serif', fontSize: 11, letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>
+                  <Share2 size={14} strokeWidth={1.5} />
+                  {shareCopied ? 'Copied!' : 'Share'}
+                </button>
+              </div>
 
               {/* Accordions */}
               <AccordionItem title="Description">

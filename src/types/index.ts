@@ -18,7 +18,7 @@ export interface Product {
   reviews: number;
   stock: Record<string, number>;
   // Populated by adaptApiProduct — used to resolve variantId for cart/checkout
-  _variants?: Array<{ id: string; size: string; color: string; price: number; stock: number }>;
+  _variants?: Array<{ id: string; size: string; color: string; colorHex?: string; price: number; stock: number }>;
 }
 
 export interface CartItem {

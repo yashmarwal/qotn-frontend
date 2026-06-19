@@ -21,7 +21,7 @@ declare global {
 }
 
 type Step = 1 | 2 | 3;
-type Delivery = 'standard' | 'express' | 'cod';
+type Delivery = 'standard' | 'cod';
 
 const indianStates = [
   'Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa','Gujarat',
@@ -106,11 +106,11 @@ export default function CheckoutPage() {
 
   // ── Computed prices (all in paise) ───────────────────────────────────────
   const stitchingCharge = items.filter(i => i.customStitchingId).length * 24900;
-  const shippingPaise = delivery === 'standard'
-    ? (totalPrice + stitchingCharge >= 99900 ? 0 : 9900)
-    : delivery === 'express' ? 19900 : 5000;
-  const discountPaise = couponData?.discount ?? 0;
   const subtotalWithStitching = totalPrice + stitchingCharge;
+  const freeDeliveryThreshold = 149900; // ₹1499
+  const baseDelivery = subtotalWithStitching >= freeDeliveryThreshold ? 0 : 9900; // ₹99
+  const shippingPaise = delivery === 'cod' ? baseDelivery + 5000 : baseDelivery; // COD adds ₹50
+  const discountPaise = couponData?.discount ?? 0;
   const grandTotal = Math.max(0, subtotalWithStitching + shippingPaise - discountPaise);
   const isCOD = delivery === 'cod';
 
@@ -451,14 +451,17 @@ export default function CheckoutPage() {
   // STEP 2 — DELIVERY METHOD
   // ────────────────────────────────────────────────────────────────────────
   const DeliveryStep = () => {
+    const isFreeDelivery = subtotalWithStitching >= freeDeliveryThreshold;
     const options: { id: Delivery; label: string; sub: string; badge?: string; price: string }[] = [
       {
         id: 'standard', label: 'Standard Delivery', sub: '5–7 business days',
-        badge: totalPrice + stitchingCharge >= 99900 ? 'FREE SHIPPING' : undefined,
-        price: totalPrice + stitchingCharge >= 99900 ? 'FREE' : '₹99',
+        badge: isFreeDelivery ? 'FREE DELIVERY' : undefined,
+        price: isFreeDelivery ? 'FREE' : '₹99',
       },
-      { id: 'express', label: 'Express Delivery', sub: '2–3 business days', price: '₹199' },
-      { id: 'cod', label: 'Cash on Delivery', sub: '5–7 business days', price: '+₹50' },
+      {
+        id: 'cod', label: 'Cash on Delivery', sub: '5–7 business days',
+        price: isFreeDelivery ? '₹50' : '₹149',
+      },
     ];
     return (
       <motion.div key="delivery" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
@@ -580,7 +583,7 @@ export default function CheckoutPage() {
         )}
         <p style={{ fontSize: 12, color: 'var(--dust)' }}>
           <strong style={{ color: '#1A1A1A' }}>Method:</strong>{' '}
-          {delivery === 'standard' ? 'Standard (5–7 days)' : delivery === 'express' ? 'Express (2–3 days)' : 'Cash on Delivery (5–7 days)'}
+          {delivery === 'standard' ? 'Standard (5–7 days)' : 'Cash on Delivery (5–7 days)'}
         </p>
       </div>
 
