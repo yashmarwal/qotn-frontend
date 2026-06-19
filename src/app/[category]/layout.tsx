@@ -1,4 +1,7 @@
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+
+const VALID_CATEGORIES = new Set(['men', 'women', 'kids']);
 
 const meta: Record<string, { title: string; description: string }> = {
   men: {
@@ -35,6 +38,16 @@ export async function generateMetadata({
   };
 }
 
-export default function CategoryLayout({ children }: { children: React.ReactNode }) {
+export default async function CategoryLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: Promise<{ category: string }>;
+}) {
+  const { category } = await params;
+  if (!VALID_CATEGORIES.has(category)) {
+    notFound();
+  }
   return <>{children}</>;
 }

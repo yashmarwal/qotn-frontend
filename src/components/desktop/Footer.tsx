@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { AtSign } from 'lucide-react';
 
 const shopLinks = [
   { href: '/men', label: 'Men' },
@@ -62,11 +61,12 @@ export default function DesktopFooter() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <span style={{ fontSize: 11, letterSpacing: '0.12em', fontWeight: 500, textTransform: 'uppercase', color: 'rgba(245,240,232,0.5)' }}>Follow</span>
-          <a href="https://www.instagram.com/shopqotn" target="_blank" rel="noopener noreferrer"
+          <a href="https://www.instagram.com/qotn.in?igsh=MWcyaTl2bjRqenppNg==" target="_blank" rel="noopener noreferrer"
             style={{ ...linkStyle, display: 'flex', alignItems: 'center', gap: 8 }}
             onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
             onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.8')}>
-            <AtSign size={14} strokeWidth={1.5} /> @shopqotn
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+            @qotn.in
           </a>
           <span style={{ fontSize: 14, opacity: 0.8 }}>qotn.in</span>
         </div>

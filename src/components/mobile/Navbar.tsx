@@ -155,7 +155,7 @@ export default function MobileNavbar() {
                   style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'rgba(245,240,232,0.6)', fontSize: 13, letterSpacing: '0.06em', textDecoration: 'none', minHeight: 44 }}>
                   <User size={16} strokeWidth={1.5} color="rgba(245,240,232,0.6)" /> My Account
                 </Link>
-                <Link href="/account" onClick={() => setDrawerOpen(false)}
+                <Link href="/wishlist" onClick={() => setDrawerOpen(false)}
                   style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'rgba(245,240,232,0.6)', fontSize: 13, letterSpacing: '0.06em', textDecoration: 'none', minHeight: 44 }}>
                   <Heart size={16} strokeWidth={1.5} color="rgba(245,240,232,0.6)" /> Wishlist
                 </Link>

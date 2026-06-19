@@ -64,10 +64,10 @@ export default function MobileFooter() {
         <p style={{ fontSize: 12, color: 'rgba(245,240,232,0.5)', letterSpacing: '0.06em' }}>Pure Cotton. Nothing Else.</p>
       </div>
 
-      <a href="https://www.instagram.com/shopqotn" target="_blank" rel="noreferrer"
+      <a href="https://www.instagram.com/qotn.in?igsh=MWcyaTl2bjRqenppNg==" target="_blank" rel="noreferrer"
         style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'rgba(245,240,232,0.75)', fontSize: 13, textDecoration: 'none', marginBottom: 24, minHeight: 'unset' }}>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
-        @shopqotn
+        @qotn.in
       </a>
 
       <div style={{ height: 1, background: '#2A2A2A', marginBottom: 4 }} />
