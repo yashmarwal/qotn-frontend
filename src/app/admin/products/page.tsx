@@ -52,6 +52,7 @@ export default function AdminProductsPage() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [form, setForm] = useState<FormState>({ ...emptyForm });
   const [saving, setSaving] = useState(false);
+  const [loadingEdit, setLoadingEdit] = useState(false);
   const [formError, setFormError] = useState('');
   const [toast, setToast] = useState('');
   const [variantPreviewOpen, setVariantPreviewOpen] = useState(false);
@@ -124,10 +125,12 @@ export default function AdminProductsPage() {
     setModalOpen(true);
   };
 
-  const openEdit = (p: any) => {
-    setEditProduct(p);
-    const rawImages: string[] = (p.images ?? []).map((img: any) =>
-      typeof img === 'string' ? img : img?.url ?? '').filter(Boolean);
+  const populateEditForm = (p: any) => {
+    // Handle images in any format: string URL, {url}, {secure_url}, {imageUrl}
+    const rawImages: string[] = (p.images ?? []).map((img: any) => {
+      if (typeof img === 'string') return img;
+      return img?.url || img?.secure_url || img?.imageUrl || '';
+    }).filter(Boolean);
 
     const variants = p.variants ?? [];
     const sizesFromVariants = [...new Set<string>(variants.map((v: any) => v.size).filter(Boolean))];
@@ -155,7 +158,7 @@ export default function AdminProductsPage() {
       care: p.care ?? '',
       price: priceVal ? String(priceVal / 100) : '',
       originalPrice: origVal ? String(origVal / 100) : '',
-      category: p.category?.slug ?? '',
+      category: p.category?.slug ?? p.category ?? '',
       gender: p.gender ?? 'UNISEX',
       isNew: p.isNew ?? false,
       isBestseller: p.isBestseller ?? false,
@@ -170,7 +173,25 @@ export default function AdminProductsPage() {
     setHasColors(colorNames.length !== 1 || colorNames[0] !== 'Default');
     setFormError('');
     setVariantPreviewOpen(false);
+  };
+
+  const openEdit = async (p: any) => {
+    setEditProduct(p);
     setModalOpen(true);
+    setLoadingEdit(true);
+    // Populate with list data immediately so modal opens fast
+    populateEditForm(p);
+    try {
+      // Fetch full product to guarantee all images and data are present
+      const res: any = await adminService.getProduct(p.slug || p.id);
+      const full = res?.data?.data ?? res?.data ?? p;
+      populateEditForm(full);
+      setEditProduct({ ...p, ...full });
+    } catch {
+      // list data already populated above — silently continue
+    } finally {
+      setLoadingEdit(false);
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -354,7 +375,7 @@ export default function AdminProductsPage() {
                   <div>
                     <label style={labelStyle}>Product Name *</label>
                     <input style={inputStyle} value={form.name}
-                      onChange={e => setForm(f => ({ ...f, name: e.target.value, slug: editProduct ? f.slug : makeSlug(e.target.value) }))}
+                      onChange={e => setForm(f => ({ ...f, name: e.target.value, slug: makeSlug(e.target.value) }))}
                       placeholder="Pure Cotton Kurta" />
                   </div>
                   <div>
@@ -577,7 +598,10 @@ export default function AdminProductsPage() {
 
                 {/* Images */}
                 <div>
-                  <label style={labelStyle}>Product Images (min 3, max 6)</label>
+                  <label style={labelStyle}>
+                    Product Images (min 3, max 6)
+                    {loadingEdit && <span style={{ marginLeft: 8, fontSize: 10, color: 'var(--dust)', fontWeight: 400, letterSpacing: 0, textTransform: 'none' }}>Loading full data…</span>}
+                  </label>
                   <ImageUploader images={form.images} onChange={urls => setForm(f => ({ ...f, images: urls }))} maxImages={6} minImages={3} />
                 </div>
 

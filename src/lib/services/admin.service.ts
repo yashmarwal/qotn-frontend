@@ -21,6 +21,7 @@ export const adminService = {
     api.patch<{ data: any }>(`/admin/inventory/${variantId}`, { stock }),
 
   // Products
+  getProduct: (idOrSlug: string) => api.get<{ data: any }>(`/products/${idOrSlug}`),
   createProduct: (data: any) => api.post<{ data: any }>('/products', data),
   updateProduct: (id: string, data: any) => api.patch<{ data: any }>(`/products/${id}`, data),
   deleteProduct: (id: string) => api.delete<{ data: any }>(`/products/${id}`),
