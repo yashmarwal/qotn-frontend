@@ -207,23 +207,19 @@ export default function CheckoutPage() {
       const synced = await syncCartToBackend(items);
       if (synced === 0) throw new Error('Could not process cart. Please re-add your items.');
 
-      // 1. Create order in our system
-      const orderRes: any = await ordersService.createOrder({
+      // 1. Prepare checkout — calculates total server-side, creates Razorpay order.
+      //    No DB order is created here. Order only exists after payment is confirmed.
+      const prepRes: any = await paymentsService.prepareCheckout({
         addressId: selectedAddr.id,
-        deliveryMethod: delivery.toUpperCase() as any,
-        paymentMethod: 'UPI',
+        deliveryMethod: delivery.toUpperCase(),
         couponCode: couponData?.coupon?.code,
       });
-      const order = orderRes.data.order;
+      const { razorpayOrderId, amount, key } = prepRes.data;
 
-      // 2. Create Razorpay order
-      const rpRes: any = await paymentsService.createRazorpayOrder(order.id);
-      const { razorpayOrderId, amount, key } = rpRes.data;
-
-      // 3. Load Razorpay script
+      // 2. Load Razorpay script
       await loadRazorpay();
 
-      // 4. Open Razorpay modal
+      // 3. Open Razorpay modal
       await new Promise<void>((resolve, reject) => {
         const rzp = new window.Razorpay({
           key,
@@ -245,14 +241,17 @@ export default function CheckoutPage() {
           },
           handler: async (response: any) => {
             try {
-              await paymentsService.verifyPayment({
+              // 4. Verify signature + create order atomically — only runs after real payment
+              const captureRes: any = await paymentsService.confirmOrder({
                 razorpayOrderId: response.razorpay_order_id,
                 razorpayPaymentId: response.razorpay_payment_id,
                 razorpaySignature: response.razorpay_signature,
-                orderId: order.id,
+                addressId: selectedAddr.id,
+                deliveryMethod: delivery.toUpperCase(),
+                couponCode: couponData?.coupon?.code,
               });
               clearCart();
-              router.push(`/order-confirmation?order=${order.orderNumber}`);
+              router.push(`/order-confirmation?order=${captureRes.data.order.orderNumber}`);
               resolve();
             } catch (err: any) {
               reject(new Error(err.message || 'Payment verification failed. Contact support.'));
