@@ -11,12 +11,14 @@ import { formatPrice, formatDate } from '@/lib/utils';
 const statusColors: Record<string, string> = {
   pending: '#B45309', confirmed: '#1E40AF', processing: '#1D4ED8',
   shipped: '#6D28D9', delivered: '#065F46', cancelled: '#991B1B',
+  returned: '#6B7280', refunded: '#6B7280',
 };
 const statusBg: Record<string, string> = {
   pending: '#FEF3C7', confirmed: '#DBEAFE', processing: '#DBEAFE',
   shipped: '#EDE9FE', delivered: '#D1FAE5', cancelled: '#FEE2E2',
+  returned: '#F3F4F6', refunded: '#F3F4F6',
 };
-const ALL_STATUSES = ['PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'];
+const ALL_STATUSES = ['PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'RETURNED', 'REFUNDED'];
 const STITCHING_STATUSES = ['PENDING', 'IN_PROGRESS', 'COMPLETED'];
 
 export default function AdminOrdersPage() {
