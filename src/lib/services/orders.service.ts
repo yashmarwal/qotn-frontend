@@ -16,6 +16,6 @@ export const ordersService = {
   cancelOrder: (orderNumber: string) =>
     api.post<{ data: any }>(`/orders/${orderNumber}/cancel`, {}),
 
-  requestReturn: (orderNumber: string) =>
-    api.post<{ data: any }>(`/orders/${orderNumber}/return`, {}),
+  requestReturn: (orderNumber: string, reason: string) =>
+    api.post<{ data: any }>(`/orders/${orderNumber}/return`, { reason }),
 };

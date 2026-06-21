@@ -22,7 +22,16 @@ const STATUS_COLOR: Record<string, string> = {
 
 const TERMINAL = ['CANCELLED', 'RETURNED', 'REFUNDED'];
 
-// Returns null if the action is allowed, or a reason string if blocked.
+const RETURN_REASONS = [
+  'Received damaged item',
+  'Wrong size delivered',
+  'Wrong item delivered',
+  'Item doesn\'t match description',
+  'Quality not as expected',
+  'Changed my mind',
+  'Other',
+];
+
 function cancelBlockReason(order: any): string | null {
   if (order.customStitching?.length > 0) return 'Custom stitched orders cannot be cancelled.';
   if (!['PENDING', 'CONFIRMED'].includes(order.status)) return 'Order cannot be cancelled after it has been dispatched.';
@@ -35,33 +44,26 @@ function returnBlockReason(order: any): string | null {
   return null;
 }
 
-interface ConfirmDialogProps {
-  message: string;
-  onConfirm: () => void;
-  onCancel: () => void;
-  loading: boolean;
-}
-
-function ConfirmDialog({ message, onConfirm, onCancel, loading }: ConfirmDialogProps) {
+// ─── Cancel confirmation dialog ───────────────────────────────────────────────
+function CancelDialog({ onConfirm, onClose, loading }: { onConfirm: () => void; onClose: () => void; loading: boolean }) {
   return (
-    <div style={{
-      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 100,
-      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24,
-    }}>
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
       <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.96 }}
         style={{ background: '#F5F0E8', padding: '32px 28px', maxWidth: 380, width: '100%', position: 'relative' }}>
-        <button onClick={onCancel} style={{ position: 'absolute', top: 16, right: 16, background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+        <button onClick={onClose} style={{ position: 'absolute', top: 16, right: 16, background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
           <X size={16} strokeWidth={1.5} color="#9E9987" />
         </button>
-        <p style={{ fontSize: 14, lineHeight: 1.7, color: '#1A1A1A', marginBottom: 28, fontFamily: 'DM Sans, sans-serif' }}>{message}</p>
+        <p style={{ fontSize: 14, lineHeight: 1.7, color: '#1A1A1A', marginBottom: 28, fontFamily: 'DM Sans, sans-serif' }}>
+          Are you sure you want to cancel this order? This action cannot be undone.
+        </p>
         <div style={{ display: 'flex', gap: 12 }}>
-          <button onClick={onCancel} disabled={loading}
+          <button onClick={onClose} disabled={loading}
             style={{ flex: 1, height: 42, background: 'none', border: '1px solid rgba(26,26,26,0.2)', fontSize: 12, letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', color: '#1A1A1A' }}>
             No, Keep It
           </button>
           <button onClick={onConfirm} disabled={loading}
-            style={{ flex: 1, height: 42, background: '#1A1A1A', border: 'none', fontSize: 12, letterSpacing: '0.08em', textTransform: 'uppercase', cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'DM Sans, sans-serif', color: '#F5F0E8', opacity: loading ? 0.6 : 1 }}>
-            {loading ? 'Please wait…' : 'Yes, Confirm'}
+            style={{ flex: 1, height: 42, background: '#DC2626', border: 'none', fontSize: 12, letterSpacing: '0.08em', textTransform: 'uppercase', cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'DM Sans, sans-serif', color: '#fff', opacity: loading ? 0.6 : 1 }}>
+            {loading ? 'Cancelling…' : 'Yes, Cancel'}
           </button>
         </div>
       </motion.div>
@@ -69,6 +71,87 @@ function ConfirmDialog({ message, onConfirm, onCancel, loading }: ConfirmDialogP
   );
 }
 
+// ─── Return reason modal ──────────────────────────────────────────────────────
+function ReturnReasonModal({ onConfirm, onClose, loading }: {
+  onConfirm: (reason: string) => void;
+  onClose: () => void;
+  loading: boolean;
+}) {
+  const [selected, setSelected] = useState('');
+  const [other, setOther] = useState('');
+
+  const finalReason = selected === 'Other' ? other.trim() : selected;
+  const canSubmit = selected !== '' && (selected !== 'Other' || other.trim().length > 0);
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+      <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.96 }}
+        style={{ background: '#F5F0E8', padding: '32px 28px', maxWidth: 420, width: '100%', position: 'relative', maxHeight: '90vh', overflowY: 'auto' }}>
+        <button onClick={onClose} style={{ position: 'absolute', top: 16, right: 16, background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+          <X size={16} strokeWidth={1.5} color="#9E9987" />
+        </button>
+
+        <p style={{ fontSize: 9, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#9E9987', marginBottom: 8, fontFamily: 'DM Sans, sans-serif' }}>Request Return</p>
+        <p style={{ fontSize: 16, fontWeight: 400, color: '#1A1A1A', marginBottom: 24, fontFamily: 'DM Sans, sans-serif' }}>Why are you returning this order?</p>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
+          {RETURN_REASONS.map((reason) => (
+            <button
+              key={reason}
+              onClick={() => { setSelected(reason); if (reason !== 'Other') setOther(''); }}
+              style={{
+                textAlign: 'left', padding: '12px 16px',
+                background: selected === reason ? '#1A1A1A' : 'transparent',
+                border: `1px solid ${selected === reason ? '#1A1A1A' : 'rgba(26,26,26,0.2)'}`,
+                fontSize: 13, color: selected === reason ? '#F5F0E8' : '#1A1A1A',
+                cursor: 'pointer', fontFamily: 'DM Sans, sans-serif',
+                transition: 'all 0.15s',
+              }}>
+              {reason}
+            </button>
+          ))}
+        </div>
+
+        {selected === 'Other' && (
+          <textarea
+            value={other}
+            onChange={(e) => setOther(e.target.value)}
+            placeholder="Please describe the reason…"
+            rows={3}
+            style={{
+              width: '100%', padding: '12px 14px', border: '1px solid rgba(26,26,26,0.25)',
+              background: '#F5F0E8', fontSize: 13, fontFamily: 'DM Sans, sans-serif',
+              color: '#1A1A1A', outline: 'none', resize: 'vertical', marginBottom: 16,
+              boxSizing: 'border-box',
+            }}
+          />
+        )}
+
+        <div style={{ display: 'flex', gap: 12, marginTop: 4 }}>
+          <button onClick={onClose} disabled={loading}
+            style={{ flex: 1, height: 42, background: 'none', border: '1px solid rgba(26,26,26,0.2)', fontSize: 12, letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', color: '#1A1A1A' }}>
+            Cancel
+          </button>
+          <button
+            onClick={() => canSubmit && onConfirm(finalReason)}
+            disabled={!canSubmit || loading}
+            style={{
+              flex: 1, height: 42, background: '#1A1A1A', border: 'none',
+              fontSize: 12, letterSpacing: '0.08em', textTransform: 'uppercase',
+              cursor: (!canSubmit || loading) ? 'not-allowed' : 'pointer',
+              fontFamily: 'DM Sans, sans-serif', color: '#F5F0E8',
+              opacity: (!canSubmit || loading) ? 0.45 : 1,
+              transition: 'opacity 0.15s',
+            }}>
+            {loading ? 'Submitting…' : 'Submit Return'}
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 export default function OrdersPage() {
   const { isLoading, isAuthenticated } = useAuth();
   const router = useRouter();
@@ -77,9 +160,9 @@ export default function OrdersPage() {
   const [error, setError] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const [dialog, setDialog] = useState<{ type: 'cancel' | 'return'; orderNumber: string } | null>(null);
+  const [cancelOrderNumber, setCancelOrderNumber] = useState<string | null>(null);
+  const [returnOrderNumber, setReturnOrderNumber] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
-  // Per-order inline message (reason blocked or API error)
   const [inlineMsg, setInlineMsg] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -96,44 +179,45 @@ export default function OrdersPage() {
 
   function handleCancelClick(order: any) {
     const reason = cancelBlockReason(order);
-    if (reason) {
-      setInlineMsg((p) => ({ ...p, [order.orderNumber]: reason }));
-      return;
-    }
+    if (reason) { setInlineMsg((p) => ({ ...p, [order.orderNumber]: reason })); return; }
     setInlineMsg((p) => ({ ...p, [order.orderNumber]: '' }));
-    setDialog({ type: 'cancel', orderNumber: order.orderNumber });
+    setCancelOrderNumber(order.orderNumber);
   }
 
   function handleReturnClick(order: any) {
     const reason = returnBlockReason(order);
-    if (reason) {
-      setInlineMsg((p) => ({ ...p, [order.orderNumber]: reason }));
-      return;
-    }
+    if (reason) { setInlineMsg((p) => ({ ...p, [order.orderNumber]: reason })); return; }
     setInlineMsg((p) => ({ ...p, [order.orderNumber]: '' }));
-    setDialog({ type: 'return', orderNumber: order.orderNumber });
+    setReturnOrderNumber(order.orderNumber);
   }
 
-  async function handleConfirm() {
-    if (!dialog) return;
+  async function handleCancelConfirm() {
+    if (!cancelOrderNumber) return;
     setActionLoading(true);
     try {
-      let updatedOrder: any;
-      if (dialog.type === 'cancel') {
-        const res: any = await ordersService.cancelOrder(dialog.orderNumber);
-        updatedOrder = res.data?.data || res.data;
-      } else {
-        const res: any = await ordersService.requestReturn(dialog.orderNumber);
-        updatedOrder = res.data?.data || res.data;
-      }
-      if (updatedOrder) {
-        setOrders((prev) => prev.map((o) => o.orderNumber === dialog.orderNumber ? { ...o, ...updatedOrder } : o));
-      }
-      setDialog(null);
+      const res: any = await ordersService.cancelOrder(cancelOrderNumber);
+      const updated = res.data?.data || res.data;
+      if (updated) setOrders((prev) => prev.map((o) => o.orderNumber === cancelOrderNumber ? { ...o, ...updated } : o));
+      setCancelOrderNumber(null);
     } catch (err: any) {
-      const msg = err?.message || (dialog.type === 'cancel' ? 'Could not cancel order.' : 'Could not request return.');
-      setInlineMsg((p) => ({ ...p, [dialog.orderNumber]: msg }));
-      setDialog(null);
+      setInlineMsg((p) => ({ ...p, [cancelOrderNumber]: err?.message || 'Could not cancel order.' }));
+      setCancelOrderNumber(null);
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
+  async function handleReturnConfirm(reason: string) {
+    if (!returnOrderNumber) return;
+    setActionLoading(true);
+    try {
+      const res: any = await ordersService.requestReturn(returnOrderNumber, reason);
+      const updated = res.data?.data || res.data;
+      if (updated) setOrders((prev) => prev.map((o) => o.orderNumber === returnOrderNumber ? { ...o, ...updated } : o));
+      setReturnOrderNumber(null);
+    } catch (err: any) {
+      setInlineMsg((p) => ({ ...p, [returnOrderNumber]: err?.message || 'Could not submit return.' }));
+      setReturnOrderNumber(null);
     } finally {
       setActionLoading(false);
     }
@@ -152,15 +236,17 @@ export default function OrdersPage() {
   return (
     <>
       <AnimatePresence>
-        {dialog && (
-          <ConfirmDialog
-            message={
-              dialog.type === 'cancel'
-                ? 'Are you sure you want to cancel this order? This action cannot be undone.'
-                : 'Are you sure you want to request a return? Our team will review and contact you within 24 hours.'
-            }
-            onConfirm={handleConfirm}
-            onCancel={() => setDialog(null)}
+        {cancelOrderNumber && (
+          <CancelDialog
+            onConfirm={handleCancelConfirm}
+            onClose={() => setCancelOrderNumber(null)}
+            loading={actionLoading}
+          />
+        )}
+        {returnOrderNumber && (
+          <ReturnReasonModal
+            onConfirm={handleReturnConfirm}
+            onClose={() => setReturnOrderNumber(null)}
             loading={actionLoading}
           />
         )}
@@ -259,49 +345,38 @@ export default function OrdersPage() {
                               </div>
                             )}
 
-                            {/* Cancel / Return — always shown unless order is already terminal */}
+                            {/* Cancel / Return — always shown unless terminal */}
                             {!isTerminal && (
                               <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
                                 <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                                  {/* Cancel button */}
                                   <button
                                     onClick={() => handleCancelClick(order)}
                                     style={{
-                                      height: 36, padding: '0 18px',
-                                      background: 'none',
-                                      border: '1px solid rgba(220,38,38,0.4)',
-                                      fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase',
+                                      height: 36, padding: '0 18px', background: 'none',
+                                      border: '1px solid rgba(220,38,38,0.4)', fontSize: 11,
+                                      letterSpacing: '0.08em', textTransform: 'uppercase',
                                       cursor: cancelBlocked ? 'not-allowed' : 'pointer',
-                                      fontFamily: 'DM Sans, sans-serif',
-                                      color: '#DC2626',
-                                      opacity: cancelBlocked ? 0.4 : 1,
-                                      transition: 'opacity 0.2s',
+                                      fontFamily: 'DM Sans, sans-serif', color: '#DC2626',
+                                      opacity: cancelBlocked ? 0.4 : 1, transition: 'opacity 0.2s',
                                     }}>
                                     Cancel Order
                                   </button>
-
-                                  {/* Return button */}
                                   <button
                                     onClick={() => handleReturnClick(order)}
                                     style={{
-                                      height: 36, padding: '0 18px',
-                                      background: 'none',
-                                      border: '1px solid rgba(26,26,26,0.3)',
-                                      fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase',
+                                      height: 36, padding: '0 18px', background: 'none',
+                                      border: '1px solid rgba(26,26,26,0.3)', fontSize: 11,
+                                      letterSpacing: '0.08em', textTransform: 'uppercase',
                                       cursor: returnBlocked ? 'not-allowed' : 'pointer',
-                                      fontFamily: 'DM Sans, sans-serif',
-                                      color: '#1A1A1A',
-                                      opacity: returnBlocked ? 0.4 : 1,
-                                      transition: 'opacity 0.2s',
+                                      fontFamily: 'DM Sans, sans-serif', color: '#1A1A1A',
+                                      opacity: returnBlocked ? 0.4 : 1, transition: 'opacity 0.2s',
                                     }}>
                                     Request Return
                                   </button>
                                 </div>
 
-                                {/* Inline message — reason blocked or API error */}
                                 {msg && (
-                                  <motion.p
-                                    initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
+                                  <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
                                     style={{ fontSize: 12, color: '#9E9987', lineHeight: 1.6 }}>
                                     {msg}
                                   </motion.p>
