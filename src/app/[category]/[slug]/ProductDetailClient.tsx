@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Star, Heart, ChevronDown, ChevronUp, Share2 } from 'lucide-react';
+import { Heart, ChevronDown, ChevronUp, Share2 } from 'lucide-react';
 import { Product } from '@/types';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
@@ -268,14 +268,6 @@ export default function ProductDetailClient({ product }: Props) {
               {discount && <span style={{ fontSize: 11, color: '#2E7D32', fontWeight: 500 }}>{discount}% OFF</span>}
             </div>
 
-            {/* Rating */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 20, paddingBottom: 20, borderBottom: '1px solid var(--border)' }}>
-              <div style={{ display: 'flex', gap: 2 }}>
-                {[1,2,3,4,5].map((s) => <Star key={s} size={11} strokeWidth={1} fill={s <= Math.round(product.rating) ? 'var(--black)' : 'none'} color="var(--black)" />)}
-              </div>
-              <span style={{ fontSize: 12, color: 'var(--dust)' }}>{product.rating} ({product.reviews} reviews)</span>
-            </div>
-
             {/* Size */}
             <div style={{ marginBottom: 20 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
@@ -500,11 +492,6 @@ export default function ProductDetailClient({ product }: Props) {
                 <span style={{ fontSize: 26, fontWeight: 500 }}>{formatPrice(product.price)}</span>
                 {product.originalPrice && <span style={{ fontSize: 15, color: 'var(--dust)', textDecoration: 'line-through' }}>{formatPrice(product.originalPrice)}</span>}
                 {discount && <span style={{ fontSize: 12, color: 'var(--dust)', letterSpacing: '0.06em' }}>{discount}% off</span>}
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24 }}>
-                <div style={{ display: 'flex', gap: 2 }}>{[1,2,3,4,5].map((s) => <Star key={s} size={12} strokeWidth={1} fill={s <= Math.round(product.rating) ? 'var(--black)' : 'none'} color="var(--black)" />)}</div>
-                <span style={{ fontSize: 12, color: 'var(--dust)' }}>{product.rating} · {product.reviews} reviews</span>
               </div>
 
               <div style={{ borderTop: '1px solid var(--border)', paddingTop: 20, marginBottom: 24 }}>

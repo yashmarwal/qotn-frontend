@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Heart, Star } from 'lucide-react';
+import { Heart } from 'lucide-react';
 import { Product } from '@/types';
 import { useWishlist } from '@/context/WishlistContext';
 import { formatPrice } from '@/lib/utils';
@@ -72,16 +72,6 @@ export default function ProductCard({ product, variant = 'desktop' }: ProductCar
             <p style={{ fontSize: 12, fontWeight: 400, color: 'var(--black)', lineHeight: 1.3, marginBottom: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {product.name}
             </p>
-            {product.reviews > 0 && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 3, marginBottom: 4 }}>
-                <div style={{ display: 'flex', gap: 1 }}>
-                  {[1,2,3,4,5].map((s) => (
-                    <Star key={s} size={9} strokeWidth={1} fill={s <= Math.round(product.rating) ? '#1A1A1A' : 'none'} color="#1A1A1A" />
-                  ))}
-                </div>
-                <span style={{ fontSize: 9, color: 'var(--dust)' }}>({product.reviews})</span>
-              </div>
-            )}
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 5, marginBottom: 7, flexWrap: 'wrap' }}>
               <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--black)' }}>{formatPrice(product.price)}</span>
               {product.originalPrice && (

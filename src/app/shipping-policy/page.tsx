@@ -16,14 +16,6 @@ const deliveryCards = [
     highlight: true,
   },
   {
-    name: 'Express Delivery',
-    price: '₹199',
-    priceAlt: null,
-    time: '2–3 business days',
-    area: 'Metro cities',
-    highlight: false,
-  },
-  {
     name: 'Cash on Delivery',
     price: '+₹50 extra charge',
     priceAlt: null,

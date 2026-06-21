@@ -21,7 +21,7 @@ const sections = [
   },
   {
     heading: '4. Orders & Payment',
-    body: `4.1 All orders are subject to availability and confirmation.\n\n4.2 We accept UPI, Credit/Debit Cards, Net Banking, and Cash on Delivery.\n\n4.3 COD orders carry an additional charge of ₹50.\n\n4.4 We reserve the right to cancel any order at our discretion with a full refund.\n\n4.5 In case of payment failure, please do not place a duplicate order before confirming with us at hello@qotn.in.`,
+    body: `4.1 All orders are subject to availability and confirmation.\n\n4.2 We accept UPI, Credit/Debit Cards, Net Banking, and Cash on Delivery.\n\n4.3 COD orders carry an additional charge of ₹50.\n\n4.4 We reserve the right to cancel any order at our discretion with a full refund.\n\n4.5 In case of payment failure, please do not place a duplicate order before confirming with us at Helloqotn@gmail.com.`,
   },
   {
     heading: '5. Custom Stitching',
@@ -57,7 +57,7 @@ const sections = [
   },
   {
     heading: '13. Contact',
-    body: `For any questions regarding these terms:\nEmail: hello@qotn.in\nWebsite: qotn.in`,
+    body: `For any questions regarding these terms:\nEmail: Helloqotn@gmail.com\nWebsite: qotn.in`,
   },
 ];
 

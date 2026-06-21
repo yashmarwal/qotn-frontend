@@ -98,10 +98,10 @@ const jsonLd = {
   },
   address: {
     '@type': 'PostalAddress',
-    streetAddress: 'Ward No. 36, Saipura, Behind Homeopathic University',
+    streetAddress: 'Ward No. 64, Jain Nasiya Road, Near Manohar Palace',
     addressLocality: 'Sanganer, Jaipur',
     addressRegion: 'Rajasthan',
-    postalCode: '302029',
+    postalCode: '302033',
     addressCountry: 'IN',
   },
   sameAs: ['https://www.instagram.com/qotn.in'],
@@ -115,11 +115,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="msapplication-TileColor" content="#F5F0E8" />
         <meta name="msapplication-TileImage" content="/mstile-144x144.png" />
         <meta name="msapplication-config" content="/browserconfig.xml" />
-        {/* Explicit favicon links — ensures reliable display across all browsers */}
-        <link rel="icon" href="/favicon.ico" sizes="any" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="mask-icon" href="/logo-cream-on-black.png" color="#1A1A1A" />
         <Script
           id="schema-org"

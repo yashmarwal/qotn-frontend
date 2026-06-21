@@ -45,7 +45,7 @@ function ContactInfo() {
           <div>
             <p style={{ fontSize: 10, letterSpacing: '0.10em', textTransform: 'uppercase', color: 'var(--dust)', marginBottom: 6 }}>Office</p>
             <p style={{ fontSize: 14, lineHeight: 1.8, color: 'var(--black)' }}>
-              Ward No. 36, Saipura<br />Behind Homeopathic University<br />Sanganer, Jaipur (Rajasthan)<br />Pincode: 302029
+              Ward No. 64, Jain Nasiya Road<br />Near Manohar Palace, Sanganer<br />Jaipur (Rajasthan)<br />Pincode: 302033
             </p>
           </div>
         </div>
