@@ -27,7 +27,7 @@ function ContactInfo() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
           {[
             { icon: Mail, label: 'Email', value: 'Helloqotn@gmail.com' },
-            { icon: AtSign, label: 'Instagram', value: '@shopqotn' },
+            { icon: AtSign, label: 'Instagram', value: '@qotn.in' },
           ].map(({ icon: Icon, label, value }) => (
             <div key={label} style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
               <Icon size={15} strokeWidth={1.5} color="var(--dust)" style={{ marginTop: 2, flexShrink: 0 }} />

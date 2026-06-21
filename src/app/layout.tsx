@@ -104,7 +104,7 @@ const jsonLd = {
     postalCode: '302029',
     addressCountry: 'IN',
   },
-  sameAs: ['https://www.instagram.com/shopqotn'],
+  sameAs: ['https://www.instagram.com/qotn.in'],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
