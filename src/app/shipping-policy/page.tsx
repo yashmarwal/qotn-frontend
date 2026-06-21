@@ -40,7 +40,7 @@ const sections = [
   },
   {
     heading: 'Damaged in Transit',
-    body: `If your order arrives damaged due to transit, please contact us within 24 hours at hello@qotn.in with photos. We will arrange a replacement at no extra cost.`,
+    body: `If your order arrives damaged due to transit, please contact us within 24 hours at Helloqotn@gmail.com with photos. We will arrange a replacement at no extra cost.`,
   },
   {
     heading: 'Custom Stitching Orders',
@@ -93,7 +93,7 @@ export default function ShippingPolicyPage() {
         <div style={{ borderTop: '1px solid rgba(26,26,26,0.12)', marginTop: 40, paddingTop: 32 }}>
           <p style={{ fontSize: 13, color: '#9E9987' }}>
             Questions?{' '}
-            <a href="mailto:hello@qotn.in" style={{ color: '#1A1A1A', textDecoration: 'underline' }}>hello@qotn.in</a>
+            <a href="mailto:Helloqotn@gmail.com" style={{ color: '#1A1A1A', textDecoration: 'underline' }}>Helloqotn@gmail.com</a>
           </p>
         </div>
       </div>

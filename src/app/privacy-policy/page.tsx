@@ -29,11 +29,11 @@ const sections = [
   },
   {
     heading: '6. Your Rights',
-    body: `You have the right to:\n\n• Access your personal data\n• Request correction of incorrect data\n• Request deletion of your account and data\n• Unsubscribe from marketing emails\n\nTo exercise these rights, email us at hello@qotn.in`,
+    body: `You have the right to:\n\n• Access your personal data\n• Request correction of incorrect data\n• Request deletion of your account and data\n• Unsubscribe from marketing emails\n\nTo exercise these rights, email us at Helloqotn@gmail.com`,
   },
   {
     heading: '7. Contact',
-    body: `For privacy related queries: hello@qotn.in`,
+    body: `For privacy related queries: Helloqotn@gmail.com`,
   },
 ];
 

@@ -20,16 +20,19 @@ const STATUS_COLOR: Record<string, string> = {
   REFUNDED: '#6B7280',
 };
 
-function canCancel(order: any): boolean {
-  if (!['PENDING', 'CONFIRMED'].includes(order.status)) return false;
-  if (order.customStitching && order.customStitching.length > 0) return false;
-  return true;
+const TERMINAL = ['CANCELLED', 'RETURNED', 'REFUNDED'];
+
+// Returns null if the action is allowed, or a reason string if blocked.
+function cancelBlockReason(order: any): string | null {
+  if (order.customStitching?.length > 0) return 'Custom stitched orders cannot be cancelled.';
+  if (!['PENDING', 'CONFIRMED'].includes(order.status)) return 'Order cannot be cancelled after it has been dispatched.';
+  return null;
 }
 
-function canReturn(order: any): boolean {
-  if (order.status !== 'DELIVERED') return false;
-  if (order.customStitching && order.customStitching.length > 0) return false;
-  return true;
+function returnBlockReason(order: any): string | null {
+  if (order.customStitching?.length > 0) return 'Custom stitched orders cannot be returned.';
+  if (order.status !== 'DELIVERED') return 'Return can only be requested after delivery.';
+  return null;
 }
 
 interface ConfirmDialogProps {
@@ -74,12 +77,10 @@ export default function OrdersPage() {
   const [error, setError] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const [dialog, setDialog] = useState<{
-    type: 'cancel' | 'return';
-    orderNumber: string;
-  } | null>(null);
+  const [dialog, setDialog] = useState<{ type: 'cancel' | 'return'; orderNumber: string } | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
-  const [actionError, setActionError] = useState<Record<string, string>>({});
+  // Per-order inline message (reason blocked or API error)
+  const [inlineMsg, setInlineMsg] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) router.replace('/account');
@@ -92,6 +93,26 @@ export default function OrdersPage() {
       .catch(() => setError('Unable to load orders. Please try again.'))
       .finally(() => setFetching(false));
   }, [isAuthenticated]);
+
+  function handleCancelClick(order: any) {
+    const reason = cancelBlockReason(order);
+    if (reason) {
+      setInlineMsg((p) => ({ ...p, [order.orderNumber]: reason }));
+      return;
+    }
+    setInlineMsg((p) => ({ ...p, [order.orderNumber]: '' }));
+    setDialog({ type: 'cancel', orderNumber: order.orderNumber });
+  }
+
+  function handleReturnClick(order: any) {
+    const reason = returnBlockReason(order);
+    if (reason) {
+      setInlineMsg((p) => ({ ...p, [order.orderNumber]: reason }));
+      return;
+    }
+    setInlineMsg((p) => ({ ...p, [order.orderNumber]: '' }));
+    setDialog({ type: 'return', orderNumber: order.orderNumber });
+  }
 
   async function handleConfirm() {
     if (!dialog) return;
@@ -111,7 +132,7 @@ export default function OrdersPage() {
       setDialog(null);
     } catch (err: any) {
       const msg = err?.message || (dialog.type === 'cancel' ? 'Could not cancel order.' : 'Could not request return.');
-      setActionError((prev) => ({ ...prev, [dialog.orderNumber]: msg }));
+      setInlineMsg((p) => ({ ...p, [dialog.orderNumber]: msg }));
       setDialog(null);
     } finally {
       setActionLoading(false);
@@ -178,117 +199,122 @@ export default function OrdersPage() {
             </motion.div>
           ) : (
             <div style={{ borderTop: '1px solid rgba(26,26,26,0.1)' }}>
-              {orders.map((order: any, idx: number) => (
-                <motion.div key={order.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: idx * 0.05 }}
-                  style={{ borderBottom: '1px solid rgba(26,26,26,0.1)' }}>
-                  <button onClick={() => setExpandedId(expandedId === order.id ? null : order.id)}
-                    style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '22px 0', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', textAlign: 'left' }}>
-                    <div>
-                      <p style={{ fontSize: 14, color: '#1A1A1A', fontWeight: 500, marginBottom: 5 }}>
-                        Order #{order.orderNumber || order.id?.slice(0, 8).toUpperCase()}
-                      </p>
-                      <p style={{ fontSize: 12, color: '#9E9987' }}>
-                        {order.createdAt ? new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}
-                        &nbsp;·&nbsp;{formatPrice(order.total || order.grandTotal || 0)}
-                      </p>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexShrink: 0 }}>
-                      <span style={{ fontSize: 10, letterSpacing: '0.10em', textTransform: 'uppercase', color: STATUS_COLOR[order.status] || '#9E9987', fontWeight: 600 }}>
-                        {order.status || 'PENDING'}
-                      </span>
-                      <motion.div animate={{ rotate: expandedId === order.id ? 180 : 0 }} transition={{ duration: 0.2 }}>
-                        <ChevronDown size={14} strokeWidth={1.5} color="#9E9987" />
-                      </motion.div>
-                    </div>
-                  </button>
+              {orders.map((order: any, idx: number) => {
+                const cancelBlocked = cancelBlockReason(order);
+                const returnBlocked = returnBlockReason(order);
+                const isTerminal = TERMINAL.includes(order.status);
+                const msg = inlineMsg[order.orderNumber];
 
-                  <AnimatePresence>
-                    {expandedId === order.id && (
-                      <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.25, ease: 'easeOut' }} style={{ overflow: 'hidden' }}>
-                        <div style={{ paddingBottom: 24, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                          {(order.items || order.orderItems || []).map((item: any, i: number) => (
-                            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
-                              <span style={{ color: '#1A1A1A' }}>
-                                {item.productName || item.product?.name || item.name || 'Item'}
-                                {(item.variant?.size || item.size) && (
-                                  <span style={{ color: '#9E9987' }}> — {item.variant?.size || item.size}</span>
-                                )}
-                                <span style={{ color: '#9E9987' }}> × {item.quantity}</span>
-                              </span>
-                              <span style={{ color: '#1A1A1A' }}>{formatPrice((item.price || 0) * (item.quantity || 1))}</span>
-                            </div>
-                          ))}
+                return (
+                  <motion.div key={order.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: idx * 0.05 }}
+                    style={{ borderBottom: '1px solid rgba(26,26,26,0.1)' }}>
+                    <button onClick={() => setExpandedId(expandedId === order.id ? null : order.id)}
+                      style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '22px 0', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', textAlign: 'left' }}>
+                      <div>
+                        <p style={{ fontSize: 14, color: '#1A1A1A', fontWeight: 500, marginBottom: 5 }}>
+                          Order #{order.orderNumber || order.id?.slice(0, 8).toUpperCase()}
+                        </p>
+                        <p style={{ fontSize: 12, color: '#9E9987' }}>
+                          {order.createdAt ? new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}
+                          &nbsp;·&nbsp;{formatPrice(order.total || order.grandTotal || 0)}
+                        </p>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexShrink: 0 }}>
+                        <span style={{ fontSize: 10, letterSpacing: '0.10em', textTransform: 'uppercase', color: STATUS_COLOR[order.status] || '#9E9987', fontWeight: 600 }}>
+                          {order.status || 'PENDING'}
+                        </span>
+                        <motion.div animate={{ rotate: expandedId === order.id ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                          <ChevronDown size={14} strokeWidth={1.5} color="#9E9987" />
+                        </motion.div>
+                      </div>
+                    </button>
 
-                          {order.address && (
-                            <div style={{ marginTop: 10, paddingTop: 14, borderTop: '1px solid rgba(26,26,26,0.08)', fontSize: 12, color: '#9E9987', lineHeight: 1.75 }}>
-                              <p style={{ fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 6, color: '#C8C3BA' }}>Delivery Address</p>
-                              <p>
-                                {order.address.addressLine1}
-                                {order.address.addressLine2 ? `, ${order.address.addressLine2}` : ''}
-                                , {order.address.city}, {order.address.state} {order.address.pincode}
-                              </p>
-                            </div>
-                          )}
+                    <AnimatePresence>
+                      {expandedId === order.id && (
+                        <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.25, ease: 'easeOut' }} style={{ overflow: 'hidden' }}>
+                          <div style={{ paddingBottom: 24, display: 'flex', flexDirection: 'column', gap: 8 }}>
 
-                          {/* Action error */}
-                          {actionError[order.orderNumber] && (
-                            <p style={{ fontSize: 12, color: '#DC2626', marginTop: 8 }}>{actionError[order.orderNumber]}</p>
-                          )}
+                            {(order.items || order.orderItems || []).map((item: any, i: number) => (
+                              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
+                                <span style={{ color: '#1A1A1A' }}>
+                                  {item.productName || item.product?.name || item.name || 'Item'}
+                                  {(item.variant?.size || item.size) && (
+                                    <span style={{ color: '#9E9987' }}> — {item.variant?.size || item.size}</span>
+                                  )}
+                                  <span style={{ color: '#9E9987' }}> × {item.quantity}</span>
+                                </span>
+                                <span style={{ color: '#1A1A1A' }}>{formatPrice((item.price || 0) * (item.quantity || 1))}</span>
+                              </div>
+                            ))}
 
-                          {/* Cancel / Return buttons */}
-                          <div style={{ display: 'flex', gap: 10, marginTop: 14, flexWrap: 'wrap' }}>
-                            {canCancel(order) && (
-                              <button
-                                onClick={() => {
-                                  setActionError((p) => ({ ...p, [order.orderNumber]: '' }));
-                                  setDialog({ type: 'cancel', orderNumber: order.orderNumber });
-                                }}
-                                style={{
-                                  height: 36, padding: '0 18px', background: 'none',
-                                  border: '1px solid rgba(220,38,38,0.4)', fontSize: 11,
-                                  letterSpacing: '0.08em', textTransform: 'uppercase',
-                                  cursor: 'pointer', fontFamily: 'DM Sans, sans-serif',
-                                  color: '#DC2626',
-                                }}>
-                                Cancel Order
-                              </button>
+                            {order.address && (
+                              <div style={{ marginTop: 10, paddingTop: 14, borderTop: '1px solid rgba(26,26,26,0.08)', fontSize: 12, color: '#9E9987', lineHeight: 1.75 }}>
+                                <p style={{ fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 6, color: '#C8C3BA' }}>Delivery Address</p>
+                                <p>
+                                  {order.address.addressLine1}
+                                  {order.address.addressLine2 ? `, ${order.address.addressLine2}` : ''}
+                                  , {order.address.city}, {order.address.state} {order.address.pincode}
+                                </p>
+                              </div>
                             )}
-                            {canReturn(order) && (
-                              <button
-                                onClick={() => {
-                                  setActionError((p) => ({ ...p, [order.orderNumber]: '' }));
-                                  setDialog({ type: 'return', orderNumber: order.orderNumber });
-                                }}
-                                style={{
-                                  height: 36, padding: '0 18px', background: 'none',
-                                  border: '1px solid rgba(26,26,26,0.3)', fontSize: 11,
-                                  letterSpacing: '0.08em', textTransform: 'uppercase',
-                                  cursor: 'pointer', fontFamily: 'DM Sans, sans-serif',
-                                  color: '#1A1A1A',
-                                }}>
-                                Request Return
-                              </button>
+
+                            {/* Cancel / Return — always shown unless order is already terminal */}
+                            {!isTerminal && (
+                              <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                                  {/* Cancel button */}
+                                  <button
+                                    onClick={() => handleCancelClick(order)}
+                                    style={{
+                                      height: 36, padding: '0 18px',
+                                      background: 'none',
+                                      border: '1px solid rgba(220,38,38,0.4)',
+                                      fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase',
+                                      cursor: cancelBlocked ? 'not-allowed' : 'pointer',
+                                      fontFamily: 'DM Sans, sans-serif',
+                                      color: '#DC2626',
+                                      opacity: cancelBlocked ? 0.4 : 1,
+                                      transition: 'opacity 0.2s',
+                                    }}>
+                                    Cancel Order
+                                  </button>
+
+                                  {/* Return button */}
+                                  <button
+                                    onClick={() => handleReturnClick(order)}
+                                    style={{
+                                      height: 36, padding: '0 18px',
+                                      background: 'none',
+                                      border: '1px solid rgba(26,26,26,0.3)',
+                                      fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase',
+                                      cursor: returnBlocked ? 'not-allowed' : 'pointer',
+                                      fontFamily: 'DM Sans, sans-serif',
+                                      color: '#1A1A1A',
+                                      opacity: returnBlocked ? 0.4 : 1,
+                                      transition: 'opacity 0.2s',
+                                    }}>
+                                    Request Return
+                                  </button>
+                                </div>
+
+                                {/* Inline message — reason blocked or API error */}
+                                {msg && (
+                                  <motion.p
+                                    initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
+                                    style={{ fontSize: 12, color: '#9E9987', lineHeight: 1.6 }}>
+                                    {msg}
+                                  </motion.p>
+                                )}
+                              </div>
                             )}
                           </div>
-
-                          {/* Return eligibility notice */}
-                          {order.status === 'DELIVERED' && order.customStitching?.length > 0 && (
-                            <p style={{ fontSize: 11, color: '#9E9987', marginTop: 4 }}>
-                              Custom stitched orders are non-returnable.
-                            </p>
-                          )}
-                          {order.status === 'SHIPPED' && (
-                            <p style={{ fontSize: 11, color: '#9E9987', marginTop: 4 }}>
-                              Order is dispatched and can no longer be cancelled.
-                            </p>
-                          )}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </motion.div>
-              ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                );
+              })}
             </div>
           )}
         </div>

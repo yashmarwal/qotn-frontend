@@ -124,7 +124,7 @@ td{padding:1.5mm 1mm;border-bottom:1px dashed #ccc;vertical-align:top;line-heigh
   <div>
     <div class="addr-lbl">From</div>
     <div style="font-weight:600">QOTN</div>
-    <div>hello@qotn.in</div>
+    <div>Helloqotn@gmail.com</div>
     <div>qotn.in</div>
   </div>
 </div>
@@ -156,7 +156,7 @@ td{padding:1.5mm 1mm;border-bottom:1px dashed #ccc;vertical-align:top;line-heigh
 ${stitchingSection}
 
 <div class="footer">
-  QOTN · qotn.in · hello@qotn.in · Pure Cotton. Nothing Else.<br>
+  QOTN · qotn.in · Helloqotn@gmail.com · Pure Cotton. Nothing Else.<br>
   Returns within 24 hrs (damaged items only) · No returns on custom orders
 </div>
 

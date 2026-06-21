@@ -13,7 +13,7 @@ const sections = [
   },
   {
     heading: 'Damaged Items Only',
-    body: `We only accept returns for items that arrive damaged or defective. If your item arrives in a damaged condition, please email us at hello@qotn.in within 24 hours with:\n\n• Your order number\n• Clear photos of the damaged item\n• A brief description of the damage\n\nWe will review your request and respond within 24 hours.`,
+    body: `We only accept returns for items that arrive damaged or defective. If your item arrives in a damaged condition, please email us at Helloqotn@gmail.com within 24 hours with:\n\n• Your order number\n• Clear photos of the damaged item\n• A brief description of the damage\n\nWe will review your request and respond within 24 hours.`,
   },
   {
     heading: 'No Returns on Custom Stitched Orders',
@@ -29,7 +29,7 @@ const sections = [
   },
   {
     heading: 'Contact Us',
-    body: `For return requests: hello@qotn.in\nPlease mention your order number in the subject line.`,
+    body: `For return requests: Helloqotn@gmail.com\nPlease mention your order number in the subject line.`,
   },
 ];
 
@@ -58,7 +58,7 @@ export default function ReturnPolicyPage() {
         <div style={{ borderTop: '1px solid rgba(26,26,26,0.12)', marginTop: 40, paddingTop: 32 }}>
           <p style={{ fontSize: 13, color: '#9E9987' }}>
             Questions?{' '}
-            <a href="mailto:hello@qotn.in" style={{ color: '#1A1A1A', textDecoration: 'underline' }}>hello@qotn.in</a>
+            <a href="mailto:Helloqotn@gmail.com" style={{ color: '#1A1A1A', textDecoration: 'underline' }}>Helloqotn@gmail.com</a>
           </p>
         </div>
       </div>
