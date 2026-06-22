@@ -41,6 +41,11 @@ function cancelBlockReason(order: any): string | null {
 function returnBlockReason(order: any): string | null {
   if (order.customStitching?.length > 0) return 'Custom stitched orders cannot be returned.';
   if (order.status !== 'DELIVERED') return 'Return can only be requested after delivery.';
+  const deliveredEntry = (order.timeline || []).find((t: any) => t.status === 'DELIVERED');
+  if (deliveredEntry) {
+    const hours = (Date.now() - new Date(deliveredEntry.createdAt).getTime()) / (1000 * 60 * 60);
+    if (hours > 24) return 'Return window has closed. Returns must be requested within 24 hours of delivery.';
+  }
   return null;
 }
 
