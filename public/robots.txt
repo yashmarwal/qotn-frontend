@@ -1,9 +1,16 @@
 User-agent: *
 Allow: /
+
 Disallow: /admin
 Disallow: /api
 Disallow: /checkout
 Disallow: /account
 Disallow: /order-confirmation
+Disallow: /orders
+Disallow: /addresses
+Disallow: /wishlist
+Disallow: /track
+Disallow: /verify-email
+Disallow: /reset-password
 
 Sitemap: https://qotn.in/sitemap.xml

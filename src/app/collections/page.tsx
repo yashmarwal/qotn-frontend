@@ -3,8 +3,14 @@ import Image from 'next/image';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Collections — QOTN',
-  description: 'Explore our curated collections of pure cotton apparel.',
+  title: 'Collections — Pure Cotton Curated Sets | QOTN',
+  description: 'Explore QOTN curated collections of 100% pure cotton apparel for men, women and kids. Each collection is thoughtfully put together — no blends, no shortcuts.',
+  alternates: { canonical: 'https://qotn.in/collections' },
+  openGraph: {
+    title: 'Collections — Pure Cotton Curated Sets | QOTN',
+    description: 'Explore QOTN curated collections of 100% pure cotton apparel for men, women and kids.',
+    url: 'https://qotn.in/collections',
+  },
 };
 
 const API =

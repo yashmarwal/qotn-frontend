@@ -3,6 +3,12 @@ import { notFound } from 'next/navigation';
 
 const VALID_CATEGORIES = new Set(['men', 'women', 'kids']);
 
+const categoryLabels: Record<string, string> = {
+  men: "Men's",
+  women: "Women's",
+  kids: "Kids'",
+};
+
 const meta: Record<string, { title: string; description: string }> = {
   men: {
     title: "Men's Pure Cotton Clothing — Shirts, Kurtas, T-Shirts | QOTN",
@@ -34,6 +40,7 @@ export async function generateMetadata({
   return {
     title: m.title,
     description: m.description,
+    alternates: { canonical: `https://qotn.in/${category}` },
     openGraph: { title: m.title, description: m.description, url: `https://qotn.in/${category}` },
   };
 }
@@ -49,5 +56,24 @@ export default async function CategoryLayout({
   if (!VALID_CATEGORIES.has(category)) {
     notFound();
   }
-  return <>{children}</>;
+
+  const label = categoryLabels[category] || category;
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://qotn.in' },
+      { '@type': 'ListItem', position: 2, name: label, item: `https://qotn.in/${category}` },
+    ],
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      {children}
+    </>
+  );
 }

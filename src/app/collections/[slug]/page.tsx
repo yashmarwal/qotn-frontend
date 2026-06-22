@@ -23,9 +23,19 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const col = await getCollection(slug);
   if (!col) return { title: 'Collection Not Found — QOTN' };
+  const title = `${col.name} — Pure Cotton Collection | QOTN`;
+  const description = col.description || `Shop ${col.name} — 100% pure cotton apparel. Made in India. No blends.`;
+  const url = `https://qotn.in/collections/${slug}`;
   return {
-    title: `${col.name} — QOTN Collections`,
-    description: col.description || `Shop ${col.name} — pure cotton apparel.`,
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      title,
+      description,
+      url,
+      images: col.thumbnail ? [{ url: col.thumbnail, alt: col.name }] : [],
+    },
   };
 }
 
