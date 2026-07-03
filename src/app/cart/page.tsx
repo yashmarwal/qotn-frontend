@@ -4,7 +4,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Minus, Plus, Trash2, ShoppingBag } from 'lucide-react';
-import { useState } from 'react';
 import { useCart } from '@/context/CartContext';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { formatPrice } from '@/lib/utils';
@@ -20,24 +19,11 @@ const btnStyle = (full?: boolean): React.CSSProperties => ({
 export default function CartPage() {
   const { items, removeItem, updateQuantity, totalPrice, totalItems } = useCart();
   const isMobile = useIsMobile();
-  const [discountCode, setDiscountCode] = useState('');
-  const [discountApplied, setDiscountApplied] = useState(false);
-
   // All values in paise
   const stitchingCharge = items.filter(i => i.customStitchingId).length * 24900;
-  const subtotal = totalPrice; // already in paise from CartContext
+  const subtotal = totalPrice;
   const shipping = subtotal + stitchingCharge >= 149900 ? 0 : 9900;
-  const discount = discountApplied ? Math.round((subtotal + stitchingCharge) * 0.1) : 0;
-  const total = subtotal + stitchingCharge + shipping - discount;
-
-  const applyDiscount = () => {
-    if (discountCode.toUpperCase() === 'COTTON10') setDiscountApplied(true);
-  };
-
-  const inputStyle: React.CSSProperties = {
-    padding: '10px 14px', border: '1px solid var(--border)', background: 'var(--cream)',
-    fontSize: 12, outline: 'none', color: 'var(--black)', fontFamily: 'DM Sans, sans-serif',
-  };
+  const total = subtotal + stitchingCharge + shipping;
 
   const EmptyState = () => (
     <div style={{ textAlign: 'center', padding: '80px 0' }}>
@@ -67,20 +53,6 @@ export default function CartPage() {
           <span style={{ fontSize: 13, color: 'var(--dust)' }}>Shipping</span>
           <span style={{ fontSize: 13 }}>{shipping === 0 ? 'FREE' : formatPrice(shipping)}</span>
         </div>
-        {discountApplied && (
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: 13, color: 'var(--dust)' }}>Discount (10%)</span>
-            <span style={{ fontSize: 13, color: 'var(--dust)' }}>−{formatPrice(discount)}</span>
-          </div>
-        )}
-      </div>
-      <div style={{ display: 'flex', marginBottom: 20 }}>
-        <input value={discountCode} onChange={(e) => setDiscountCode(e.target.value)} placeholder="Discount code" disabled={discountApplied}
-          style={{ ...inputStyle, flex: 1, borderRight: 'none' }} />
-        <button onClick={applyDiscount} disabled={discountApplied}
-          style={{ padding: '10px 14px', background: discountApplied ? 'var(--border)' : 'var(--black)', color: discountApplied ? 'var(--dust)' : 'var(--cream)', border: 'none', fontSize: 11, letterSpacing: '0.08em', cursor: discountApplied ? 'default' : 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
-          {discountApplied ? 'Applied' : 'Apply'}
-        </button>
       </div>
       <div style={{ borderTop: '1px solid var(--border)', paddingTop: 14, marginBottom: 20 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
