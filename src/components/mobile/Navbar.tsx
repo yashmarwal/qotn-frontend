@@ -59,7 +59,6 @@ export default function MobileNavbar() {
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [trendingNames, setTrendingNames] = useState<string[]>([]);
   const [pillNames, setPillNames] = useState<string[]>([]);
-  const [fadingPill, setFadingPill] = useState(-1);
   const nextPillRef = useRef(0);
   const searchDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
   const router = useRouter();
@@ -132,25 +131,21 @@ export default function MobileNavbar() {
     setRecentSearches([]);
   };
 
-  // One pill changes at a time every 2s
+  // One pill slot changes at a time every 2.2s, slide-up animation handled by AnimatePresence key change
   useEffect(() => {
     if (!searchOpen || trendingNames.length <= TRENDING_SHOW || pillNames.length < TRENDING_SHOW) return;
     const t = setInterval(() => {
       const slot = nextPillRef.current % TRENDING_SHOW;
       nextPillRef.current += 1;
-      setFadingPill(slot);
-      setTimeout(() => {
-        setPillNames(prev => {
-          const available = trendingNames.filter(n => !prev.includes(n));
-          if (!available.length) return prev;
-          const next = available[Math.floor(Math.random() * available.length)];
-          const updated = [...prev];
-          updated[slot] = next;
-          return updated;
-        });
-        setFadingPill(-1);
-      }, 220);
-    }, 2000);
+      setPillNames(prev => {
+        const available = trendingNames.filter(n => !prev.includes(n));
+        if (!available.length) return prev;
+        const next = available[Math.floor(Math.random() * available.length)];
+        const updated = [...prev];
+        updated[slot] = next;
+        return updated;
+      });
+    }, 2200);
     return () => clearInterval(t);
   }, [searchOpen, trendingNames.length, pillNames.length]);
 
@@ -308,10 +303,20 @@ export default function MobileNavbar() {
                       </div>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                         {pillNames.map((name, idx) => (
-                          <button key={idx} onClick={() => { setSearchQuery(name); runSearch(name); }}
-                            style={{ padding: '8px 14px', border: '1px solid var(--border)', background: 'transparent', fontSize: 13, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', borderRadius: 20, color: 'var(--black)', opacity: fadingPill === idx ? 0 : 1, transition: 'opacity 0.22s ease' }}>
-                            {name}
-                          </button>
+                          <div key={idx} style={{ overflow: 'hidden', display: 'inline-flex', borderRadius: 20, border: '1px solid var(--border)' }}>
+                            <AnimatePresence mode="wait" initial={false}>
+                              <motion.button
+                                key={`${idx}-${name}`}
+                                initial={{ y: 14, opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
+                                exit={{ y: -14, opacity: 0 }}
+                                transition={{ duration: 0.22, ease: 'easeOut' }}
+                                onClick={() => { setSearchQuery(name); runSearch(name); }}
+                                style={{ padding: '8px 14px', border: 'none', background: 'transparent', fontSize: 13, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', color: 'var(--black)', display: 'block' }}>
+                                {name}
+                              </motion.button>
+                            </AnimatePresence>
+                          </div>
                         ))}
                       </div>
                     </div>
