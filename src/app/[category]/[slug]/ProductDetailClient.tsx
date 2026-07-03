@@ -467,8 +467,8 @@ export default function ProductDetailClient({ product }: Props) {
           <div style={{ display: 'grid', gridTemplateColumns: '58% 42%', gap: 64, alignItems: 'start' }}>
             {/* Images */}
             <div>
-              <div style={{ position: 'relative', aspectRatio: '3/4', backgroundColor: 'var(--raw-cotton)', overflow: 'hidden' }}>
-                <Image src={product.images[activeImage]} alt={product.name} fill style={{ objectFit: 'cover' }} sizes="58vw" priority />
+              <div style={{ position: 'relative', aspectRatio: '1/1', backgroundColor: 'var(--raw-cotton)', overflow: 'hidden' }}>
+                <Image src={product.images[activeImage]} alt={product.name} fill style={{ objectFit: 'contain' }} sizes="58vw" priority />
                 {(product.isNew || product.isBestseller) && (
                   <span style={{ position: 'absolute', top: 16, left: 16, background: 'var(--black)', color: 'var(--cream)', fontSize: 9, fontWeight: 500, letterSpacing: '0.12em', textTransform: 'uppercase', padding: '4px 10px' }}>
                     {product.isNew ? 'New' : 'Bestseller'}
@@ -478,8 +478,8 @@ export default function ProductDetailClient({ product }: Props) {
               <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
                 {product.images.map((img, i) => (
                   <button key={i} onClick={() => setActiveImage(i)}
-                    style={{ position: 'relative', width: 80, height: 100, padding: 0, border: activeImage === i ? '1px solid var(--black)' : '1px solid transparent', cursor: 'pointer', background: 'var(--raw-cotton)', overflow: 'hidden', flexShrink: 0, transition: 'border-color 0.15s' }}>
-                    <Image src={img} alt={`${product.name} ${i + 1}`} fill style={{ objectFit: 'cover', opacity: activeImage === i ? 1 : 0.65 }} sizes="80px" />
+                    style={{ position: 'relative', width: 72, height: 72, padding: 0, border: activeImage === i ? '1px solid var(--black)' : '1px solid transparent', cursor: 'pointer', background: 'var(--raw-cotton)', overflow: 'hidden', flexShrink: 0, transition: 'border-color 0.15s' }}>
+                    <Image src={img} alt={`${product.name} ${i + 1}`} fill style={{ objectFit: 'contain', opacity: activeImage === i ? 1 : 0.65 }} sizes="72px" />
                   </button>
                 ))}
               </div>

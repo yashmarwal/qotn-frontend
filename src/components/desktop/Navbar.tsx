@@ -55,9 +55,10 @@ export default function DesktopNavbar() {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [searching, setSearching] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
-  const [trendingNames, setTrendingNames] = useState<string[]>([]);
-  const [trendingIdx, setTrendingIdx] = useState(0);
-  const [trendingFade, setTrendingFade] = useState(true);
+  const [trendingNames, setTrendingNames] = useState<string[]>([]);   // full fetched list
+  const [pillNames, setPillNames] = useState<string[]>([]);           // currently displayed pills
+  const [fadingPill, setFadingPill] = useState(-1);                   // index of pill fading out (-1 = none)
+  const nextPillRef = useRef(0);                                      // which slot changes next
   const searchDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
   const router = useRouter();
   const { totalItems, openCart } = useCart();
@@ -102,12 +103,15 @@ export default function DesktopNavbar() {
     setSearchResults([]);
     setSearchOpen(true);
     setRecentSearches(getRecent());
-    setTrendingIdx(0);
-    setTrendingFade(true);
+    nextPillRef.current = 0;
     if (trendingNames.length === 0) {
       fetch(`${API}/products?limit=40&page=1`)
         .then(r => r.json())
-        .then(d => setTrendingNames((d.data || []).map((p: any) => p.name).filter(Boolean)))
+        .then(d => {
+          const names: string[] = (d.data || []).map((p: any) => p.name).filter(Boolean);
+          setTrendingNames(names);
+          setPillNames(names.slice(0, TRENDING_SHOW));
+        })
         .catch(() => {});
     }
   };
@@ -130,23 +134,27 @@ export default function DesktopNavbar() {
     setRecentSearches([]);
   };
 
-  // Rotate trending pills every 2s when search is open
+  // One pill changes at a time, every 2s — staggered feel
   useEffect(() => {
-    if (!searchOpen || trendingNames.length <= TRENDING_SHOW) return;
+    if (!searchOpen || trendingNames.length <= TRENDING_SHOW || pillNames.length < TRENDING_SHOW) return;
     const t = setInterval(() => {
-      setTrendingFade(false);
+      const slot = nextPillRef.current % TRENDING_SHOW;
+      nextPillRef.current += 1;
+      setFadingPill(slot);
       setTimeout(() => {
-        setTrendingIdx(i => (i + TRENDING_SHOW) % trendingNames.length);
-        setTrendingFade(true);
-      }, 200);
+        setPillNames(prev => {
+          const available = trendingNames.filter(n => !prev.includes(n));
+          if (!available.length) return prev;
+          const next = available[Math.floor(Math.random() * available.length)];
+          const updated = [...prev];
+          updated[slot] = next;
+          return updated;
+        });
+        setFadingPill(-1);
+      }, 220);
     }, 2000);
     return () => clearInterval(t);
-  }, [searchOpen, trendingNames.length]);
-
-  const visibleTrending = Array.from(
-    { length: Math.min(TRENDING_SHOW, trendingNames.length) },
-    (_, i) => trendingNames[(trendingIdx + i) % trendingNames.length]
-  );
+  }, [searchOpen, trendingNames.length, pillNames.length]);
 
   const iconBtn: React.CSSProperties = {
     background: 'none', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -245,17 +253,17 @@ export default function DesktopNavbar() {
                       </div>
                     </div>
                   )}
-                  {/* Trending — dynamic from real products, rotates every 2s */}
-                  {visibleTrending.length > 0 && (
+                  {/* Trending — real product names, one pill changes at a time */}
+                  {pillNames.length > 0 && (
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 14 }}>
                         <TrendingUp size={11} strokeWidth={1.5} color="var(--dust)" />
                         <p style={{ fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--dust)' }}>TRENDING</p>
                       </div>
-                      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', opacity: trendingFade ? 1 : 0, transition: 'opacity 0.2s ease' }}>
-                        {visibleTrending.map(name => (
-                          <button key={name} onClick={() => { setSearchQuery(name); runSearch(name); }}
-                            style={{ padding: '8px 16px', border: '1px solid var(--border)', background: 'transparent', fontSize: 13, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', borderRadius: 20, color: 'var(--black)' }}>
+                      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                        {pillNames.map((name, idx) => (
+                          <button key={idx} onClick={() => { setSearchQuery(name); runSearch(name); }}
+                            style={{ padding: '8px 16px', border: '1px solid var(--border)', background: 'transparent', fontSize: 13, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', borderRadius: 20, color: 'var(--black)', opacity: fadingPill === idx ? 0 : 1, transition: 'opacity 0.22s ease' }}>
                             {name}
                           </button>
                         ))}
