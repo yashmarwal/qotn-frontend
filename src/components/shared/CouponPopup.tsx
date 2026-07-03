@@ -149,7 +149,7 @@ export default function CouponPopup() {
     setActiveIdx(Math.max(0, Math.min(idx, coupons.length - 1)));
   };
 
-  const goTo = (ref: React.RefObject<HTMLDivElement>, idx: number) => {
+  const goTo = (ref: React.RefObject<HTMLDivElement | null>, idx: number) => {
     if (!ref.current || coupons.length <= 1) return;
     const clamped = Math.max(0, Math.min(idx, coupons.length - 1));
     const el = ref.current;
