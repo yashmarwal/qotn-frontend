@@ -8,6 +8,7 @@ import CartDrawer from '@/components/desktop/CartDrawer';
 import MobileNavbar from '@/components/mobile/Navbar';
 import MobileFooter from '@/components/mobile/Footer';
 import AnnouncementBar from '@/components/shared/AnnouncementBar';
+import CouponPopup from '@/components/shared/CouponPopup';
 
 export default function RootLayoutClient({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -24,6 +25,7 @@ export default function RootLayoutClient({ children }: { children: React.ReactNo
       {isMobile ? <MobileFooter /> : <DesktopFooter />}
       {/* Cart drawer is desktop-only; mobile uses the cart page */}
       {!isMobile && <CartDrawer />}
+      <CouponPopup />
     </>
   );
 }

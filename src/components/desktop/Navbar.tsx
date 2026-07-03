@@ -1,10 +1,10 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { Search, User, ShoppingBag, X } from 'lucide-react';
+import { Search, User, ShoppingBag, X, Clock, TrendingUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
@@ -23,7 +23,30 @@ const navLinks = [
   { href: '/about',       label: 'About' },
 ];
 
-const TRENDING = ['Men\'s Tees', 'Women\'s Kurtis', 'Kids Cotton', 'New Arrivals'];
+const TRENDING = ["Men's Kurtas", "Women's Kurtis", "Kids Cotton", "New Arrivals", "Cotton Shirts"];
+const RECENT_KEY = 'qotn_recent_searches';
+const CAT_LABELS: Record<string, string> = { men: "Men's", women: "Women's", kids: "Kids'" };
+
+function getRecent(): string[] {
+  try { return JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); } catch { return []; }
+}
+function saveRecent(q: string) {
+  const prev = getRecent().filter(s => s.toLowerCase() !== q.toLowerCase());
+  localStorage.setItem(RECENT_KEY, JSON.stringify([q, ...prev].slice(0, 5)));
+}
+
+function HighlightMatch({ text, query }: { text: string; query: string }) {
+  if (!query.trim()) return <>{text}</>;
+  const idx = text.toLowerCase().indexOf(query.toLowerCase());
+  if (idx === -1) return <>{text}</>;
+  return (
+    <>
+      {text.slice(0, idx)}
+      <strong style={{ fontWeight: 600, color: 'var(--black)' }}>{text.slice(idx, idx + query.length)}</strong>
+      {text.slice(idx + query.length)}
+    </>
+  );
+}
 
 export default function DesktopNavbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -31,6 +54,7 @@ export default function DesktopNavbar() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [searching, setSearching] = useState(false);
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const searchDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
   const router = useRouter();
   const { totalItems, openCart } = useCart();
@@ -56,7 +80,7 @@ export default function DesktopNavbar() {
   const runSearch = useCallback((q: string) => {
     if (!q.trim()) { setSearchResults([]); return; }
     setSearching(true);
-    fetch(`${API}/products?search=${encodeURIComponent(q)}&limit=5`)
+    fetch(`${API}/products?search=${encodeURIComponent(q)}&limit=8`)
       .then(r => r.json())
       .then(d => setSearchResults(d.data || []))
       .catch(() => setSearchResults([]))
@@ -67,11 +91,33 @@ export default function DesktopNavbar() {
     const q = e.target.value;
     setSearchQuery(q);
     if (searchDebounce.current) clearTimeout(searchDebounce.current);
-    searchDebounce.current = setTimeout(() => runSearch(q), 300);
+    searchDebounce.current = setTimeout(() => runSearch(q), 280);
   };
 
-  const openSearch = () => { setSearchQuery(''); setSearchResults([]); setSearchOpen(true); };
+  const openSearch = () => {
+    setSearchQuery('');
+    setSearchResults([]);
+    setSearchOpen(true);
+    setRecentSearches(getRecent());
+  };
+
   const closeSearch = () => setSearchOpen(false);
+
+  const handleResultClick = () => {
+    if (searchQuery.trim()) saveRecent(searchQuery.trim());
+    closeSearch();
+  };
+
+  const handleEnter = () => {
+    if (!searchQuery.trim()) return;
+    saveRecent(searchQuery.trim());
+    closeSearch();
+  };
+
+  const clearRecent = () => {
+    localStorage.removeItem(RECENT_KEY);
+    setRecentSearches([]);
+  };
 
   const iconBtn: React.CSSProperties = {
     background: 'none', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -88,19 +134,12 @@ export default function DesktopNavbar() {
         transition: 'border-color 200ms ease',
       }}>
         <div style={{ maxWidth: 1400, margin: '0 auto', height: '100%', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', alignItems: 'center', padding: '0 40px' }}>
-          {/* ZONE LEFT */}
           <Link href="/" className="brand-wordmark" style={{ fontSize: 20, color: 'var(--black)', minHeight: 'unset' }}>QOTN</Link>
-
-          {/* ZONE CENTER */}
           <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 36 }}>
             {navLinks.map(link => (
-              <Link key={link.href} href={link.href} className="nav-link-desktop" style={{ minHeight: 'unset' }}>
-                {link.label}
-              </Link>
+              <Link key={link.href} href={link.href} className="nav-link-desktop" style={{ minHeight: 'unset' }}>{link.label}</Link>
             ))}
           </nav>
-
-          {/* ZONE RIGHT */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 4 }}>
             <button style={iconBtn} aria-label="Search products" onClick={openSearch}>
               <Search size={18} strokeWidth={1.5} />
@@ -116,70 +155,146 @@ export default function DesktopNavbar() {
         </div>
       </header>
 
-      {/* ─── Search Overlay ──────────────────────── */}
+      {/* ─── Search Overlay ────────────────────────────── */}
       <AnimatePresence>
         {searchOpen && (
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.18 }}
             onClick={e => { if (e.target === e.currentTarget) closeSearch(); }}
-            style={{ position: 'fixed', inset: 0, background: 'rgba(245,240,232,0.97)', backdropFilter: 'blur(8px)', zIndex: 200, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', paddingTop: 80 }}>
-            {/* Close */}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(245,240,232,0.97)', backdropFilter: 'blur(10px)', zIndex: 200, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', paddingTop: 72 }}>
+
             <button onClick={closeSearch} aria-label="Close search"
-              style={{ position: 'fixed', top: 16, right: 24, width: 48, height: 48, background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--dust)' }}>
-              <X size={22} strokeWidth={1.5} />
+              style={{ position: 'fixed', top: 16, right: 24, width: 44, height: 44, background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--dust)' }}>
+              <X size={20} strokeWidth={1.5} />
             </button>
 
-            <p style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--dust)', marginBottom: 16 }}>SEARCH</p>
-
             {/* Input */}
-            <div style={{ width: '100%', maxWidth: 600, position: 'relative' }}>
+            <div style={{ width: '100%', maxWidth: 620, position: 'relative' }}>
+              <Search size={18} strokeWidth={1.5} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'var(--dust)', pointerEvents: 'none' }} />
               <input
                 autoFocus
                 type="search"
                 value={searchQuery}
                 onChange={handleSearchChange}
-                onKeyDown={e => { if (e.key === 'Enter' && searchQuery.trim()) { router.push(`/search?q=${encodeURIComponent(searchQuery)}`); closeSearch(); } }}
-                placeholder="Search for products..."
-                style={{ width: '100%', fontSize: 32, fontWeight: 300, letterSpacing: '0.04em', border: 'none', borderBottom: '1px solid var(--black)', background: 'transparent', padding: '16px 0', outline: 'none', fontFamily: 'DM Sans, sans-serif', color: 'var(--black)' }}
+                onKeyDown={e => { if (e.key === 'Enter' && searchQuery.trim()) handleEnter(); }}
+                placeholder="Search for cotton kurtas, shirts, dresses…"
+                style={{ width: '100%', fontSize: 28, fontWeight: 300, letterSpacing: '0.02em', border: 'none', borderBottom: '1px solid var(--black)', background: 'transparent', padding: '14px 0 14px 32px', outline: 'none', fontFamily: 'DM Sans, sans-serif', color: 'var(--black)' }}
               />
+              {searchQuery && (
+                <button onClick={() => { setSearchQuery(''); setSearchResults([]); }}
+                  style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--dust)', display: 'flex', alignItems: 'center' }}>
+                  <X size={16} strokeWidth={1.5} />
+                </button>
+              )}
             </div>
 
-            {/* Results */}
-            <div style={{ width: '100%', maxWidth: 600, marginTop: 24 }}>
+            {/* Results panel */}
+            <div style={{ width: '100%', maxWidth: 620, marginTop: 28 }}>
               {searchQuery.trim() === '' ? (
-                <>
-                  <p style={{ fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--dust)', marginBottom: 12 }}>TRENDING SEARCHES</p>
-                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                    {TRENDING.map(t => (
-                      <button key={t} onClick={() => { setSearchQuery(t); runSearch(t); }}
-                        style={{ padding: '8px 16px', border: '1px solid var(--border)', background: 'transparent', fontSize: 13, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', borderRadius: 20 }}>
-                        {t}
-                      </button>
-                    ))}
+                <div>
+                  {/* Recent searches */}
+                  {recentSearches.length > 0 && (
+                    <div style={{ marginBottom: 28 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                          <Clock size={11} strokeWidth={1.5} color="var(--dust)" />
+                          <p style={{ fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--dust)' }}>RECENT</p>
+                        </div>
+                        <button onClick={clearRecent}
+                          style={{ background: 'none', border: 'none', fontSize: 11, color: 'var(--dust)', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', letterSpacing: '0.04em' }}>
+                          Clear all
+                        </button>
+                      </div>
+                      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                        {recentSearches.map(s => (
+                          <button key={s} onClick={() => { setSearchQuery(s); runSearch(s); }}
+                            style={{ padding: '8px 16px', border: '1px solid var(--border)', background: 'transparent', fontSize: 13, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', borderRadius: 20, color: 'var(--black)' }}>
+                            {s}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {/* Trending */}
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 14 }}>
+                      <TrendingUp size={11} strokeWidth={1.5} color="var(--dust)" />
+                      <p style={{ fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--dust)' }}>TRENDING</p>
+                    </div>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                      {TRENDING.map(t => (
+                        <button key={t} onClick={() => { setSearchQuery(t); runSearch(t); }}
+                          style={{ padding: '8px 16px', border: '1px solid var(--border)', background: 'transparent', fontSize: 13, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', borderRadius: 20, color: 'var(--black)' }}>
+                          {t}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </>
+                </div>
               ) : searching ? (
-                <p style={{ fontSize: 13, color: 'var(--dust)' }}>Searching…</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  {[1,2,3].map(i => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 0', borderBottom: '1px solid var(--border)', opacity: 0.4 }}>
+                      <div style={{ width: 56, height: 56, background: 'var(--raw-cotton)', flexShrink: 0 }} />
+                      <div style={{ flex: 1 }}>
+                        <div style={{ height: 14, width: '60%', background: 'var(--raw-cotton)', marginBottom: 6 }} />
+                        <div style={{ height: 10, width: '30%', background: 'var(--raw-cotton)' }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
               ) : searchResults.length === 0 ? (
-                <p style={{ fontSize: 14, color: 'var(--dust)' }}>No products found for &quot;{searchQuery}&quot;</p>
+                <div style={{ paddingTop: 8 }}>
+                  <p style={{ fontSize: 15, color: 'var(--dust)', marginBottom: 6 }}>No results for <strong style={{ color: 'var(--black)', fontWeight: 500 }}>&ldquo;{searchQuery}&rdquo;</strong></p>
+                  <p style={{ fontSize: 13, color: 'var(--dust)' }}>Try searching for kurta, shirt, dress, or browse by category above.</p>
+                </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                   {searchResults.map((p: any) => {
-                    const img = p.images?.[0]?.url || p.images?.[0] || '';
-                    const price = p.variants?.[0]?.price ?? p.minPrice ?? 0;
+                    const img = p.images?.[0]?.url || (typeof p.images?.[0] === 'string' ? p.images[0] : '');
+                    const variants = p.variants || [];
+                    const prices = variants.map((v: any) => v.price).filter(Boolean);
+                    const minPrice = prices.length > 0 ? Math.min(...prices) : (p.minPrice ?? 0);
+                    const origPrices = variants.map((v: any) => v.originalPrice).filter(Boolean);
+                    const origPrice = origPrices.length > 0 ? Math.max(...origPrices) : null;
+                    const discount = origPrice && minPrice && origPrice > minPrice
+                      ? Math.round(((origPrice - minPrice) / origPrice) * 100) : null;
+                    const catSlug = p.category?.slug ?? p.categoryId ?? '';
+                    const catLabel = CAT_LABELS[catSlug] || catSlug;
+
                     return (
-                      <Link key={p.id} href={`/${p.category?.slug ?? p.categoryId}/${p.slug}`}
-                        onClick={closeSearch}
+                      <Link key={p.id} href={`/${catSlug}/${p.slug}`}
+                        onClick={handleResultClick}
                         style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '12px 0', borderBottom: '1px solid var(--border)', textDecoration: 'none', color: 'inherit' }}>
-                        {img && <Image src={img} alt={p.name} width={40} height={40} style={{ objectFit: 'cover', borderRadius: 2, flexShrink: 0 }} />}
-                        <div style={{ flex: 1 }}>
-                          <p style={{ fontSize: 15, fontWeight: 400 }}>{p.name}</p>
+                        <div style={{ width: 56, height: 56, flexShrink: 0, overflow: 'hidden', background: 'var(--raw-cotton)' }}>
+                          {img && <Image src={img} alt={p.name} width={56} height={56} style={{ objectFit: 'cover', width: '100%', height: '100%' }} />}
                         </div>
-                        <span style={{ fontSize: 14, fontWeight: 500, flexShrink: 0 }}>{formatPrice(price)}</span>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{ fontSize: 15, fontWeight: 400, color: 'var(--black)', marginBottom: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            <HighlightMatch text={p.name} query={searchQuery} />
+                          </p>
+                          {catLabel && (
+                            <span style={{ display: 'inline-block', fontSize: 9, letterSpacing: '0.10em', textTransform: 'uppercase', color: 'var(--dust)', border: '1px solid var(--border)', padding: '2px 7px', borderRadius: 20 }}>
+                              {catLabel}
+                            </span>
+                          )}
+                        </div>
+                        <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                          <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--black)' }}>{formatPrice(minPrice)}</p>
+                          {origPrice && origPrice > minPrice && (
+                            <p style={{ fontSize: 11, color: 'var(--dust)', textDecoration: 'line-through' }}>{formatPrice(origPrice)}</p>
+                          )}
+                          {discount && (
+                            <p style={{ fontSize: 11, color: '#15803D', fontWeight: 500 }}>{discount}% off</p>
+                          )}
+                        </div>
                       </Link>
                     );
                   })}
+                  <p style={{ fontSize: 12, color: 'var(--dust)', paddingTop: 12, textAlign: 'center' }}>
+                    Showing top {searchResults.length} results · Press Enter to see all
+                  </p>
                 </div>
               )}
             </div>
