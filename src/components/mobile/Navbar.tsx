@@ -23,8 +23,8 @@ const navLinks = [
   { href: '/contact',       label: 'CONTACT' },
 ];
 
-const TRENDING = ["Men's Kurtas", "Women's Kurtis", "Kids Cotton", "New Arrivals"];
 const RECENT_KEY = 'qotn_recent_searches';
+const TRENDING_SHOW = 4;
 const CAT_LABELS: Record<string, string> = { men: "Men's", women: "Women's", kids: "Kids'" };
 
 function getRecent(): string[] {
@@ -57,6 +57,9 @@ export default function MobileNavbar() {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [searching, setSearching] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [trendingNames, setTrendingNames] = useState<string[]>([]);
+  const [trendingIdx, setTrendingIdx] = useState(0);
+  const [trendingFade, setTrendingFade] = useState(true);
   const searchDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
   const router = useRouter();
   const { totalItems } = useCart();
@@ -105,6 +108,14 @@ export default function MobileNavbar() {
     setSearchResults([]);
     setSearchOpen(true);
     setRecentSearches(getRecent());
+    setTrendingIdx(0);
+    setTrendingFade(true);
+    if (trendingNames.length === 0) {
+      fetch(`${API}/products?limit=40&page=1`)
+        .then(r => r.json())
+        .then(d => setTrendingNames((d.data || []).map((p: any) => p.name).filter(Boolean)))
+        .catch(() => {});
+    }
   };
 
   const handleResultClick = () => {
@@ -116,6 +127,24 @@ export default function MobileNavbar() {
     localStorage.removeItem(RECENT_KEY);
     setRecentSearches([]);
   };
+
+  // Rotate trending pills every 2s when search overlay is open
+  useEffect(() => {
+    if (!searchOpen || trendingNames.length <= TRENDING_SHOW) return;
+    const t = setInterval(() => {
+      setTrendingFade(false);
+      setTimeout(() => {
+        setTrendingIdx(i => (i + TRENDING_SHOW) % trendingNames.length);
+        setTrendingFade(true);
+      }, 200);
+    }, 2000);
+    return () => clearInterval(t);
+  }, [searchOpen, trendingNames.length]);
+
+  const visibleTrending = Array.from(
+    { length: Math.min(TRENDING_SHOW, trendingNames.length) },
+    (_, i) => trendingNames[(trendingIdx + i) % trendingNames.length]
+  );
 
   const navH = compact ? 44 : 52;
 
@@ -262,21 +291,23 @@ export default function MobileNavbar() {
                       </div>
                     </div>
                   )}
-                  {/* Trending */}
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
-                      <TrendingUp size={11} strokeWidth={1.5} color="var(--dust)" />
-                      <p style={{ fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--dust)', fontWeight: 500 }}>TRENDING</p>
+                  {/* Trending — dynamic from real products, rotates every 2s */}
+                  {visibleTrending.length > 0 && (
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
+                        <TrendingUp size={11} strokeWidth={1.5} color="var(--dust)" />
+                        <p style={{ fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--dust)', fontWeight: 500 }}>TRENDING</p>
+                      </div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, opacity: trendingFade ? 1 : 0, transition: 'opacity 0.2s ease' }}>
+                        {visibleTrending.map(name => (
+                          <button key={name} onClick={() => { setSearchQuery(name); runSearch(name); }}
+                            style={{ padding: '8px 14px', border: '1px solid var(--border)', background: 'transparent', fontSize: 13, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', borderRadius: 20, color: 'var(--black)' }}>
+                            {name}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                      {TRENDING.map(t => (
-                        <button key={t} onClick={() => { setSearchQuery(t); runSearch(t); }}
-                          style={{ padding: '8px 14px', border: '1px solid var(--border)', background: 'transparent', fontSize: 13, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', borderRadius: 20, color: 'var(--black)' }}>
-                          {t}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                  )}
                 </div>
               ) : searching ? (
                 <div style={{ padding: '0 16px' }}>
