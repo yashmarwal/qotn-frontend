@@ -40,9 +40,15 @@ export default function CouponPopup() {
 
   useEffect(() => {
     if (!coupon) return;
+    let fired = false;
     const onScroll = () => {
+      if (fired) return;
       const total = document.documentElement.scrollHeight - window.innerHeight;
-      if (total > 0 && window.scrollY / total > 0.25) setVisible(true);
+      if (total > 0 && window.scrollY / total > 0.25) {
+        fired = true;
+        setVisible(true);
+        window.removeEventListener('scroll', onScroll);
+      }
     };
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
@@ -73,17 +79,27 @@ export default function CouponPopup() {
   return (
     <AnimatePresence>
       {visible && (
-        <motion.div
-          initial={{ opacity: 0, y: 60, scale: 0.96 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 40, scale: 0.96 }}
-          transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
-          style={{
-            position: 'fixed', bottom: 24, left: 24, zIndex: 90,
-            width: 290, background: '#1A1A1A',
-            boxShadow: '0 24px 64px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.06)',
-          }}
-        >
+        <>
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={dismiss}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 90 }}
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.92 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.92 }}
+            transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+            style={{
+              position: 'fixed', top: '50%', left: '50%',
+              marginTop: 0, marginLeft: 0,
+              translate: '-50% -50%',
+              zIndex: 91,
+              width: 'min(340px, calc(100vw - 32px))', background: '#1A1A1A',
+              boxShadow: '0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06)',
+            }}
+          >
           {/* Top accent line */}
           <div style={{ height: 3, background: 'linear-gradient(90deg, #F5F0E8 0%, rgba(245,240,232,0.3) 100%)' }} />
 
@@ -140,6 +156,7 @@ export default function CouponPopup() {
             )}
           </div>
         </motion.div>
+        </>
       )}
     </AnimatePresence>
   );
