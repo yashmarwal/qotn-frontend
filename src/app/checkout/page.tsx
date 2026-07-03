@@ -99,6 +99,8 @@ export default function CheckoutPage() {
   const [couponData, setCouponData] = useState<any>(null);
   const [couponError, setCouponError] = useState('');
   const [couponLoading, setCouponLoading] = useState(false);
+  const [availableCoupons, setAvailableCoupons] = useState<any[]>([]);
+  const [couponsOpen, setCouponsOpen] = useState(false);
 
   // ── Payment ──────────────────────────────────────────────────────────────
   const [loading, setLoading] = useState(false);
@@ -115,6 +117,16 @@ export default function CheckoutPage() {
   const isCOD = delivery === 'cod';
 
   useEffect(() => {
+    fetch('/api/coupons/active')
+      .then(r => r.json())
+      .then(data => {
+        const list = Array.isArray(data) ? data : (data.data || []);
+        setAvailableCoupons(list);
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
     if (!isAuthenticated) return;
     usersService.getAddresses().then((res: any) => {
       const addrs: any[] = res.data || [];
@@ -129,13 +141,15 @@ export default function CheckoutPage() {
   }, [isAuthenticated]);
 
   // ── Coupon ───────────────────────────────────────────────────────────────
-  const applyCoupon = async () => {
-    if (!couponInput.trim()) return;
+  const applyCoupon = async (directCode?: string) => {
+    const code = (directCode ?? couponInput).trim();
+    if (!code) return;
+    if (directCode) setCouponInput(directCode);
     setCouponError(''); setCouponLoading(true);
     try {
-      const res: any = await couponsService.validate(couponInput.trim(), subtotalWithStitching);
+      const res: any = await couponsService.validate(code, subtotalWithStitching);
       const d = res.data;
-      if (d?.valid) { setCouponData(d); }
+      if (d?.valid) { setCouponData(d); setCouponsOpen(false); }
       else { setCouponData(null); setCouponError(d?.message || 'Invalid coupon code.'); }
     } catch (err: any) {
       setCouponData(null); setCouponError(err.message || 'Could not validate coupon.');
@@ -551,23 +565,95 @@ export default function CheckoutPage() {
 
       {/* Coupon */}
       <div style={{ marginBottom: 20 }}>
-        <p style={{ fontSize: 10, letterSpacing: '0.10em', textTransform: 'uppercase', color: 'var(--dust)', marginBottom: 8, fontWeight: 500 }}>Coupon Code</p>
+        <p style={{ fontSize: 10, letterSpacing: '0.10em', textTransform: 'uppercase', color: 'var(--dust)', marginBottom: 10, fontWeight: 500 }}>Apply Coupon</p>
+
+        {/* Applied state */}
         {couponData ? (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: '#F0FDF4', border: '1px solid #BBF7D0' }}>
-            <span style={{ fontSize: 13, color: '#065F46', fontWeight: 500 }}>✓ {couponData?.coupon?.code} — saving {formatPrice(discountPaise)}</span>
-            <button onClick={removeCoupon} style={{ background: 'none', border: 'none', fontSize: 13, color: '#065F46', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', padding: 0 }}>✕</button>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: '#F0FDF4', border: '1px solid #BBF7D0', borderLeft: '3px solid #16A34A' }}>
+            <div>
+              <p style={{ fontSize: 13, color: '#15803D', fontWeight: 600, letterSpacing: '0.06em', fontFamily: 'monospace' }}>{couponData?.coupon?.code}</p>
+              <p style={{ fontSize: 12, color: '#16A34A', marginTop: 2 }}>You save {formatPrice(discountPaise)} with this coupon</p>
+            </div>
+            <button onClick={removeCoupon}
+              style={{ background: 'none', border: '1px solid #BBF7D0', fontSize: 11, color: '#15803D', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', padding: '5px 12px', letterSpacing: '0.06em' }}>
+              REMOVE
+            </button>
           </div>
         ) : (
           <>
-            <div style={{ display: 'flex', gap: 0 }}>
-              <input style={{ ...inp, flex: 1, textTransform: 'uppercase' }} placeholder="ENTER CODE"
-                value={couponInput} onChange={e => { setCouponInput(e.target.value.toUpperCase()); setCouponError(''); }} onKeyDown={e => e.key === 'Enter' && applyCoupon()} />
-              <button onClick={applyCoupon} disabled={couponLoading || !couponInput.trim()}
-                style={{ padding: '0 18px', background: '#1A1A1A', color: '#F5F0E8', border: 'none', fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', whiteSpace: 'nowrap', opacity: !couponInput.trim() ? 0.5 : 1 }}>
+            {/* Manual entry */}
+            <div style={{ display: 'flex', gap: 0, marginBottom: couponError ? 0 : 0 }}>
+              <input style={{ ...inp, flex: 1, textTransform: 'uppercase', letterSpacing: '0.08em' }} placeholder="ENTER COUPON CODE"
+                value={couponInput} onChange={e => { setCouponInput(e.target.value.toUpperCase()); setCouponError(''); }}
+                onKeyDown={e => e.key === 'Enter' && applyCoupon()} />
+              <button onClick={() => applyCoupon()} disabled={couponLoading || !couponInput.trim()}
+                style={{ padding: '0 20px', background: '#1A1A1A', color: '#F5F0E8', border: 'none', fontSize: 11, letterSpacing: '0.10em', textTransform: 'uppercase', cursor: !couponInput.trim() ? 'default' : 'pointer', fontFamily: 'DM Sans, sans-serif', whiteSpace: 'nowrap', opacity: !couponInput.trim() ? 0.45 : 1 }}>
                 {couponLoading ? '...' : 'Apply'}
               </button>
             </div>
             {couponError && <p style={{ fontSize: 12, color: '#DC2626', marginTop: 6 }}>{couponError}</p>}
+
+            {/* Available coupons accordion */}
+            {availableCoupons.length > 0 && (
+              <div style={{ marginTop: 10 }}>
+                <button onClick={() => setCouponsOpen(o => !o)}
+                  style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 14px', background: 'rgba(26,26,26,0.03)', border: '1px solid var(--border)', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', textAlign: 'left' }}>
+                  <span style={{ fontSize: 13, color: 'var(--black)' }}>
+                    🏷 {availableCoupons.length} coupon{availableCoupons.length > 1 ? 's' : ''} available
+                  </span>
+                  <span style={{ fontSize: 11, color: 'var(--dust)', letterSpacing: '0.04em' }}>{couponsOpen ? '▲ Hide' : '▼ View all'}</span>
+                </button>
+
+                {couponsOpen && (
+                  <div style={{ border: '1px solid var(--border)', borderTop: 'none', display: 'flex', flexDirection: 'column' }}>
+                    {availableCoupons.map((c, idx) => {
+                      const minPaise = c.minOrderValue ?? 0;
+                      const eligible = subtotalWithStitching >= minPaise;
+                      const shortfall = minPaise - subtotalWithStitching;
+                      const discLabel = c.discountType === 'PERCENTAGE'
+                        ? `${c.discountValue}% OFF${c.maxDiscount ? ` (up to ₹${Math.round(c.maxDiscount / 100)})` : ''}`
+                        : `₹${Math.round(c.discountValue / 100)} OFF`;
+
+                      return (
+                        <div key={c.code} style={{
+                          padding: '14px 16px',
+                          borderTop: idx > 0 ? '1px solid var(--border)' : 'none',
+                          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+                          opacity: eligible ? 1 : 0.55,
+                          background: 'var(--cream)',
+                        }}>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
+                              <span style={{ fontFamily: 'monospace', fontSize: 13, fontWeight: 700, letterSpacing: '0.10em', color: 'var(--black)', background: 'rgba(26,26,26,0.06)', padding: '2px 8px', borderRadius: 2 }}>{c.code}</span>
+                            </div>
+                            <p style={{ fontSize: 13, fontWeight: 600, color: '#15803D', marginBottom: 2 }}>{discLabel}</p>
+                            {c.description && <p style={{ fontSize: 12, color: 'var(--dust)', lineHeight: 1.4, marginBottom: 2 }}>{c.description}</p>}
+                            {minPaise > 0 && (
+                              <p style={{ fontSize: 11, color: eligible ? 'var(--dust)' : '#DC2626' }}>
+                                {eligible
+                                  ? `Min. order ₹${Math.round(minPaise / 100).toLocaleString('en-IN')}`
+                                  : `Add ₹${Math.round(shortfall / 100).toLocaleString('en-IN')} more to unlock`}
+                              </p>
+                            )}
+                            {c.expiresAt && (
+                              <p style={{ fontSize: 10, color: 'var(--dust)', marginTop: 2 }}>
+                                Expires {new Date(c.expiresAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                              </p>
+                            )}
+                          </div>
+                          <button
+                            onClick={() => eligible && applyCoupon(c.code)}
+                            disabled={!eligible || couponLoading}
+                            style={{ flexShrink: 0, padding: '8px 16px', background: eligible ? '#1A1A1A' : 'transparent', color: eligible ? '#F5F0E8' : 'var(--dust)', border: eligible ? 'none' : '1px solid var(--border)', fontSize: 11, letterSpacing: '0.10em', textTransform: 'uppercase', cursor: eligible ? 'pointer' : 'default', fontFamily: 'DM Sans, sans-serif', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                            {couponLoading && couponInput === c.code ? '...' : 'Apply'}
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
           </>
         )}
       </div>
