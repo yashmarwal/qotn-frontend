@@ -163,12 +163,14 @@ export default function CouponPopup() {
   const multi = coupons.length > 1;
 
   const Dots = () => !multi ? null : (
-    <div style={{ display: 'flex', justifyContent: 'center', gap: 5, paddingTop: 10 }}>
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 5, paddingTop: 12 }}>
       {coupons.map((_, i) => (
-        <button key={i}
+        <div key={i}
+          role="button"
+          tabIndex={0}
           onClick={() => goTo(isMobile ? mobileRef : desktopRef, i)}
           aria-label={`Coupon ${i + 1}`}
-          style={{ width: activeIdx === i ? 14 : 5, height: 5, borderRadius: 3, background: activeIdx === i ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.28)', border: 'none', cursor: 'pointer', padding: 0, transition: 'width 0.25s ease, background 0.25s ease' }}
+          style={{ width: activeIdx === i ? 14 : 5, height: 5, borderRadius: 3, background: activeIdx === i ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.28)', cursor: 'pointer', flexShrink: 0, transition: 'width 0.25s ease, background 0.25s ease' }}
         />
       ))}
     </div>
@@ -187,18 +189,18 @@ export default function CouponPopup() {
           />
 
           {isMobile ? (
-            /* ── MOBILE: peek carousel slides up from bottom ── */
+            /* ── MOBILE: vertically centered peek carousel ── */
+            <div style={{ position: 'fixed', top: '50%', left: 0, right: 0, zIndex: 91, transform: 'translateY(-50%)' }}>
             <motion.div
-              initial={{ y: 80, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 80, opacity: 0 }}
-              transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
-              style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 91, paddingBottom: 'calc(28px + env(safe-area-inset-bottom,0px))' }}
+              initial={{ opacity: 0, scale: 0.92 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.92 }}
+              transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
             >
               {/* Close row */}
               <div style={{ display: 'flex', justifyContent: 'flex-end', paddingRight: '6vw', marginBottom: 14 }}>
                 <button onClick={dismiss}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.6)', display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, letterSpacing: '0.10em', fontFamily: 'DM Sans, sans-serif' }}>
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.7)', display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, letterSpacing: '0.10em', fontFamily: 'DM Sans, sans-serif' }}>
                   <X size={13} strokeWidth={2} /> CLOSE
                 </button>
               </div>
@@ -245,6 +247,7 @@ export default function CouponPopup() {
 
               <Dots />
             </motion.div>
+            </div>
           ) : (
             /* ── DESKTOP: centered modal with left/right arrows ── */
             <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 91, width: 'min(300px, calc(100vw - 40px))' }}>
