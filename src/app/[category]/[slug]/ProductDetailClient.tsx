@@ -373,19 +373,21 @@ export default function ProductDetailClient({ product }: Props) {
               </button>
             </div>
 
-            <CustomStitchingButton
-              productId={product.id}
-              productCategory={product.category}
-              selectedSize={selectedSize}
-              onStitchingAdded={(id) => {
-                setCustomStitchingId(id);
-                // Use selected size or fall back to first available variant
-                const size = selectedSize || product._variants?.[0]?.size || product.sizes[0] || 'Custom';
-                const color = selectedColor || product.colors[0] || 'Default';
-                addItem(product, size, color, 1, id);
-              }}
-              savedStitchingId={customStitchingId}
-            />
+            {product.category !== 'kids' && (
+              <CustomStitchingButton
+                productId={product.id}
+                productCategory={product.category}
+                selectedSize={selectedSize}
+                onStitchingAdded={(id) => {
+                  setCustomStitchingId(id);
+                  // Use selected size or fall back to first available variant
+                  const size = selectedSize || product._variants?.[0]?.size || product.sizes[0] || 'Custom';
+                  const color = selectedColor || product.colors[0] || 'Default';
+                  addItem(product, size, color, 1, id);
+                }}
+                savedStitchingId={customStitchingId}
+              />
+            )}
 
             {/* Trust signals */}
             <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -588,18 +590,20 @@ export default function ProductDetailClient({ product }: Props) {
                 </button>
               </div>
 
-              <CustomStitchingButton
-                productId={product.id}
-                productCategory={product.category}
-                onStitchingAdded={(id) => {
-                setCustomStitchingId(id);
-                // Use selected size or fall back to first available variant
-                const size = selectedSize || product._variants?.[0]?.size || product.sizes[0] || 'Custom';
-                const color = selectedColor || product.colors[0] || 'Default';
-                addItem(product, size, color, 1, id);
-              }}
-                savedStitchingId={customStitchingId}
-              />
+              {product.category !== 'kids' && (
+                <CustomStitchingButton
+                  productId={product.id}
+                  productCategory={product.category}
+                  onStitchingAdded={(id) => {
+                    setCustomStitchingId(id);
+                    // Use selected size or fall back to first available variant
+                    const size = selectedSize || product._variants?.[0]?.size || product.sizes[0] || 'Custom';
+                    const color = selectedColor || product.colors[0] || 'Default';
+                    addItem(product, size, color, 1, id);
+                  }}
+                  savedStitchingId={customStitchingId}
+                />
+              )}
 
               {/* Trust signals — 2×2 grid */}
               <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
