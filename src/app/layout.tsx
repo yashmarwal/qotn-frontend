@@ -31,10 +31,6 @@ export const metadata: Metadata = {
     googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1 },
   },
 
-  alternates: {
-    canonical: 'https://qotn.in',
-  },
-
   openGraph: {
     title: 'QOTN — Pure Cotton Clothing for Men, Women & Kids | Made in India',
     description:
