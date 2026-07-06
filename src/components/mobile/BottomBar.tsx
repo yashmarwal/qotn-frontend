@@ -29,7 +29,7 @@ export default function MobileBottomBar({ product, selectedSize, onAddToBag, add
         position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 60,
         backgroundColor: 'var(--black)',
         display: 'flex', alignItems: 'center',
-        padding: '12px 16px', gap: 10, minHeight: 72,
+        padding: '12px 16px', paddingBottom: 'calc(12px + env(safe-area-inset-bottom, 0px))', gap: 10,
       }}
     >
       <div style={{ flexShrink: 0, minWidth: 72 }}>

@@ -15,8 +15,8 @@ export default function RootLayoutClient({ children }: { children: React.ReactNo
   const pathname = usePathname();
   const isMobile = useIsMobile();
   const isAdmin = pathname.startsWith('/admin');
-  // Bottom nav is hidden on checkout (focused funnel) and admin
-  const showBottomNav = isMobile && !isAdmin && pathname !== '/checkout';
+  // Bottom nav is hidden on checkout + cart (pages have their own action bars) and admin
+  const showBottomNav = isMobile && !isAdmin && pathname !== '/checkout' && pathname !== '/cart';
 
   if (isAdmin) return <>{children}</>;
 

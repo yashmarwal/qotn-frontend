@@ -96,7 +96,7 @@ export default function CartPage() {
         {items.length === 0 ? (
           <div style={{ padding: '0 16px' }}><EmptyState /></div>
         ) : (
-          <div style={{ paddingBottom: 160 }}>
+          <div style={{ paddingBottom: 'calc(128px + env(safe-area-inset-bottom, 0px))' }}>
             <div style={{ padding: '0 16px' }}>
               {items.map((item) => (
                 <div key={`${item.product.id}-${item.size}`}
@@ -139,9 +139,9 @@ export default function CartPage() {
           </div>
         )}
 
-        {/* Sticky bottom checkout bar — sits above the mobile bottom nav */}
+        {/* Sticky bottom checkout bar */}
         {items.length > 0 && (
-          <div style={{ position: 'fixed', bottom: 'calc(56px + env(safe-area-inset-bottom, 0px))', left: 0, right: 0, zIndex: 44, backgroundColor: 'var(--cream)', borderTop: '1px solid var(--border)', padding: '12px 16px' }}>
+          <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 44, backgroundColor: 'var(--cream)', borderTop: '1px solid var(--border)', padding: '12px 16px', paddingBottom: 'calc(12px + env(safe-area-inset-bottom, 0px))' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
               <span style={{ fontSize: 12, color: 'var(--dust)' }}>Total</span>
               <span style={{ fontSize: 16, fontWeight: 600 }}>{formatPrice(total)}</span>
