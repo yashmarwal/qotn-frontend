@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect, use, useCallback, useRef } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, SlidersHorizontal, X } from 'lucide-react';
@@ -39,6 +39,11 @@ export default function CategoryPageClient({ params }: { params: Promise<{ categ
   const [filtered, setFiltered] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const LIMIT = 24;
 
   // Keep URL in sync with filter state (enables sharing + back-button)
   useEffect(() => {
@@ -52,29 +57,70 @@ export default function CategoryPageClient({ params }: { params: Promise<{ categ
 
   const label = categoryLabels[category] || category;
 
+  const sortMap: Record<string, 'price_asc' | 'price_desc' | 'newest'> = {
+    'price-asc': 'price_asc',
+    'price-desc': 'price_desc',
+    'newest': 'newest',
+  };
+
+  // Reset and load page 1 whenever filters/sort/category change
   useEffect(() => {
     setLoading(true);
-    const sortMap: Record<string, 'price_asc' | 'price_desc' | 'newest'> = {
-      'price-asc': 'price_asc',
-      'price-desc': 'price_desc',
-      'newest': 'newest',
-    };
+    setPage(1);
+    setHasMore(false);
     productsService.getAll({
       category,
       ...(sortBy && sortMap[sortBy] ? { sortBy: sortMap[sortBy] } : {}),
       ...(selectedSizes.length === 1 ? { size: selectedSizes[0] } : {}),
       ...(selectedColors.length === 1 ? { color: selectedColors[0] } : {}),
       page: 1,
-      limit: 48,
+      limit: LIMIT,
     }).then((res: any) => {
       let result = adaptApiProductList(res.data || []);
       if (selectedSizes.length > 1) result = result.filter((p) => selectedSizes.some((s) => p.sizes.includes(s)));
       if (selectedColors.length > 1) result = result.filter((p) => selectedColors.some((c) => p.colors.includes(c)));
       setFiltered(result);
-      setTotal(res.meta?.total || result.length);
+      const metaTotal = res.meta?.total || result.length;
+      setTotal(metaTotal);
+      setHasMore(result.length === LIMIT && metaTotal > LIMIT);
     }).catch(console.error)
       .finally(() => setLoading(false));
-  }, [category, sortBy, selectedSizes, selectedColors]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [category, sortBy, selectedSizes.join(','), selectedColors.join(',')]);
+
+  const loadMore = useCallback(() => {
+    if (loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    const nextPage = page + 1;
+    productsService.getAll({
+      category,
+      ...(sortBy && sortMap[sortBy] ? { sortBy: sortMap[sortBy] } : {}),
+      ...(selectedSizes.length === 1 ? { size: selectedSizes[0] } : {}),
+      ...(selectedColors.length === 1 ? { color: selectedColors[0] } : {}),
+      page: nextPage,
+      limit: LIMIT,
+    }).then((res: any) => {
+      let result = adaptApiProductList(res.data || []);
+      if (selectedSizes.length > 1) result = result.filter((p) => selectedSizes.some((s) => p.sizes.includes(s)));
+      if (selectedColors.length > 1) result = result.filter((p) => selectedColors.some((c) => p.colors.includes(c)));
+      setFiltered(prev => [...prev, ...result]);
+      setPage(nextPage);
+      setHasMore(result.length === LIMIT);
+    }).catch(console.error)
+      .finally(() => setLoadingMore(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, hasMore, loadingMore, category, sortBy, selectedSizes.join(','), selectedColors.join(',')]);
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) loadMore(); },
+      { rootMargin: '400px' }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [loadMore]);
 
   const toggleSize = (s: string) => setSelectedSizes((prev) => prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]);
   const toggleColor = (c: string) => setSelectedColors((prev) => prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]);
@@ -216,10 +262,12 @@ export default function CategoryPageClient({ params }: { params: Promise<{ categ
                   </motion.div>
                 ))}
               </div>
-              {filtered.length < total && (
-                <button style={{ width: '100%', height: 48, minHeight: 'unset', background: 'transparent', color: 'var(--black)', border: '1px solid var(--border)', fontSize: 12, letterSpacing: '0.10em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', marginTop: 24 }}>
-                  LOAD MORE
-                </button>
+              {/* Infinite scroll sentinel */}
+              <div ref={sentinelRef} style={{ height: 1 }} />
+              {loadingMore && (
+                <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 24, paddingBottom: 8 }}>
+                  <div style={{ width: 20, height: 20, border: '2px solid var(--border)', borderTopColor: 'var(--black)', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+                </div>
               )}
             </>
           )}
@@ -311,14 +359,13 @@ export default function CategoryPageClient({ params }: { params: Promise<{ categ
             ))}
           </div>
         )}
-        {/* Pagination */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 64 }}>
-          {['←', '1', '2', '3', '→'].map((p, i) => (
-            <button key={i} style={{ width: 36, height: 36, background: p === '1' ? 'var(--black)' : 'transparent', color: p === '1' ? 'var(--cream)' : 'var(--black)', border: '1px solid var(--border)', fontSize: 13, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
-              {p}
-            </button>
-          ))}
-        </div>
+        {/* Infinite scroll sentinel */}
+        <div ref={sentinelRef} style={{ height: 1, marginTop: 32 }} />
+        {loadingMore && (
+          <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 32 }}>
+            <div style={{ width: 24, height: 24, border: '2px solid var(--border)', borderTopColor: 'var(--black)', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+          </div>
+        )}
       </div>
     </div>
     </PageTransition>

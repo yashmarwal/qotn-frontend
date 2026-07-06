@@ -961,6 +961,19 @@ export default function CheckoutPage() {
         {otpModalOpen && OTPModal()}
         <div style={{ backgroundColor: 'var(--cream)', minHeight: '100vh', paddingBottom: 100 }}>
           <div style={{ padding: '20px 16px 0' }}>
+            {/* Trust strip */}
+            <div style={{ display: 'flex', gap: 16, marginBottom: 20, overflowX: 'auto', scrollbarWidth: 'none' }}>
+              {[
+                { icon: '💵', label: 'COD Available' },
+                { icon: '🔒', label: 'Secure Payment' },
+                { icon: '🚚', label: 'Free above ₹1499' },
+              ].map(t => (
+                <div key={t.label} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, color: 'var(--dust)', flexShrink: 0, letterSpacing: '0.04em' }}>
+                  <span>{t.icon}</span>
+                  <span>{t.label}</span>
+                </div>
+              ))}
+            </div>
             {StepIndicator()}
             {step > 1 && (
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', background: 'rgba(26,26,26,0.04)', marginBottom: 20 }}>
@@ -994,7 +1007,15 @@ export default function CheckoutPage() {
             </div>
             {step !== 3 && (
               <div style={{ border: '1px solid var(--border)', padding: 24, position: 'sticky', top: 80 }}>
-                <h3 style={{ fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 20, color: 'var(--dust)' }}>Order Summary</h3>
+                <h3 style={{ fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 16, color: 'var(--dust)' }}>Order Summary</h3>
+                <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: 10, background: '#F0FFF4', color: '#065F46', border: '1px solid #A7F3D0', padding: '3px 9px', letterSpacing: '0.06em', fontWeight: 600 }}>
+                    💵 COD Available
+                  </span>
+                  <span style={{ fontSize: 10, background: 'rgba(26,26,26,0.04)', color: 'var(--dust)', padding: '3px 9px', letterSpacing: '0.04em' }}>
+                    🔒 Secure checkout
+                  </span>
+                </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
                   {items.map(item => (
                     <div key={`${item.product.id}-${item.size}`} style={{ display: 'flex', gap: 10, alignItems: 'center' }}>

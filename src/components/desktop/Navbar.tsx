@@ -61,6 +61,18 @@ export default function DesktopNavbar() {
   const searchDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
   const router = useRouter();
   const { totalItems, openCart } = useCart();
+  const prevTotalRef = useRef(totalItems);
+  const [badgeBounce, setBadgeBounce] = useState(false);
+
+  useEffect(() => {
+    if (totalItems > prevTotalRef.current) {
+      setBadgeBounce(true);
+      const t = setTimeout(() => setBadgeBounce(false), 500);
+      prevTotalRef.current = totalItems;
+      return () => clearTimeout(t);
+    }
+    prevTotalRef.current = totalItems;
+  }, [totalItems]);
   const { items: wishlistItems } = useWishlist();
 
   useEffect(() => {
@@ -182,9 +194,13 @@ export default function DesktopNavbar() {
             <button onClick={openCart} style={{ ...iconBtn, position: 'relative' }} aria-label={`Shopping bag, ${totalItems} items`} suppressHydrationWarning>
               <ShoppingBag size={18} strokeWidth={1.5} />
               {totalItems > 0 && (
-                <span suppressHydrationWarning style={{ position: 'absolute', top: 4, right: 4, width: 15, height: 15, borderRadius: '50%', background: 'var(--black)', color: 'var(--cream)', fontSize: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, letterSpacing: 0, pointerEvents: 'none' }}>
+                <motion.span
+                  suppressHydrationWarning
+                  animate={badgeBounce ? { scale: [1, 1.55, 0.85, 1.2, 1] } : { scale: 1 }}
+                  transition={{ duration: 0.45, ease: 'easeOut' }}
+                  style={{ position: 'absolute', top: 4, right: 4, width: 15, height: 15, borderRadius: '50%', background: 'var(--black)', color: 'var(--cream)', fontSize: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, letterSpacing: 0, pointerEvents: 'none' }}>
                   {totalItems > 9 ? '9+' : totalItems}
-                </span>
+                </motion.span>
               )}
             </button>
           </div>

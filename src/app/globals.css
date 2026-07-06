@@ -119,3 +119,7 @@ input, textarea, select {
 }
 .nav-link-desktop:hover { color: var(--black); }
 .nav-link-desktop:hover::after { width: 100%; }
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

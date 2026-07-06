@@ -10,6 +10,7 @@ import { Product } from '@/types';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 import SizeGuide from '@/components/shared/SizeGuide';
+import FindMySize from '@/components/shared/FindMySize';
 import ProductCard from '@/components/shared/ProductCard';
 import MobileBottomBar from '@/components/mobile/BottomBar';
 import { useIsMobile } from '@/hooks/useIsMobile';
@@ -70,6 +71,7 @@ export default function ProductDetailClient({ product }: Props) {
   const [liveVariants, setLiveVariants] = useState<Array<{ id: string; size: string; color: string; stock: number }>>(product?._variants ?? []);
   const [stockError, setStockError] = useState('');
   const [shareCopied, setShareCopied] = useState(false);
+  const [findMySizeOpen, setFindMySizeOpen] = useState(false);
 
   const colorHexMap: Record<string, string> = Object.fromEntries(
     (product?._variants ?? []).filter(v => v.colorHex).map(v => [v.color, v.colorHex as string])
@@ -303,15 +305,29 @@ export default function ProductDetailClient({ product }: Props) {
               {discount && <span style={{ fontSize: 11, color: '#2E7D32', fontWeight: 500 }}>{discount}% OFF</span>}
             </div>
 
+            {/* COD badge */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
+              <span style={{ fontSize: 10, background: '#F0FFF4', color: '#065F46', border: '1px solid #A7F3D0', padding: '3px 9px', letterSpacing: '0.06em', fontWeight: 600, flexShrink: 0 }}>
+                ✓ COD Available
+              </span>
+              <span style={{ fontSize: 10, color: 'var(--dust)' }}>Free delivery above ₹1499</span>
+            </div>
+
             {/* Size */}
             <div style={{ marginBottom: 20 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
                 <span style={{ fontSize: 11, letterSpacing: '0.10em', fontWeight: 500, textTransform: 'uppercase' }}>
                   Size{selectedSize && ` — ${selectedSize}`}
                 </span>
-                <button onClick={() => setSizeGuideOpen(true)} style={{ background: 'none', border: 'none', fontSize: 11, color: 'var(--dust)', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'DM Sans, sans-serif' }}>
-                  Size Guide
-                </button>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                  <button onClick={() => setFindMySizeOpen(true)} style={{ background: 'none', border: 'none', fontSize: 11, color: 'var(--black)', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', fontWeight: 600, letterSpacing: '0.04em', padding: 0 }}>
+                    Find My Size
+                  </button>
+                  <span style={{ fontSize: 10, color: 'var(--border)' }}>|</span>
+                  <button onClick={() => setSizeGuideOpen(true)} style={{ background: 'none', border: 'none', fontSize: 11, color: 'var(--dust)', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'DM Sans, sans-serif', padding: 0 }}>
+                    Size Guide
+                  </button>
+                </div>
               </div>
               <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 4, scrollbarWidth: 'none' }}>
                 {product.sizes.map((size) => {
@@ -395,7 +411,7 @@ export default function ProductDetailClient({ product }: Props) {
             </div>
 
             {/* Wishlist + Share */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 8, marginBottom: 12 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 12 }}>
               <button onClick={() => toggleItem(product)}
                 style={{ padding: '14px', background: 'none', border: '1px solid var(--border)', fontSize: 12, letterSpacing: '0.10em', textTransform: 'uppercase', cursor: 'pointer', color: 'var(--black)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'DM Sans, sans-serif' }}>
                 <Heart size={14} strokeWidth={1.5} fill={inWishlist ? 'var(--black)' : 'none'} color="var(--black)" />
@@ -496,6 +512,7 @@ export default function ProductDetailClient({ product }: Props) {
 
         <MobileBottomBar product={product} selectedSize={selectedSize} onAddToBag={handleAddToBag} added={added} isOOS={isCurrentVariantOOS} />
         <SizeGuide isOpen={sizeGuideOpen} onClose={() => setSizeGuideOpen(false)} />
+        <FindMySize isOpen={findMySizeOpen} onClose={() => setFindMySizeOpen(false)} availableSizes={product.sizes} onSelect={(size) => { setSelectedSize(size); }} />
       </>
     );
   }
@@ -557,10 +574,18 @@ export default function ProductDetailClient({ product }: Props) {
               <p style={{ fontSize: 11, letterSpacing: '0.10em', textTransform: 'uppercase', color: 'var(--dust)', marginBottom: 12 }}>{product.subcategory}</p>
               <h1 style={{ fontSize: 28, fontWeight: 400, letterSpacing: '0.02em', lineHeight: 1.2, marginBottom: 18 }}>{product.name}</h1>
 
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 6 }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 10 }}>
                 <span style={{ fontSize: 26, fontWeight: 500 }}>{formatPrice(product.price)}</span>
                 {product.originalPrice && <span style={{ fontSize: 15, color: 'var(--dust)', textDecoration: 'line-through' }}>{formatPrice(product.originalPrice)}</span>}
                 {discount && <span style={{ fontSize: 12, color: 'var(--dust)', letterSpacing: '0.06em' }}>{discount}% off</span>}
+              </div>
+
+              {/* COD badge */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                <span style={{ fontSize: 10, background: '#F0FFF4', color: '#065F46', border: '1px solid #A7F3D0', padding: '3px 9px', letterSpacing: '0.06em', fontWeight: 600 }}>
+                  ✓ COD Available
+                </span>
+                <span style={{ fontSize: 10, color: 'var(--dust)' }}>Free delivery above ₹1499</span>
               </div>
 
               <div style={{ borderTop: '1px solid var(--border)', paddingTop: 20, marginBottom: 24 }}>
@@ -571,7 +596,13 @@ export default function ProductDetailClient({ product }: Props) {
               <div style={{ marginBottom: 24 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                   <span style={{ fontSize: 11, letterSpacing: '0.10em', fontWeight: 500, textTransform: 'uppercase' }}>Size{selectedSize && ` — ${selectedSize}`}</span>
-                  <button onClick={() => setSizeGuideOpen(true)} style={{ background: 'none', border: 'none', fontSize: 11, color: 'var(--dust)', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'DM Sans, sans-serif' }}>Size Guide</button>
+                  <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                    <button onClick={() => setFindMySizeOpen(true)} style={{ background: 'none', border: 'none', fontSize: 11, color: 'var(--black)', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', fontWeight: 600, padding: 0 }}>
+                      Find My Size
+                    </button>
+                    <span style={{ fontSize: 10, color: 'var(--border)' }}>|</span>
+                    <button onClick={() => setSizeGuideOpen(true)} style={{ background: 'none', border: 'none', fontSize: 11, color: 'var(--dust)', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'DM Sans, sans-serif', padding: 0 }}>Size Guide</button>
+                  </div>
                 </div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                   {product.sizes.map((size) => {
@@ -765,6 +796,7 @@ export default function ProductDetailClient({ product }: Props) {
       </div>
 
       <SizeGuide isOpen={sizeGuideOpen} onClose={() => setSizeGuideOpen(false)} />
+      <FindMySize isOpen={findMySizeOpen} onClose={() => setFindMySizeOpen(false)} availableSizes={product.sizes} onSelect={(size) => { setSelectedSize(size); }} />
     </>
   );
 }

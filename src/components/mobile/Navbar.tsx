@@ -63,6 +63,18 @@ export default function MobileNavbar() {
   const searchDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
   const router = useRouter();
   const { totalItems } = useCart();
+  const prevTotalRef = useRef(totalItems);
+  const [badgeBounce, setBadgeBounce] = useState(false);
+
+  useEffect(() => {
+    if (totalItems > prevTotalRef.current) {
+      setBadgeBounce(true);
+      const t = setTimeout(() => setBadgeBounce(false), 500);
+      prevTotalRef.current = totalItems;
+      return () => clearTimeout(t);
+    }
+    prevTotalRef.current = totalItems;
+  }, [totalItems]);
 
   useEffect(() => {
     document.body.style.overflow = (drawerOpen || searchOpen) ? 'hidden' : '';
@@ -186,9 +198,12 @@ export default function MobileNavbar() {
             style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', width: 48, height: 48, position: 'relative' }}>
             <ShoppingBag size={20} strokeWidth={1.5} />
             {totalItems > 0 && (
-              <span style={{ position: 'absolute', top: 8, right: 8, width: 16, height: 16, borderRadius: '50%', background: 'var(--black)', color: 'var(--cream)', fontSize: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, pointerEvents: 'none' }}>
+              <motion.span
+                animate={badgeBounce ? { scale: [1, 1.55, 0.85, 1.2, 1] } : { scale: 1 }}
+                transition={{ duration: 0.45, ease: 'easeOut' }}
+                style={{ position: 'absolute', top: 8, right: 8, width: 16, height: 16, borderRadius: '50%', background: 'var(--black)', color: 'var(--cream)', fontSize: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, pointerEvents: 'none' }}>
                 {totalItems > 9 ? '9+' : totalItems}
-              </span>
+              </motion.span>
             )}
           </button>
         </div>
