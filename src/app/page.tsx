@@ -249,7 +249,11 @@ export default function HomePage() {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, alignItems: 'start' }}>
             {(newArrivals.length === 0 ? Array.from({ length: 4 }) : newArrivals.slice(0, 4)).map((p, i) => (
-              p ? <ProductCard key={(p as any).id} product={p as any} variant="mobile" /> : <ProductCardSkeleton key={i} variant="mobile" />
+              p ? (
+                <motion.div key={(p as any).id} initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.3, delay: i * 0.06 }}>
+                  <ProductCard product={p as any} variant="mobile" />
+                </motion.div>
+              ) : <ProductCardSkeleton key={i} variant="mobile" />
             ))}
           </div>
           <Link href="/men" style={{ display: 'block', marginTop: 10, minHeight: 'unset' }}>
@@ -275,11 +279,12 @@ export default function HomePage() {
               { icon: Droplets, num: '0', label: 'Blends' },
               { icon: MapPin, num: 'India', label: 'Made' },
             ].map(({ icon: Icon, num, label }, i) => (
-              <div key={i} style={{ padding: '12px 4px' }}>
+              <motion.div key={i} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.3, delay: i * 0.1 }}
+                style={{ padding: '12px 4px' }}>
                 <Icon size={24} strokeWidth={1.5} color="var(--dust)" style={{ margin: '0 auto 6px' }} />
                 <p style={{ fontSize: 18, fontWeight: 300, marginBottom: 2 }}>{num}</p>
                 <p style={{ fontSize: 9, letterSpacing: '0.10em', textTransform: 'uppercase', color: 'var(--dust)' }}>{label}</p>
-              </div>
+              </motion.div>
             ))}
           </div>
         </section>
@@ -291,13 +296,14 @@ export default function HomePage() {
             { icon: '✂', title: 'Custom Stitched', desc: 'Your measurements. Perfect fit, every time. Just ₹249 extra.' },
             { icon: '🚚', title: 'Free Delivery', desc: 'Free delivery on orders above ₹1499. COD available with small surcharge.' },
           ].map((item, i) => (
-            <div key={i} style={{ display: 'flex', gap: 14, paddingTop: 16, paddingBottom: 16, borderBottom: '1px solid var(--border)', alignItems: 'flex-start' }}>
+            <motion.div key={i} initial={{ opacity: 0, x: -14 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.32, delay: i * 0.08 }}
+              style={{ display: 'flex', gap: 14, paddingTop: 16, paddingBottom: 16, borderBottom: '1px solid var(--border)', alignItems: 'flex-start' }}>
               <span style={{ fontSize: 24, flexShrink: 0 }}>{item.icon}</span>
               <div>
                 <p style={{ fontSize: 13, fontWeight: 500, marginBottom: 4 }}>{item.title}</p>
                 <p style={{ fontSize: 12, color: 'var(--dust)', lineHeight: 1.5 }}>{item.desc}</p>
               </div>
-            </div>
+            </motion.div>
           ))}
         </section>
 
@@ -309,7 +315,11 @@ export default function HomePage() {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, paddingBottom: 16, alignItems: 'start' }}>
             {(bestsellers.length === 0 ? Array.from({ length: 4 }) : bestsellers.slice(0, 4)).map((p, i) => (
-              p ? <ProductCard key={(p as any).id} product={p as any} variant="mobile" /> : <ProductCardSkeleton key={i} variant="mobile" />
+              p ? (
+                <motion.div key={(p as any).id} initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.3, delay: i * 0.06 }}>
+                  <ProductCard product={p as any} variant="mobile" />
+                </motion.div>
+              ) : <ProductCardSkeleton key={i} variant="mobile" />
             ))}
           </div>
         </section>

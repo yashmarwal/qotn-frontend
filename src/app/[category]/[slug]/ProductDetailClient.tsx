@@ -524,9 +524,20 @@ export default function ProductDetailClient({ product }: Props) {
             {/* Images */}
             <div>
               <div style={{ position: 'relative', aspectRatio: '1/1', backgroundColor: 'var(--raw-cotton)', overflow: 'hidden' }}>
-                <Image src={product.images[activeImage]} alt={product.name} fill style={{ objectFit: 'contain' }} sizes="58vw" priority />
+                <AnimatePresence initial={false}>
+                  <motion.div
+                    key={activeImage}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.25 }}
+                    style={{ position: 'absolute', inset: 0 }}
+                  >
+                    <Image src={product.images[activeImage]} alt={product.name} fill style={{ objectFit: 'contain' }} sizes="58vw" priority={activeImage === 0} />
+                  </motion.div>
+                </AnimatePresence>
                 {(product.isNew || product.isBestseller) && (
-                  <span style={{ position: 'absolute', top: 16, left: 16, background: 'var(--black)', color: 'var(--cream)', fontSize: 9, fontWeight: 500, letterSpacing: '0.12em', textTransform: 'uppercase', padding: '4px 10px' }}>
+                  <span style={{ position: 'absolute', top: 16, left: 16, background: 'var(--black)', color: 'var(--cream)', fontSize: 9, fontWeight: 500, letterSpacing: '0.12em', textTransform: 'uppercase', padding: '4px 10px', zIndex: 1 }}>
                     {product.isNew ? 'New' : 'Bestseller'}
                   </span>
                 )}

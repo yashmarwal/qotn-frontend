@@ -97,3 +97,25 @@ input, textarea, select {
 .collection-product-card:hover .collection-product-card-img {
   transform: scale(1.03);
 }
+
+/* Desktop nav link — sliding underline on hover */
+.nav-link-desktop {
+  position: relative;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  color: var(--dust);
+  padding-bottom: 3px;
+  transition: color 0.22s ease;
+}
+.nav-link-desktop::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: var(--black);
+  transition: width 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.nav-link-desktop:hover { color: var(--black); }
+.nav-link-desktop:hover::after { width: 100%; }

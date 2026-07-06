@@ -100,7 +100,11 @@ export default function ProductCard({ product, variant = 'desktop' }: ProductCar
   return (
     <Link
       href={`/${product.category}/${product.slug}`}
-      style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}
+      style={{
+        display: 'block', textDecoration: 'none', color: 'inherit',
+        transform: hovered ? 'translateY(-5px)' : 'translateY(0)',
+        transition: 'transform 0.4s cubic-bezier(0.22, 1, 0.36, 1)',
+      }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
