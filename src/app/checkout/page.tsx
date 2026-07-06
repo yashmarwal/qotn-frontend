@@ -93,6 +93,7 @@ export default function CheckoutPage() {
   });
   const [addrErrors, setAddrErrors] = useState<Record<string, string>>({});
   const [savingAddr, setSavingAddr] = useState(false);
+  const [pinLookupLoading, setPinLookupLoading] = useState(false);
 
   // ── Coupon ───────────────────────────────────────────────────────────────
   const [couponInput, setCouponInput] = useState('');
@@ -157,6 +158,29 @@ export default function CheckoutPage() {
   };
 
   const removeCoupon = () => { setCouponData(null); setCouponInput(''); setCouponError(''); };
+
+  // ── PIN code auto-fill ───────────────────────────────────────────────────
+  const lookupPincode = async (pin: string) => {
+    if (!/^\d{6}$/.test(pin)) return;
+    setPinLookupLoading(true);
+    try {
+      const res = await fetch(`https://api.postalpincode.in/pincode/${pin}`);
+      const data = await res.json();
+      const post = data?.[0];
+      if (post?.Status === 'Success' && post.PostOffice?.length > 0) {
+        const po = post.PostOffice[0];
+        const city = po.District || po.Name || '';
+        const state = po.State || '';
+        setAddrForm(f => ({
+          ...f,
+          city: f.city || city,
+          state: f.state || (indianStates.includes(state) ? state : ''),
+        }));
+        setAddrErrors(f => ({ ...f, city: '', state: '' }));
+      }
+    } catch {}
+    finally { setPinLookupLoading(false); }
+  };
 
   // ── Address continue ─────────────────────────────────────────────────────
   const handleAddrContinue = async () => {
@@ -445,9 +469,17 @@ export default function CheckoutPage() {
             </div>
             <div style={{ gridColumn: isMobile ? '1 / -1' : undefined }}>
               <label style={lbl}>Pincode * (6 digits)</label>
-              <input maxLength={6} style={{ ...inp, borderColor: addrErrors.pincode ? '#DC2626' : undefined }}
-                value={addrForm.pincode} onChange={e => { setAddrForm(f => ({ ...f, pincode: e.target.value })); setAddrErrors(f => ({ ...f, pincode: '' })); }} />
+              <div style={{ position: 'relative' }}>
+                <input maxLength={6} style={{ ...inp, borderColor: addrErrors.pincode ? '#DC2626' : undefined, paddingRight: pinLookupLoading ? 36 : undefined }}
+                  value={addrForm.pincode}
+                  onChange={e => { setAddrForm(f => ({ ...f, pincode: e.target.value })); setAddrErrors(f => ({ ...f, pincode: '' })); }}
+                  onBlur={e => lookupPincode(e.target.value)} />
+                {pinLookupLoading && (
+                  <div style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', width: 14, height: 14, border: '2px solid #C8C3BA', borderTopColor: '#1A1A1A', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+                )}
+              </div>
               {addrErrors.pincode && <p style={{ fontSize: 11, color: '#DC2626', marginTop: 4 }}>{addrErrors.pincode}</p>}
+              {pinLookupLoading && <p style={{ fontSize: 11, color: 'var(--dust)', marginTop: 4 }}>Looking up pincode…</p>}
             </div>
           </div>
         </div>

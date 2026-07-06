@@ -96,7 +96,7 @@ export default function CartPage() {
         {items.length === 0 ? (
           <div style={{ padding: '0 16px' }}><EmptyState /></div>
         ) : (
-          <div style={{ paddingBottom: 120 }}>
+          <div style={{ paddingBottom: 160 }}>
             <div style={{ padding: '0 16px' }}>
               {items.map((item) => (
                 <div key={`${item.product.id}-${item.size}`}
@@ -136,6 +136,21 @@ export default function CartPage() {
               <h2 style={{ fontSize: 12, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 16 }}>Order Summary</h2>
               <SummaryBlock />
             </div>
+          </div>
+        )}
+
+        {/* Sticky bottom checkout bar */}
+        {items.length > 0 && (
+          <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 40, backgroundColor: 'var(--cream)', borderTop: '1px solid var(--border)', padding: '12px 16px', paddingBottom: 'calc(12px + env(safe-area-inset-bottom, 0px))' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+              <span style={{ fontSize: 12, color: 'var(--dust)' }}>Total</span>
+              <span style={{ fontSize: 16, fontWeight: 600 }}>{formatPrice(total)}</span>
+            </div>
+            <Link href="/checkout">
+              <button style={{ ...btnStyle(true), height: 52, fontSize: 13, letterSpacing: '0.12em' }}>
+                Proceed to Checkout →
+              </button>
+            </Link>
           </div>
         )}
       </div>

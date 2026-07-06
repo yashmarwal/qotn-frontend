@@ -337,7 +337,15 @@ export default function MobileNavbar() {
               ) : searchResults.length === 0 ? (
                 <div style={{ padding: '32px 16px' }}>
                   <p style={{ fontSize: 15, color: 'var(--dust)', marginBottom: 6 }}>No results for <strong style={{ color: 'var(--black)', fontWeight: 500 }}>&ldquo;{searchQuery}&rdquo;</strong></p>
-                  <p style={{ fontSize: 13, color: 'var(--dust)', lineHeight: 1.6 }}>Try a different word, or browse Men, Women or Kids.</p>
+                  <p style={{ fontSize: 13, color: 'var(--dust)', lineHeight: 1.6, marginBottom: 20 }}>Try a different spelling, or browse a category:</p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                    {[{ label: 'Men', href: '/men' }, { label: 'Women', href: '/women' }, { label: 'Kids', href: '/kids' }, { label: 'Collections', href: '/collections' }].map(cat => (
+                      <Link key={cat.href} href={cat.href} onClick={() => setSearchOpen(false)}
+                        style={{ padding: '9px 18px', border: '1px solid var(--black)', background: 'transparent', fontSize: 12, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', borderRadius: 20, color: 'var(--black)', letterSpacing: '0.06em', textDecoration: 'none', display: 'inline-block' }}>
+                        {cat.label}
+                      </Link>
+                    ))}
+                  </div>
                 </div>
               ) : (
                 <>

@@ -179,9 +179,13 @@ export default function DesktopNavbar() {
             <Link href="/account" style={{ ...iconBtn, textDecoration: 'none' }} aria-label="My account">
               <User size={18} strokeWidth={1.5} />
             </Link>
-            <button onClick={openCart} style={{ ...iconBtn, position: 'relative', gap: 6, paddingRight: 4 }} aria-label={`Shopping bag, ${totalItems} items`} suppressHydrationWarning>
+            <button onClick={openCart} style={{ ...iconBtn, position: 'relative' }} aria-label={`Shopping bag, ${totalItems} items`} suppressHydrationWarning>
               <ShoppingBag size={18} strokeWidth={1.5} />
-              <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, letterSpacing: '0.05em', color: 'var(--dust)' }} suppressHydrationWarning>({totalItems})</span>
+              {totalItems > 0 && (
+                <span suppressHydrationWarning style={{ position: 'absolute', top: 4, right: 4, width: 15, height: 15, borderRadius: '50%', background: 'var(--black)', color: 'var(--cream)', fontSize: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, letterSpacing: 0, pointerEvents: 'none' }}>
+                  {totalItems > 9 ? '9+' : totalItems}
+                </span>
+              )}
             </button>
           </div>
         </div>
@@ -291,7 +295,17 @@ export default function DesktopNavbar() {
               ) : searchResults.length === 0 ? (
                 <div style={{ paddingTop: 8 }}>
                   <p style={{ fontSize: 15, color: 'var(--dust)', marginBottom: 6 }}>No results for <strong style={{ color: 'var(--black)', fontWeight: 500 }}>&ldquo;{searchQuery}&rdquo;</strong></p>
-                  <p style={{ fontSize: 13, color: 'var(--dust)' }}>Try searching for kurta, shirt, dress, or browse by category above.</p>
+                  <p style={{ fontSize: 13, color: 'var(--dust)', marginBottom: 20 }}>Try a different spelling, or browse a category:</p>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    {[{ label: 'Men', href: '/men' }, { label: 'Women', href: '/women' }, { label: 'Kids', href: '/kids' }, { label: 'Collections', href: '/collections' }].map(cat => (
+                      <Link key={cat.href} href={cat.href} onClick={closeSearch}
+                        style={{ padding: '9px 20px', border: '1px solid var(--black)', background: 'transparent', fontSize: 12, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', borderRadius: 20, color: 'var(--black)', letterSpacing: '0.06em', textDecoration: 'none', display: 'inline-block', transition: 'background 0.15s, color 0.15s' }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.background = 'var(--black)'; (e.currentTarget as HTMLAnchorElement).style.color = 'var(--cream)'; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.background = 'transparent'; (e.currentTarget as HTMLAnchorElement).style.color = 'var(--black)'; }}>
+                        {cat.label}
+                      </Link>
+                    ))}
+                  </div>
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>

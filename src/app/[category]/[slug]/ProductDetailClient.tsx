@@ -61,6 +61,8 @@ export default function ProductDetailClient({ product }: Props) {
   const [selectedColor, setSelectedColor] = useState('');
   const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
   const [added, setAdded] = useState(false);
+  const [imgZoomed, setImgZoomed] = useState(false);
+  const lastTapRef = useRef<number>(0);
   const [related, setRelated] = useState<Product[]>([]);
   const [customStitchingId, setCustomStitchingId] = useState<string | undefined>();
   const [waitlistEmail, setWaitlistEmail] = useState('');
@@ -113,6 +115,15 @@ export default function ProductDetailClient({ product }: Props) {
     }).catch(() => {});
   }, [product?.id]);
 
+  // Restore last-used size from sessionStorage; auto-select if available on this product
+  useEffect(() => {
+    if (!product) return;
+    try {
+      const lastSize = sessionStorage.getItem('qotn_last_size') || '';
+      if (lastSize && product.sizes.includes(lastSize)) setSelectedSize(lastSize);
+    } catch {}
+  }, [product?.id]);
+
   // Re-fetch live stock on mount and whenever the tab regains focus
   useEffect(() => {
     if (!product?.slug) return;
@@ -156,6 +167,11 @@ export default function ProductDetailClient({ product }: Props) {
   // True when the currently selected size (+ color if chosen) is out of stock
   const isCurrentVariantOOS = selectedSize ? sizeIsOOS(selectedSize) : false;
 
+  const persistSize = (size: string) => {
+    setSelectedSize(size);
+    try { sessionStorage.setItem('qotn_last_size', size); } catch {}
+  };
+
   const handleAddToBag = () => {
     if (!selectedSize) return;
     const color = selectedColor || product.colors[0];
@@ -184,6 +200,14 @@ export default function ProductDetailClient({ product }: Props) {
     router.push('/checkout');
   };
 
+  const handleImageTap = () => {
+    const now = Date.now();
+    if (now - lastTapRef.current < 320) {
+      setImgZoomed(z => !z);
+    }
+    lastTapRef.current = now;
+  };
+
   const scrollToImage = (idx: number) => {
     setActiveImage(idx);
     if (galleryRef.current) {
@@ -209,23 +233,34 @@ export default function ProductDetailClient({ product }: Props) {
           <div style={{ position: 'relative' }}>
             <div
               ref={galleryRef}
-              onScroll={handleGalleryScroll}
-              style={{ display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory', scrollBehavior: 'smooth', msOverflowStyle: 'none', scrollbarWidth: 'none' }}
+              onScroll={imgZoomed ? undefined : handleGalleryScroll}
+              style={{ display: 'flex', overflowX: imgZoomed ? 'hidden' : 'auto', scrollSnapType: imgZoomed ? 'none' : 'x mandatory', scrollBehavior: 'smooth', msOverflowStyle: 'none', scrollbarWidth: 'none' }}
             >
               {product.images.map((img, i) => (
-                <div key={i} style={{ flexShrink: 0, width: '100%', aspectRatio: '3/4', scrollSnapAlign: 'start', position: 'relative', backgroundColor: 'var(--raw-cotton)' }}>
-                  <Image src={img} alt={`${product.name} ${i + 1}`} fill style={{ objectFit: 'cover' }} sizes="100vw" priority={i === 0} />
+                <div key={i} onClick={handleImageTap} style={{ flexShrink: 0, width: '100%', aspectRatio: '3/4', scrollSnapAlign: 'start', position: 'relative', backgroundColor: 'var(--raw-cotton)', overflow: 'hidden', cursor: 'zoom-in' }}>
+                  <Image src={img} alt={`${product.name} ${i + 1}`} fill style={{ objectFit: 'cover', transform: (imgZoomed && i === activeImage) ? 'scale(2.2)' : 'scale(1)', transition: 'transform 0.3s ease', transformOrigin: 'center center' }} sizes="100vw" priority={i === 0} />
                 </div>
               ))}
             </div>
 
             {/* Dot indicators */}
-            {product.images.length > 1 && (
+            {product.images.length > 1 && !imgZoomed && (
               <div style={{ position: 'absolute', bottom: 14, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 6 }}>
                 {product.images.map((_, i) => (
                   <button key={i} onClick={() => scrollToImage(i)}
                     style={{ width: i === activeImage ? 20 : 6, height: 6, borderRadius: 3, background: i === activeImage ? 'var(--cream)' : 'rgba(245,240,232,0.5)', border: 'none', cursor: 'pointer', padding: 0, transition: 'all 0.2s', minHeight: 'unset' }} />
                 ))}
+              </div>
+            )}
+            {imgZoomed && (
+              <button onClick={() => setImgZoomed(false)}
+                style={{ position: 'absolute', bottom: 14, left: '50%', transform: 'translateX(-50%)', background: 'rgba(0,0,0,0.55)', border: 'none', borderRadius: 20, padding: '5px 14px', color: '#F5F0E8', fontSize: 11, letterSpacing: '0.04em', cursor: 'pointer', zIndex: 5 }}>
+                Tap to exit zoom
+              </button>
+            )}
+            {!imgZoomed && (
+              <div style={{ position: 'absolute', bottom: imgZoomed || product.images.length <= 1 ? 14 : 38, left: '50%', transform: 'translateX(-50%)', pointerEvents: 'none', zIndex: 3 }}>
+                <span style={{ fontSize: 9, color: 'rgba(245,240,232,0.5)', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>double tap to zoom</span>
               </div>
             )}
             {/* Image counter pill */}
@@ -283,7 +318,7 @@ export default function ProductDetailClient({ product }: Props) {
                   const oos = sizeOutOfStock(size);
                   const sel = selectedSize === size;
                   return (
-                    <button key={size} onClick={() => !oos && setSelectedSize(size)} disabled={oos}
+                    <button key={size} onClick={() => !oos && persistSize(size)} disabled={oos}
                       style={{ padding: '9px 16px', fontSize: 12, border: sel ? 'none' : '1px solid var(--border)', background: sel ? 'var(--black)' : 'transparent', color: sel ? 'var(--cream)' : oos ? 'var(--dust)' : 'var(--black)', cursor: oos ? 'default' : 'pointer', textDecoration: oos ? 'line-through' : 'none', opacity: oos ? 0.4 : 1, flexShrink: 0, fontFamily: 'DM Sans, sans-serif', transition: 'all 0.15s' }}>
                       {size}
                     </button>
@@ -419,6 +454,27 @@ export default function ProductDetailClient({ product }: Props) {
             </div>
           </div>
 
+          {/* Complete the look */}
+          {related.length >= 2 && (
+            <section style={{ margin: '0 0 4px', padding: '20px 16px', background: 'var(--raw-cotton)' }}>
+              <p style={{ fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--dust)', marginBottom: 16 }}>STYLE IT WITH</p>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                {related.slice(0, 2).map((rp) => (
+                  <Link key={rp.id} href={`/${rp.category}/${(rp as any).slug}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                    <div style={{ position: 'relative', aspectRatio: '3/4', background: 'var(--cream)', overflow: 'hidden' }}>
+                      <Image src={rp.images[0]} alt={rp.name} fill style={{ objectFit: 'cover' }} sizes="50vw" />
+                    </div>
+                    <p style={{ fontSize: 12, fontWeight: 500, marginTop: 6, color: 'var(--black)' }}>{rp.name}</p>
+                    <p style={{ fontSize: 11, color: 'var(--dust)', marginTop: 2 }}>{formatPrice(rp.price)}</p>
+                  </Link>
+                ))}
+              </div>
+              <p style={{ fontSize: 10, color: 'var(--dust)', marginTop: 10, letterSpacing: '0.04em' }}>
+                Together: {formatPrice(product.price + related[0].price + related[1].price)}
+              </p>
+            </section>
+          )}
+
           {/* You May Also Like — horizontal scroll */}
           {related.length > 0 && (
             <section style={{ padding: '0 0 16px' }}>
@@ -511,7 +567,7 @@ export default function ProductDetailClient({ product }: Props) {
                     const oos = sizeOutOfStock(size);
                     const sel = selectedSize === size;
                     return (
-                      <button key={size} onClick={() => !oos && setSelectedSize(size)} disabled={oos}
+                      <button key={size} onClick={() => !oos && persistSize(size)} disabled={oos}
                         style={{ padding: '8px 16px', fontSize: 12, border: sel ? 'none' : '1px solid var(--border)', background: sel ? 'var(--black)' : 'transparent', color: sel ? 'var(--cream)' : oos ? 'var(--dust)' : 'var(--black)', cursor: oos ? 'default' : 'pointer', textDecoration: oos ? 'line-through' : 'none', opacity: oos ? 0.5 : 1, fontFamily: 'DM Sans, sans-serif', transition: 'all 0.15s' }}>
                         {size}
                       </button>
@@ -652,6 +708,30 @@ export default function ProductDetailClient({ product }: Props) {
               <FrequentlyBoughtTogether productId={product.id} />
             </div>
           </div>
+
+          {/* Complete the look */}
+          {related.length >= 2 && (
+            <section style={{ marginTop: 80, padding: '48px 40px', background: 'var(--raw-cotton)', borderRadius: 2 }}>
+              <p style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--dust)', marginBottom: 36, textAlign: 'center' }}>STYLE IT WITH</p>
+              <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(related.length, 2)}, 1fr)`, gap: 32, maxWidth: 600, margin: '0 auto' }}>
+                {related.slice(0, 2).map((rp) => (
+                  <Link key={rp.id} href={`/${rp.category}/${(rp as any).slug}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                    <div style={{ position: 'relative', aspectRatio: '3/4', background: 'var(--cream)', overflow: 'hidden' }}>
+                      <Image src={rp.images[0]} alt={rp.name} fill style={{ objectFit: 'cover', transition: 'transform 0.4s ease' }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLImageElement).style.transform = 'scale(1.04)'; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLImageElement).style.transform = 'scale(1)'; }}
+                        sizes="300px" />
+                    </div>
+                    <p style={{ fontSize: 13, fontWeight: 500, marginTop: 10, color: 'var(--black)' }}>{rp.name}</p>
+                    <p style={{ fontSize: 12, color: 'var(--dust)', marginTop: 3 }}>{formatPrice(rp.price)}</p>
+                  </Link>
+                ))}
+              </div>
+              <p style={{ fontSize: 12, color: 'var(--dust)', textAlign: 'center', marginTop: 24, letterSpacing: '0.04em' }}>
+                Wear together · Combined value {formatPrice(product.price + related[0].price + related[1].price)}
+              </p>
+            </section>
+          )}
 
           {/* Related */}
           {related.length > 0 && (
