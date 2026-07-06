@@ -123,6 +123,7 @@ export default function HomePage() {
   /* ── MOBILE ── */
   if (isMobile) {
     return (
+      <PageTransition>
       <div style={{ backgroundColor: 'var(--cream)' }}>
 
         {/* Hero — 60% slideshow / 40% content */}
@@ -153,20 +154,22 @@ export default function HomePage() {
             )}
           </div>
           <div style={{ flex: '0 0 40%', backgroundColor: 'var(--cream)', padding: '20px 16px 12px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            <p style={{ fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--dust)', marginBottom: 6 }}>NEW COLLECTION</p>
-            <h1 className="brand-wordmark" style={{ fontSize: 52, lineHeight: 1, color: 'var(--black)', marginBottom: 6 }}>QOTN</h1>
-            <p style={{ fontSize: 12, color: 'var(--dust)', marginBottom: 18 }}>Pure Cotton. Nothing Else.</p>
-            <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+            <motion.p initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.3 }} style={{ fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--dust)', marginBottom: 6 }}>NEW COLLECTION</motion.p>
+            <motion.h1 initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.4 }} className="brand-wordmark" style={{ fontSize: 52, lineHeight: 1, color: 'var(--black)', marginBottom: 6 }}>QOTN</motion.h1>
+            <motion.p initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.52 }} style={{ fontSize: 12, color: 'var(--dust)', marginBottom: 18 }}>Pure Cotton. Nothing Else.</motion.p>
+            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.64 }} style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
               <Link href="/men" style={{ flex: 1, minHeight: 'unset' }}>
                 <button style={{ width: '100%', height: 48, minHeight: 'unset', background: 'var(--black)', color: 'var(--cream)', border: 'none', fontSize: 11, letterSpacing: '0.10em', textTransform: 'uppercase', fontWeight: 500, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>SHOP MEN</button>
               </Link>
               <Link href="/women" style={{ flex: 1, minHeight: 'unset' }}>
                 <button style={{ width: '100%', height: 48, minHeight: 'unset', background: 'var(--cream)', color: 'var(--black)', border: '1px solid var(--black)', fontSize: 11, letterSpacing: '0.10em', textTransform: 'uppercase', fontWeight: 500, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>SHOP WOMEN</button>
               </Link>
-            </div>
-            <Link href="/kids" style={{ textAlign: 'center', fontSize: 12, color: 'var(--dust)', display: 'block', letterSpacing: '0.06em', minHeight: 'unset' }}>
-              SHOP KIDS →
-            </Link>
+            </motion.div>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35, delay: 0.78 }}>
+              <Link href="/kids" style={{ textAlign: 'center', fontSize: 12, color: 'var(--dust)', display: 'block', letterSpacing: '0.06em', minHeight: 'unset' }}>
+                SHOP KIDS →
+              </Link>
+            </motion.div>
           </div>
         </section>
 
@@ -208,8 +211,9 @@ export default function HomePage() {
           <section style={{ padding: '20px 12px 8px' }}>
             <p style={{ fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--dust)', textAlign: 'center', marginBottom: 12 }}>COLLECTIONS</p>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-              {collections.map((col: any) => (
-                <Link key={col.id} href={`/collections/${col.slug}`} style={{ textDecoration: 'none', color: 'inherit', minHeight: 'unset', display: 'block' }}>
+              {collections.map((col: any, i: number) => (
+                <motion.div key={col.id} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.32, delay: i * 0.08 }}>
+                <Link href={`/collections/${col.slug}`} style={{ textDecoration: 'none', color: 'inherit', minHeight: 'unset', display: 'block' }}>
                   <div style={{ position: 'relative', aspectRatio: '1/1', overflow: 'hidden', backgroundColor: 'var(--raw-cotton)', borderRadius: 4 }}>
                     {col.thumbnail ? (
                       <Image src={col.thumbnail} alt={col.name} fill style={{ objectFit: 'cover' }} sizes="50vw" loading="lazy" />
@@ -227,6 +231,7 @@ export default function HomePage() {
                     </div>
                   </div>
                 </Link>
+                </motion.div>
               ))}
             </div>
             <motion.div whileHover="hover" whileTap={{ scale: 0.97 }} style={{ marginTop: 10 }}>
@@ -343,6 +348,7 @@ export default function HomePage() {
         </section>
 
       </div>
+      </PageTransition>
     );
   }
 

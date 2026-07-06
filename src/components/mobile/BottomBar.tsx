@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Product } from '@/types';
 import { useCart } from '@/context/CartContext';
 import { formatPrice } from '@/lib/utils';
@@ -56,10 +57,22 @@ export default function MobileBottomBar({ product, selectedSize, onAddToBag, add
           border: 'none', borderRadius: 2,
           fontSize: 11, letterSpacing: '0.10em', textTransform: 'uppercase',
           fontWeight: 600, cursor: (selectedSize && !isOOS) ? 'pointer' : 'default',
-          fontFamily: 'DM Sans, sans-serif', transition: 'all 0.15s',
+          fontFamily: 'DM Sans, sans-serif', transition: 'background 0.15s, color 0.15s',
+          overflow: 'hidden', position: 'relative',
         }}
       >
-        {!selectedSize ? 'Select Size' : isOOS ? 'Out of Stock' : added ? 'Added ✓' : 'Add to Bag'}
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.span
+            key={added ? 'added' : 'default'}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.16 }}
+            style={{ display: 'block' }}
+          >
+            {!selectedSize ? 'Select Size' : isOOS ? 'Out of Stock' : added ? 'Added ✓' : 'Add to Bag'}
+          </motion.span>
+        </AnimatePresence>
       </button>
 
       <button

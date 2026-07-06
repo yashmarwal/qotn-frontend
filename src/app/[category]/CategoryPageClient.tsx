@@ -86,30 +86,35 @@ export default function CategoryPageClient({ params }: { params: Promise<{ categ
       <div style={{ backgroundColor: 'var(--cream)', minHeight: '100vh' }}>
         {/* Hero banner */}
         <div style={{ height: 160, backgroundColor: 'var(--black)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-          <h1 style={{ fontSize: 32, fontWeight: 300, letterSpacing: '0.12em', color: 'var(--cream)', textTransform: 'uppercase', textAlign: 'center', lineHeight: 1 }}>{label}</h1>
-          {!loading && <p style={{ fontSize: 11, color: 'rgba(245,240,232,0.55)', marginTop: 6, letterSpacing: '0.06em' }}>{total} products</p>}
+          <motion.h1 initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }} style={{ fontSize: 32, fontWeight: 300, letterSpacing: '0.12em', color: 'var(--cream)', textTransform: 'uppercase', textAlign: 'center', lineHeight: 1 }}>{label}</motion.h1>
+          {!loading && (
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35, delay: 0.25 }} style={{ fontSize: 11, color: 'rgba(245,240,232,0.55)', marginTop: 6, letterSpacing: '0.06em' }}>{total} products</motion.p>
+          )}
         </div>
 
         {/* Sticky filter bar */}
         <div style={{ position: 'sticky', top: 52, zIndex: 30, backgroundColor: 'var(--cream)', borderBottom: '1px solid var(--border)', height: 44, display: 'flex', alignItems: 'center', overflowX: 'auto', gap: 8, paddingLeft: 12, paddingRight: 12, scrollbarWidth: 'none' }}>
           {/* Filter pill */}
-          <button onClick={() => setShowMobileFilter(true)}
+          <motion.button onClick={() => setShowMobileFilter(true)}
+            whileTap={{ scale: 0.88 }} transition={{ type: 'spring', stiffness: 500, damping: 22 }}
             style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '0 14px', height: 32, minHeight: 'unset', border: `1px solid ${activeFilters > 0 ? 'var(--black)' : 'var(--border)'}`, background: activeFilters > 0 ? 'var(--black)' : 'transparent', color: activeFilters > 0 ? 'var(--cream)' : 'var(--black)', fontSize: 11, letterSpacing: '0.06em', cursor: 'pointer', flexShrink: 0, fontFamily: 'DM Sans, sans-serif', borderRadius: 16 }}>
             <SlidersHorizontal size={11} /> FILTER{activeFilters > 0 && ` (${activeFilters})`}
-          </button>
+          </motion.button>
           {/* Sort pills */}
           {['newest', 'price-asc', 'price-desc'].map((opt) => (
-            <button key={opt} onClick={() => setSortBy(sortBy === opt ? '' : opt)}
+            <motion.button key={opt} onClick={() => setSortBy(sortBy === opt ? '' : opt)}
+              whileTap={{ scale: 0.88 }} transition={{ type: 'spring', stiffness: 500, damping: 22 }}
               style={{ padding: '0 14px', height: 32, minHeight: 'unset', border: `1px solid ${sortBy === opt ? 'var(--black)' : 'var(--border)'}`, background: sortBy === opt ? 'var(--black)' : 'transparent', color: sortBy === opt ? 'var(--cream)' : 'var(--black)', fontSize: 11, letterSpacing: '0.06em', cursor: 'pointer', flexShrink: 0, fontFamily: 'DM Sans, sans-serif', borderRadius: 16 }}>
               {opt === 'newest' ? 'NEWEST' : opt === 'price-asc' ? 'LOW–HIGH' : 'HIGH–LOW'}
-            </button>
+            </motion.button>
           ))}
           {/* Quick size pills */}
           {['XS', 'S', 'M', 'L', 'XL'].map((s) => (
-            <button key={s} onClick={() => toggleSize(s)}
+            <motion.button key={s} onClick={() => toggleSize(s)}
+              whileTap={{ scale: 0.88 }} transition={{ type: 'spring', stiffness: 500, damping: 22 }}
               style={{ padding: '0 12px', height: 32, minHeight: 'unset', border: `1px solid ${selectedSizes.includes(s) ? 'var(--black)' : 'var(--border)'}`, background: selectedSizes.includes(s) ? 'var(--black)' : 'transparent', color: selectedSizes.includes(s) ? 'var(--cream)' : 'var(--black)', fontSize: 11, cursor: 'pointer', flexShrink: 0, fontFamily: 'DM Sans, sans-serif', borderRadius: 16 }}>
               {s}
-            </button>
+            </motion.button>
           ))}
           <div style={{ width: 4, flexShrink: 0 }} />
         </div>
