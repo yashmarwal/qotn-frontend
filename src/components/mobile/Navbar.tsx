@@ -86,6 +86,13 @@ export default function MobileNavbar() {
     return () => window.removeEventListener('keydown', handler);
   }, []);
 
+  // Bottom nav "Search" tab opens this overlay
+  useEffect(() => {
+    const handler = () => openSearch();
+    window.addEventListener('qotn:open-search', handler);
+    return () => window.removeEventListener('qotn:open-search', handler);
+  }, []);
+
   const runSearch = useCallback((q: string) => {
     if (!q.trim()) { setSearchResults([]); return; }
     setSearching(true);

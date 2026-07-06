@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import CategoryPageClient from './CategoryPageClient';
 
 const SITE = 'https://qotn.in';
@@ -42,5 +43,9 @@ export async function generateMetadata({
 }
 
 export default function CategoryPage({ params }: { params: Promise<{ category: string }> }) {
-  return <CategoryPageClient params={params} />;
+  return (
+    <Suspense fallback={<div style={{ minHeight: '60vh', backgroundColor: 'var(--cream)' }} />}>
+      <CategoryPageClient params={params} />
+    </Suspense>
+  );
 }

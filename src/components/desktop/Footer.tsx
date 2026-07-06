@@ -10,6 +10,8 @@ const shopLinks = [
 const helpLinks = [
   { href: '/about', label: 'About' },
   { href: '/contact', label: 'Contact' },
+  { href: '/faq', label: 'FAQ' },
+  { href: '/blog', label: 'Cotton Journal' },
   { href: '/size-guide', label: 'Size Guide' },
   { href: '/return-policy', label: 'Return Policy' },
   { href: '/shipping-policy', label: 'Shipping Policy' },

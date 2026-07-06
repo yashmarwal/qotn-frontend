@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, use } from 'react';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, SlidersHorizontal, X } from 'lucide-react';
 import ProductCard from '@/components/shared/ProductCard';
@@ -18,15 +19,36 @@ const allColors = ['White', 'Black', 'Cream', 'Olive', 'Blue', 'Beige', 'Grey', 
 export default function CategoryPageClient({ params }: { params: Promise<{ category: string }> }) {
   const { category } = use(params);
   const isMobile = useIsMobile();
-  const [sortBy, setSortBy] = useState('');
-  const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
-  const [selectedColors, setSelectedColors] = useState<string[]>([]);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  // Initialise from URL so shared/bookmarked links restore filters
+  const [sortBy, setSortBy] = useState(() => searchParams.get('sort') || '');
+  const [selectedSizes, setSelectedSizes] = useState<string[]>(() => {
+    const s = searchParams.get('sizes');
+    return s ? s.split(',').filter(Boolean) : [];
+  });
+  const [selectedColors, setSelectedColors] = useState<string[]>(() => {
+    const c = searchParams.get('colors');
+    return c ? c.split(',').filter(Boolean) : [];
+  });
   const [showSizeFilter, setShowSizeFilter] = useState(false);
   const [showColorFilter, setShowColorFilter] = useState(false);
   const [showMobileFilter, setShowMobileFilter] = useState(false);
   const [filtered, setFiltered] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
+
+  // Keep URL in sync with filter state (enables sharing + back-button)
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (sortBy) params.set('sort', sortBy);
+    if (selectedSizes.length) params.set('sizes', selectedSizes.join(','));
+    if (selectedColors.length) params.set('colors', selectedColors.join(','));
+    const query = params.toString();
+    router.replace(`${pathname}${query ? `?${query}` : ''}`, { scroll: false });
+  }, [sortBy, selectedSizes, selectedColors, pathname]);
 
   const label = categoryLabels[category] || category;
 

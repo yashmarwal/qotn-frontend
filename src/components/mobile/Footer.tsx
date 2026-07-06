@@ -19,6 +19,8 @@ const sections = [
     links: [
       { href: '/about', label: 'About Us' },
       { href: '/contact', label: 'Contact' },
+      { href: '/faq', label: 'FAQ' },
+      { href: '/blog', label: 'Cotton Journal' },
       { href: '/size-guide', label: 'Size Guide' },
       { href: '/return-policy', label: 'Return Policy' },
       { href: '/shipping-policy', label: 'Shipping Policy' },
@@ -58,7 +60,7 @@ function AccordionSection({ title, links }: { title: string; links: { href: stri
 
 export default function MobileFooter() {
   return (
-    <footer style={{ backgroundColor: '#1A1A1A', color: 'var(--cream)', padding: '32px 16px', paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 16px))' }}>
+    <footer style={{ backgroundColor: '#1A1A1A', color: 'var(--cream)', padding: '32px 16px', paddingBottom: '32px' }}>
       <div style={{ marginBottom: 20 }}>
         <p className="brand-wordmark" style={{ fontSize: 24, marginBottom: 4, color: '#F5F0E8' }}>QOTN</p>
         <p style={{ fontSize: 12, color: 'rgba(245,240,232,0.5)', letterSpacing: '0.06em' }}>Pure Cotton. Nothing Else.</p>
