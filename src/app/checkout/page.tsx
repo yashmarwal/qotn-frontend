@@ -958,7 +958,7 @@ export default function CheckoutPage() {
   if (isMobile) {
     return (
       <>
-        {otpModalOpen && <OTPModal />}
+        {otpModalOpen && OTPModal()}
         <div style={{ backgroundColor: 'var(--cream)', minHeight: '100vh', paddingBottom: 100 }}>
           <div style={{ padding: '20px 16px 0' }}>
             {StepIndicator()}
@@ -982,7 +982,7 @@ export default function CheckoutPage() {
   // ────────────────────────────────────────────────────────────────────────
   return (
     <>
-      {otpModalOpen && <OTPModal />}
+      {otpModalOpen && OTPModal()}
       <div style={{ backgroundColor: 'var(--cream)', minHeight: '100vh', padding: '60px 40px' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
           {StepIndicator()}

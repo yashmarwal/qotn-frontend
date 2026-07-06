@@ -25,8 +25,7 @@ function generateOTP(): string {
 async function sendEmail(to: string, otp: string): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
-    // Development fallback: log to console
-    console.log(`[OTP] ${to} → ${otp}`);
+    console.log(`[OTP DEV] ${to} → ${otp}`);
     return;
   }
 
@@ -67,7 +66,7 @@ async function sendEmail(to: string, otp: string): Promise<void> {
 
   if (!res.ok) {
     const err = await res.text();
-    throw new Error(`Email send failed: ${err}`);
+    throw new Error(`Resend error: ${err}`);
   }
 }
 
