@@ -28,6 +28,10 @@ export default function RootLayoutClient({ children }: { children: React.ReactNo
         {children}
       </main>
       {isMobile ? <MobileFooter /> : <DesktopFooter />}
+      {/* Spacer so the footer clears fixed bottom bars on pages that have them */}
+      {isMobile && pathname === '/cart' && (
+        <div style={{ height: 'calc(110px + env(safe-area-inset-bottom, 0px))' }} />
+      )}
       {/* Cart drawer is desktop-only; mobile uses the cart page */}
       {!isMobile && <CartDrawer />}
       {showBottomNav && <MobileBottomNav />}

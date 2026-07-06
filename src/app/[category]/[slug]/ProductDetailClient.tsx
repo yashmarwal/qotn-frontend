@@ -228,7 +228,7 @@ export default function ProductDetailClient({ product }: Props) {
   if (isMobile) {
     return (
       <>
-        <div style={{ backgroundColor: 'var(--cream)', paddingBottom: 'calc(88px + env(safe-area-inset-bottom, 0px))' }}>
+        <div style={{ backgroundColor: 'var(--cream)', paddingBottom: 88 }}>
           {/* Swipeable image gallery */}
           <div style={{ position: 'relative' }}>
             <div
