@@ -17,49 +17,44 @@ const MESSAGES = [
   'No size charts. Just your fit.',
 ];
 
-const ANIM_CSS = `
-/* ── existing (unchanged) ──────────────────────────────────────── */
-@keyframes cs-spin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-}
-@keyframes fadeCycle4 {
-  0%, 4%    { opacity: 0; transform: translateY(8px); }
-  8%, 21%   { opacity: 1; transform: translateY(0); }
-  25%, 100% { opacity: 0; transform: translateY(-8px); }
+const CSS = `
+/* ── text cycle ─────────────────────────────────── */
+@keyframes cs-fade {
+  0%,4%   { opacity:0; transform:translateY(7px);  }
+  9%,22%  { opacity:1; transform:translateY(0);    }
+  27%,100%{ opacity:0; transform:translateY(-7px); }
 }
 
-/* ── new additions ─────────────────────────────────────────────── */
-
-/* diagonal shimmer sweeps left-to-right */
+/* ── shimmer sweep ───────────────────────────────── */
 @keyframes cs-shimmer {
-  0%   { transform: translateX(-130%) skewX(-15deg); }
-  100% { transform: translateX(300%) skewX(-15deg); }
+  0%   { transform:translateX(-140%) skewX(-14deg); }
+  100% { transform:translateX(320%)  skewX(-14deg); }
 }
 
-/* dashes march left-to-right like a sewing machine */
+/* ── marching stitches on all 4 sides ────────────── */
 @keyframes cs-march {
-  from { background-position: 0 0; }
-  to   { background-position: 14px 0; }
+  from { background-position: 0 0,      100% 0,    0 100%,    0 0;    }
+  to   { background-position: 14px 0,   100% 14px, 14px 100%, 0 14px; }
 }
 
-/* scissors snip: two quick bites then rest */
+/* ── scissors snip ───────────────────────────────── */
 @keyframes cs-snip {
-  0%, 60%, 100% { transform: rotate(0deg)  scale(1); }
-  65%           { transform: rotate(-22deg) scale(1.12); }
-  72%           { transform: rotate(4deg)  scale(1); }
-  77%           { transform: rotate(-14deg) scale(1.06); }
-  84%           { transform: rotate(0deg)  scale(1); }
+  0%,55%,100% { transform:translateY(-50%) rotate(0deg)   scale(1);    }
+  60%         { transform:translateY(-50%) rotate(-24deg) scale(1.15); }
+  68%         { transform:translateY(-50%) rotate(5deg)   scale(1);    }
+  74%         { transform:translateY(-50%) rotate(-16deg) scale(1.08); }
+  82%         { transform:translateY(-50%) rotate(0deg)   scale(1);    }
 }
 
-/* price badge gentle pulse */
-@keyframes cs-badge-pulse {
-  0%, 100% { opacity: 0.75; transform: translateY(-50%) scale(1); }
-  50%       { opacity: 1;    transform: translateY(-50%) scale(1.06); }
+/* ── badge pulse ─────────────────────────────────── */
+@keyframes cs-badge {
+  0%,100%{ opacity:.78; transform:translateY(-50%) scale(1);    }
+  50%    { opacity:1;   transform:translateY(-50%) scale(1.07); }
 }
 
-/* ── base button ───────────────────────────────────────────────── */
+/* ────────────────────────────────────────────────── */
 .cs-btn {
+  --speed: 0.52s;
   position: relative;
   overflow: hidden;
   width: 100%;
@@ -69,170 +64,98 @@ const ANIM_CSS = `
   border-radius: 2px;
   cursor: pointer;
   margin-top: 8px;
-  background: transparent;
   padding: 0;
-  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* base fill */
+  background-color: var(--cream);
+  /* four dashed sides — top / right / bottom / left */
+  background-image:
+    repeating-linear-gradient(90deg,rgba(26,26,26,.32) 0px,rgba(26,26,26,.32) 6px,transparent 6px,transparent 14px),
+    repeating-linear-gradient(0deg, rgba(26,26,26,.32) 0px,rgba(26,26,26,.32) 6px,transparent 6px,transparent 14px),
+    repeating-linear-gradient(90deg,rgba(26,26,26,.32) 0px,rgba(26,26,26,.32) 6px,transparent 6px,transparent 14px),
+    repeating-linear-gradient(0deg, rgba(26,26,26,.32) 0px,rgba(26,26,26,.32) 6px,transparent 6px,transparent 14px);
+  background-size:   14px 2px, 2px 14px, 14px 2px, 2px 14px;
+  background-position: 0 0, 100% 0, 0 100%, 0 0;
+  background-repeat:   repeat-x, repeat-y, repeat-x, repeat-y;
+  animation: cs-march var(--speed) linear infinite;
+  transition: transform .18s cubic-bezier(.34,1.56,.64,1);
 }
-.cs-btn:hover  { transform: scaleX(1.003) scaleY(1.014); }
-.cs-btn:active { transform: scale(0.998); }
+/* speed up on hover */
+.cs-btn:hover  { --speed:.16s; transform:scaleX(1.004) scaleY(1.018); }
+.cs-btn:active { transform:scale(.997); }
 
-/* ── existing glow ring ────────────────────────────────────────── */
-.cs-glow {
-  position: absolute;
-  inset: -50%;
-  background: conic-gradient(from 0deg, #E8E2D8, #F5F0E8, #C4A882, #6B6560, #E8E2D8);
-  opacity: 0.55;
-  filter: blur(20px);
-  animation: cs-spin 8s linear infinite;
-  transition: opacity 0.32s ease;
+/* saved state — dark bg, cream stitches */
+.cs-btn-saved {
+  background-color: var(--black);
+  background-image:
+    repeating-linear-gradient(90deg,rgba(245,240,232,.28) 0px,rgba(245,240,232,.28) 6px,transparent 6px,transparent 14px),
+    repeating-linear-gradient(0deg, rgba(245,240,232,.28) 0px,rgba(245,240,232,.28) 6px,transparent 6px,transparent 14px),
+    repeating-linear-gradient(90deg,rgba(245,240,232,.28) 0px,rgba(245,240,232,.28) 6px,transparent 6px,transparent 14px),
+    repeating-linear-gradient(0deg, rgba(245,240,232,.28) 0px,rgba(245,240,232,.28) 6px,transparent 6px,transparent 14px);
 }
-.cs-btn:hover .cs-glow {
-  animation-duration: 2.2s;
-  opacity: 0.88;
-}
-.cs-inner {
-  position: absolute;
-  inset: 3px;
-  background: var(--cream);
-  border-radius: 1px;
-  z-index: 1;
-}
-.cs-inner-saved { background: var(--black); }
 
-/* ── shimmer sweep ─────────────────────────────────────────────── */
+/* ── shimmer layer ──────────────────────────────── */
 .cs-shimmer {
-  position: absolute;
-  inset: 3px;
-  border-radius: 1px;
-  overflow: hidden;
-  z-index: 2;
-  pointer-events: none;
+  position:absolute; inset:0; pointer-events:none; z-index:1; overflow:hidden;
 }
 .cs-shimmer::after {
-  content: '';
-  position: absolute;
-  top: -20%;
-  left: 0;
-  width: 32%;
-  height: 140%;
-  background: linear-gradient(
-    108deg,
-    transparent 10%,
-    rgba(255,255,255,0.52) 50%,
-    transparent 90%
-  );
-  animation: cs-shimmer 4.8s ease-in-out infinite;
-  animation-delay: 1.2s;
+  content:'';
+  position:absolute; top:-20%; left:0;
+  width:28%; height:140%;
+  background:linear-gradient(108deg,transparent 10%,rgba(255,255,255,.46) 50%,transparent 90%);
+  animation:cs-shimmer 5.2s ease-in-out infinite;
+  animation-delay:1.8s;
 }
 .cs-shimmer-saved::after {
-  background: linear-gradient(
-    108deg,
-    transparent 10%,
-    rgba(255,255,255,0.10) 50%,
-    transparent 90%
-  );
+  background:linear-gradient(108deg,transparent 10%,rgba(255,255,255,.08) 50%,transparent 90%);
 }
 
-/* ── marching stitch line ──────────────────────────────────────── */
-.cs-stitch {
-  position: absolute;
-  bottom: 7px;
-  left: 20px;
-  right: 20px;
-  height: 2px;
-  z-index: 3;
-  pointer-events: none;
-  background-image: repeating-linear-gradient(
-    90deg,
-    rgba(0,0,0,0.20) 0px,
-    rgba(0,0,0,0.20) 6px,
-    transparent      6px,
-    transparent      14px
-  );
-  background-size: 14px 2px;
-  animation: cs-march 0.55s linear infinite;
-}
-.cs-stitch-saved {
-  background-image: repeating-linear-gradient(
-    90deg,
-    rgba(245,240,232,0.32) 0px,
-    rgba(245,240,232,0.32) 6px,
-    transparent            6px,
-    transparent            14px
-  );
+/* ── scissors ───────────────────────────────────── */
+.cs-scissors {
+  position:absolute; top:50%; left:16px;
+  z-index:2; pointer-events:none;
+  font-size:16px; line-height:1;
+  animation:cs-snip 5.4s ease-in-out infinite;
+  animation-delay:2.4s;
 }
 
-/* ── scissors icon (left anchor) ──────────────────────────────── */
-.cs-scissors-wrap {
-  position: absolute;
-  top: 50%;
-  left: 16px;
-  transform: translateY(-50%);
-  z-index: 4;
-  pointer-events: none;
-  line-height: 1;
-}
-.cs-scissors-icon {
-  font-size: 15px;
-  display: block;
-  animation: cs-snip 4.8s ease-in-out infinite;
-  animation-delay: 2.2s;
+/* ── price badge ────────────────────────────────── */
+.cs-price {
+  position:absolute; top:50%; right:14px;
+  z-index:2; pointer-events:none;
+  font-size:10px; letter-spacing:.10em;
+  font-family:'DM Sans',sans-serif; font-weight:700;
+  color:var(--black);
+  background:rgba(26,26,26,.07);
+  border:1px solid rgba(26,26,26,.12);
+  padding:3px 9px; border-radius:20px;
+  text-transform:uppercase;
+  animation:cs-badge 3.2s ease-in-out infinite;
+  animation-delay:.7s;
 }
 
-/* ── price badge (right anchor) ────────────────────────────────── */
-.cs-price-badge {
-  position: absolute;
-  top: 50%;
-  right: 14px;
-  transform: translateY(-50%);
-  z-index: 4;
-  pointer-events: none;
-  font-size: 10px;
-  letter-spacing: 0.10em;
-  font-family: 'DM Sans', sans-serif;
-  font-weight: 700;
-  color: var(--black);
-  background: rgba(0,0,0,0.07);
-  border: 1px solid rgba(0,0,0,0.10);
-  padding: 3px 9px;
-  border-radius: 20px;
-  text-transform: uppercase;
-  animation: cs-badge-pulse 3s ease-in-out infinite;
-  animation-delay: 0.6s;
-}
-
-/* ── existing text layer ───────────────────────────────────────── */
-.cs-text-layer {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 3;
-  pointer-events: none;
+/* ── text layer ─────────────────────────────────── */
+.cs-text {
+  position:absolute; inset:0;
+  display:flex; align-items:center; justify-content:center;
+  z-index:2; pointer-events:none;
 }
 .cs-msg {
-  position: absolute;
-  font-size: 11px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  font-weight: 500;
-  font-family: 'DM Sans', sans-serif;
-  color: var(--black);
-  opacity: 0;
-  animation: fadeCycle4 10s ease-in-out infinite;
+  position:absolute;
+  font-size:11px; letter-spacing:.10em; text-transform:uppercase;
+  font-weight:500; font-family:'DM Sans',sans-serif;
+  color:var(--black); opacity:0;
+  animation:cs-fade 10s ease-in-out infinite;
 }
 
-/* ── reduced-motion overrides ──────────────────────────────────── */
-@media (prefers-reduced-motion: reduce) {
-  .cs-glow           { animation-play-state: paused !important; }
-  .cs-msg            { animation: none !important; opacity: 0 !important; }
-  .cs-msg-first      { opacity: 1 !important; transform: none !important; }
-  .cs-shimmer::after { animation: none !important; }
-  .cs-stitch         { animation: none !important; }
-  .cs-scissors-icon  { animation: none !important; }
-  .cs-price-badge    { animation: none !important; opacity: 1 !important; transform: translateY(-50%) !important; }
-  .cs-btn            { transition: none !important; }
+/* ── reduced motion ─────────────────────────────── */
+@media (prefers-reduced-motion:reduce) {
+  .cs-btn            { animation:none !important; }
+  .cs-shimmer::after { animation:none !important; }
+  .cs-scissors       { animation:none !important; }
+  .cs-price          { animation:none !important; opacity:1 !important; }
+  .cs-msg            { animation:none !important; opacity:0 !important; }
+  .cs-msg:first-child{ opacity:1 !important; transform:none !important; }
+  .cs-btn            { transition:none !important; }
 }
 `;
 
@@ -244,56 +167,44 @@ export default function CustomStitchingButton({
 
   return (
     <>
-      <style>{ANIM_CSS}</style>
+      <style>{CSS}</style>
       <button
         onClick={() => setOpen(true)}
         aria-label={saved
           ? 'Measurements saved. Click to edit your custom stitching.'
           : 'Custom stitch this garment for ₹249'}
-        className="cs-btn"
+        className={`cs-btn${saved ? ' cs-btn-saved' : ''}`}
       >
-        {/* ── existing: rotating gradient glow ring ── */}
-        <span aria-hidden="true" className="cs-glow" />
-
-        {/* ── existing: inner panel ── */}
-        <span aria-hidden="true" className={`cs-inner${saved ? ' cs-inner-saved' : ''}`} />
-
-        {/* ── new: shimmer sweep ── */}
+        {/* shimmer sweep */}
         <span aria-hidden="true" className={`cs-shimmer${saved ? ' cs-shimmer-saved' : ''}`} />
 
-        {/* ── new: marching stitch dashes along bottom ── */}
-        <span aria-hidden="true" className={`cs-stitch${saved ? ' cs-stitch-saved' : ''}`} />
+        {/* scissors — snips every few seconds */}
+        <span
+          aria-hidden="true"
+          className="cs-scissors"
+          style={{ filter: saved ? 'invert(1) brightness(.75)' : 'none' }}
+        >✂</span>
 
-        {/* ── new: scissors icon pinned left ── */}
-        <span aria-hidden="true" className="cs-scissors-wrap">
-          <span
-            className="cs-scissors-icon"
-            style={{ filter: saved ? 'invert(1) brightness(0.7)' : 'none' }}
-          >✂</span>
-        </span>
-
-        {/* ── new: price badge pinned right (only when not saved) ── */}
+        {/* price badge (hidden when saved) */}
         {!saved && (
-          <span aria-hidden="true" className="cs-price-badge">₹249</span>
+          <span aria-hidden="true" className="cs-price">₹249</span>
         )}
 
-        {/* ── existing: cycling text messages ── */}
+        {/* text */}
         {saved ? (
-          <span aria-hidden="true" className="cs-text-layer" style={{ color: 'var(--cream)' }}>
-            <span style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500, fontFamily: 'DM Sans, sans-serif' }}>
+          <span aria-hidden="true" className="cs-text" style={{ color: 'var(--cream)' }}>
+            <span style={{ fontSize: 11, letterSpacing: '.10em', textTransform: 'uppercase', fontWeight: 500, fontFamily: 'DM Sans,sans-serif' }}>
               ✓ Measurements Saved — Edit
             </span>
           </span>
         ) : (
-          <span aria-hidden="true" className="cs-text-layer">
+          <span aria-hidden="true" className="cs-text">
             {MESSAGES.map((msg, i) => (
               <span
                 key={i}
-                className={`cs-msg${i === 0 ? ' cs-msg-first' : ''}`}
+                className="cs-msg"
                 style={{ animationDelay: `${i * 2.5}s` }}
-              >
-                {msg}
-              </span>
+              >{msg}</span>
             ))}
           </span>
         )}
@@ -304,10 +215,7 @@ export default function CustomStitchingButton({
         onClose={() => setOpen(false)}
         productId={productId}
         productCategory={productCategory}
-        onSaved={(id) => {
-          onStitchingAdded(id);
-          setOpen(false);
-        }}
+        onSaved={(id) => { onStitchingAdded(id); setOpen(false); }}
       />
     </>
   );
