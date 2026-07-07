@@ -53,7 +53,7 @@ export default function FounderVideo() {
                 onClick={(e) => { e.stopPropagation(); setVisible(false); }}
                 style={{
                   position: 'absolute', top: -5, left: -5, zIndex: 3,
-                  width: 18, height: 18, borderRadius: '50%',
+                  width: 18, height: 18, minHeight: 'unset', borderRadius: '50%',
                   background: 'var(--black)', border: '1.5px solid var(--cream)',
                   color: 'var(--cream)', fontSize: 10, fontWeight: 700,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
