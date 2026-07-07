@@ -424,6 +424,34 @@ export default function ProductDetailClient({ product }: Props) {
               </button>
             </div>
 
+            {/* Find My Size pill — above custom stitching */}
+            <motion.button
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.45, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
+              whileHover={{ scale: 1.015 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => setFindMySizeOpen(true)}
+              style={{
+                width: '100%', height: 50, marginBottom: 10,
+                background: 'transparent',
+                border: '1px solid var(--border)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+                cursor: 'pointer', fontFamily: 'DM Sans, sans-serif',
+                position: 'relative', overflow: 'hidden',
+              }}
+            >
+              {/* Shimmer sweep */}
+              <motion.div
+                animate={{ x: ['-120%', '220%'] }}
+                transition={{ duration: 1.1, delay: 2, repeat: Infinity, repeatDelay: 5 }}
+                style={{ position: 'absolute', top: 0, left: 0, width: '38%', height: '100%', background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.45),transparent)', pointerEvents: 'none' }}
+              />
+              <span style={{ fontSize: 14 }}>📐</span>
+              <span style={{ fontSize: 11, letterSpacing: '0.10em', fontWeight: 600, textTransform: 'uppercase', color: 'var(--black)' }}>Find My Size</span>
+              <span style={{ fontSize: 10, color: 'var(--dust)', letterSpacing: '0.04em' }}>— Indian guide</span>
+            </motion.button>
+
             {product.category !== 'kids' && (
               <CustomStitchingButton
                 productId={product.id}
@@ -512,7 +540,7 @@ export default function ProductDetailClient({ product }: Props) {
 
         <MobileBottomBar product={product} selectedSize={selectedSize} onAddToBag={handleAddToBag} added={added} isOOS={isCurrentVariantOOS} />
         <SizeGuide isOpen={sizeGuideOpen} onClose={() => setSizeGuideOpen(false)} />
-        <FindMySize isOpen={findMySizeOpen} onClose={() => setFindMySizeOpen(false)} availableSizes={product.sizes} onSelect={(size) => { setSelectedSize(size); }} />
+        <FindMySize isOpen={findMySizeOpen} onClose={() => setFindMySizeOpen(false)} availableSizes={product.sizes} onSelect={(size) => { setSelectedSize(size); }} category={product.category} />
       </>
     );
   }
@@ -687,6 +715,32 @@ export default function ProductDetailClient({ product }: Props) {
                   Buy Now
                 </button>
               </div>
+
+              {/* Find My Size pill — desktop */}
+              <motion.button
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.45, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                whileHover={{ scale: 1.012 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => setFindMySizeOpen(true)}
+                style={{
+                  width: '100%', height: 48, marginBottom: 10,
+                  background: 'transparent', border: '1px solid var(--border)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+                  cursor: 'pointer', fontFamily: 'DM Sans, sans-serif',
+                  position: 'relative', overflow: 'hidden',
+                }}
+              >
+                <motion.div
+                  animate={{ x: ['-120%', '220%'] }}
+                  transition={{ duration: 1.1, delay: 2.5, repeat: Infinity, repeatDelay: 5 }}
+                  style={{ position: 'absolute', top: 0, left: 0, width: '38%', height: '100%', background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.45),transparent)', pointerEvents: 'none' }}
+                />
+                <span style={{ fontSize: 14 }}>📐</span>
+                <span style={{ fontSize: 11, letterSpacing: '0.10em', fontWeight: 600, textTransform: 'uppercase', color: 'var(--black)' }}>Find My Size</span>
+                <span style={{ fontSize: 10, color: 'var(--dust)', letterSpacing: '0.04em' }}>— Indian sizing guide</span>
+              </motion.button>
 
               {product.category !== 'kids' && (
                 <CustomStitchingButton

@@ -10,23 +10,22 @@ interface Props {
   onClose: () => void;
   availableSizes?: string[];
   onSelect?: (size: string) => void;
+  category?: string;
 }
 
 const SIZE_ORDER = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
-// Height upper bounds (cm) for each size
-const HEIGHT_UPPER: Record<string, number> = {
-  XS: 156, S: 162, M: 168, L: 174, XL: 181, XXL: 999,
+// Height upper bounds (cm) → frame size. Based on Indian average stature.
+// Women avg ~152–155 cm, men avg ~165 cm — sizes graded accordingly.
+const FRAME_HEIGHT: Record<'men' | 'women', Record<string, number>> = {
+  women: { XS: 152, S: 157, M: 163, L: 168, XL: 173, XXL: 999 },
+  men:   { XS: 158, S: 164, M: 170, L: 176, XL: 182, XXL: 999 },
 };
 
-// Typical weight range (kg) for each size
-const WEIGHT_RANGE: Record<string, [number, number]> = {
-  XS: [38, 52], S: [52, 62], M: [62, 73], L: [73, 85], XL: [85, 98], XXL: [98, 140],
-};
-
-function getBaseSize(heightCm: number): string {
+function getFrameSize(heightCm: number, isMen: boolean): string {
+  const chart = FRAME_HEIGHT[isMen ? 'men' : 'women'];
   for (const size of SIZE_ORDER) {
-    if (heightCm <= HEIGHT_UPPER[size]) return size;
+    if (heightCm <= chart[size]) return size;
   }
   return 'XXL';
 }
@@ -36,29 +35,101 @@ function shiftSize(size: string, delta: number): string {
   return SIZE_ORDER[idx];
 }
 
-function recommend(heightCm: number, weightKg: number, fit: string) {
-  const base = getBaseSize(heightCm);
-  const [wLo, wHi] = WEIGHT_RANGE[base];
-  let adjusted = base;
-  if (weightKg > wHi + 5) adjusted = shiftSize(base, 1);
-  else if (weightKg < wLo - 5) adjusted = shiftSize(base, -1);
-  const finalSize = fit === 'loose' ? shiftSize(adjusted, 1) : adjusted;
-  return { size: finalSize, secondary: shiftSize(finalSize, 1) };
-}
-
 function ftInToCm(ft: number, inches: number): number {
   return ft * 30.48 + inches * 2.54;
 }
 
-export default function FindMySize({ isOpen, onClose, availableSizes, onSelect }: Props) {
-  const [unit, setUnit] = useState<'cm' | 'ft'>('cm');
+function bmi(heightCm: number, weightKg: number): number {
+  const h = heightCm / 100;
+  return weightKg / (h * h);
+}
+
+type BodyShape = 'slim' | 'average' | 'fuller';
+type FitPref  = 'slim' | 'regular' | 'loose';
+
+interface Result {
+  size: string;
+  frameSize: string;
+  primaryNote: string;
+  girthNote?: string;
+  alt?: string;
+}
+
+function recommend(
+  heightCm: number,
+  weightKg: number,
+  bodyShape: BodyShape,
+  fit: FitPref,
+  category: string
+): Result {
+  const isMen = category === 'men';
+  const b = bmi(heightCm, weightKg);
+  const frame = getFrameSize(heightCm, isMen);
+
+  // Step 1 — BMI cross-check (independent of body shape)
+  let bmiShift = 0;
+  if (b < 17) bmiShift = -1;
+  else if (b > 32) bmiShift = 2;
+  else if (b > 28) bmiShift = 1;
+
+  const afterBMI = shiftSize(frame, bmiShift);
+
+  // Step 2 — Body shape: the Indian "thin-fat" correction
+  // Many Indian bodies carry more central girth than the frame suggests,
+  // so a size that fits the chest/bust can be tight at the waist.
+  let girthShift = 0;
+  let girthNote: string | undefined;
+
+  if (bodyShape === 'fuller') {
+    if (b > 21) {
+      girthShift = 1;
+      girthNote = `Your shoulders & chest fit ${afterBMI} — sized up to ${shiftSize(afterBMI, 1)} for waist comfort. This is the classic Indian fit challenge: the frame fits one size while the waist needs the next.`;
+    }
+    if (b > 28) girthShift = 2;
+  } else if (bodyShape === 'slim' && b < 19) {
+    girthShift = -1;
+  }
+
+  const afterGirth = shiftSize(afterBMI, girthShift);
+
+  // Step 3 — Fit preference
+  let fitShift = 0;
+  if (fit === 'loose') fitShift = 1;
+  if (fit === 'slim' && bodyShape !== 'fuller') fitShift = -1;
+
+  const finalSize = shiftSize(afterGirth, fitShift);
+
+  // Build note
+  let primaryNote = '';
+  if (bodyShape === 'fuller' && girthShift > 0) {
+    primaryNote = girthNote!;
+  } else if (fit === 'loose') {
+    primaryNote = 'Sized up for a relaxed, breathable kurta fit. Great for layering or longer wear.';
+  } else if (fit === 'slim') {
+    primaryNote = 'Close-to-body cut. Cotton is structured fresh and softens after a few washes.';
+  } else {
+    primaryNote = 'Classic Indian fit — relaxed through the chest, room at the waist. Works for most builds.';
+  }
+
+  return {
+    size: finalSize,
+    frameSize: afterBMI,
+    primaryNote,
+    girthNote: bodyShape === 'fuller' && girthShift > 0 ? girthNote : undefined,
+    alt: shiftSize(finalSize, 1),
+  };
+}
+
+export default function FindMySize({ isOpen, onClose, availableSizes, onSelect, category = 'women' }: Props) {
+  const [unit, setUnit]         = useState<'cm' | 'ft'>('cm');
   const [heightCm, setHeightCm] = useState('');
   const [heightFt, setHeightFt] = useState('');
   const [heightIn, setHeightIn] = useState('');
-  const [weight, setWeight] = useState('');
-  const [fit, setFit] = useState<'slim' | 'regular' | 'loose'>('regular');
-  const [result, setResult] = useState<{ size: string; secondary: string } | null>(null);
-  const [error, setError] = useState('');
+  const [weight, setWeight]     = useState('');
+  const [bodyShape, setBodyShape] = useState<BodyShape>('average');
+  const [fit, setFit]           = useState<FitPref>('regular');
+  const [result, setResult]     = useState<Result | null>(null);
+  const [error, setError]       = useState('');
 
   const handleFind = () => {
     setError('');
@@ -70,8 +141,8 @@ export default function FindMySize({ isOpen, onClose, availableSizes, onSelect }
     }
     const w = parseFloat(weight);
     if (!h || h < 100 || h > 230) { setError('Please enter a valid height.'); return; }
-    if (!w || w < 25 || w > 200) { setError('Please enter a valid weight.'); return; }
-    setResult(recommend(h, w, fit));
+    if (!w || w < 25 || w > 200)  { setError('Please enter a valid weight.'); return; }
+    setResult(recommend(h, w, bodyShape, fit, category));
   };
 
   const handleClose = () => {
@@ -79,24 +150,35 @@ export default function FindMySize({ isOpen, onClose, availableSizes, onSelect }
     setTimeout(() => { setResult(null); setError(''); setHeightCm(''); setHeightFt(''); setHeightIn(''); setWeight(''); }, 320);
   };
 
-  const sizeUnavailable = result && availableSizes && availableSizes.length > 0 && !availableSizes.includes(result.size);
+  const sizeUnavail = result && availableSizes && availableSizes.length > 0 && !availableSizes.includes(result.size);
+  const recommendedSize = sizeUnavail ? result!.alt! : result?.size;
+
+  const inputStyle: React.CSSProperties = {
+    width: '100%', padding: '13px 14px',
+    border: '1px solid var(--border)', background: 'transparent',
+    fontSize: 15, outline: 'none',
+    fontFamily: 'DM Sans, sans-serif', boxSizing: 'border-box', color: 'var(--black)',
+  };
 
   const sheet = (
     <AnimatePresence>
       {isOpen && (
         <>
+          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             onClick={handleClose}
-            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.52)', zIndex: 500 }}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 500 }}
           />
+
+          {/* Sheet */}
           <motion.div
             initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 280 }}
             style={{
               position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 501,
               backgroundColor: 'var(--cream)', borderRadius: '16px 16px 0 0',
-              maxHeight: '92vh', overflowY: 'auto',
+              maxHeight: '94vh', overflowY: 'auto',
               paddingBottom: 'calc(20px + env(safe-area-inset-bottom, 0px))',
             }}
           >
@@ -107,19 +189,17 @@ export default function FindMySize({ isOpen, onClose, availableSizes, onSelect }
 
             <div style={{ padding: '0 20px 8px' }}>
               {/* Header */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 22 }}>
                 <div>
                   <p style={{ fontSize: 13, letterSpacing: '0.10em', textTransform: 'uppercase', fontWeight: 600 }}>Find My Size</p>
-                  <p style={{ fontSize: 11, color: 'var(--dust)', marginTop: 3, lineHeight: 1.4 }}>
-                    Indian sizing · Cotton shrinks ~3–5% on first wash
-                  </p>
+                  <p style={{ fontSize: 11, color: 'var(--dust)', marginTop: 3 }}>Indian sizing · built for Indian body types</p>
                 </div>
-                <button onClick={handleClose} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--dust)', marginTop: 2 }}>
+                <button onClick={handleClose} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--dust)' }}>
                   <X size={18} strokeWidth={1.5} />
                 </button>
               </div>
 
-              {/* Height row */}
+              {/* Height */}
               <div style={{ marginBottom: 16 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                   <label style={{ fontSize: 10, letterSpacing: '0.10em', textTransform: 'uppercase', color: 'var(--dust)', fontWeight: 500 }}>Height</label>
@@ -133,91 +213,123 @@ export default function FindMySize({ isOpen, onClose, availableSizes, onSelect }
                   </div>
                 </div>
                 {unit === 'cm' ? (
-                  <input type="number" placeholder="e.g. 168"
-                    value={heightCm} onChange={e => setHeightCm(e.target.value)}
-                    style={{ width: '100%', padding: '13px 14px', border: '1px solid var(--border)', background: 'transparent', fontSize: 15, outline: 'none', fontFamily: 'DM Sans, sans-serif', boxSizing: 'border-box', color: 'var(--black)' }} />
+                  <input type="number" placeholder="e.g. 165" value={heightCm} onChange={e => setHeightCm(e.target.value)} style={inputStyle} />
                 ) : (
                   <div style={{ display: 'flex', gap: 8 }}>
-                    <input type="number" placeholder="Feet (e.g. 5)"
-                      value={heightFt} onChange={e => setHeightFt(e.target.value)}
-                      style={{ flex: 1, padding: '13px 14px', border: '1px solid var(--border)', background: 'transparent', fontSize: 15, outline: 'none', fontFamily: 'DM Sans, sans-serif', boxSizing: 'border-box', color: 'var(--black)' }} />
-                    <input type="number" placeholder="Inches (e.g. 7)"
-                      value={heightIn} onChange={e => setHeightIn(e.target.value)}
-                      style={{ flex: 1, padding: '13px 14px', border: '1px solid var(--border)', background: 'transparent', fontSize: 15, outline: 'none', fontFamily: 'DM Sans, sans-serif', boxSizing: 'border-box', color: 'var(--black)' }} />
+                    <input type="number" placeholder="Feet (e.g. 5)" value={heightFt} onChange={e => setHeightFt(e.target.value)} style={{ ...inputStyle, flex: 1 }} />
+                    <input type="number" placeholder="Inches (e.g. 4)" value={heightIn} onChange={e => setHeightIn(e.target.value)} style={{ ...inputStyle, flex: 1 }} />
                   </div>
                 )}
               </div>
 
               {/* Weight */}
-              <div style={{ marginBottom: 16 }}>
+              <div style={{ marginBottom: 18 }}>
                 <label style={{ fontSize: 10, letterSpacing: '0.10em', textTransform: 'uppercase', color: 'var(--dust)', fontWeight: 500, display: 'block', marginBottom: 8 }}>Weight (kg)</label>
-                <input type="number" placeholder="e.g. 65"
-                  value={weight} onChange={e => setWeight(e.target.value)}
-                  style={{ width: '100%', padding: '13px 14px', border: '1px solid var(--border)', background: 'transparent', fontSize: 15, outline: 'none', fontFamily: 'DM Sans, sans-serif', boxSizing: 'border-box', color: 'var(--black)' }} />
+                <input type="number" placeholder="e.g. 62" value={weight} onChange={e => setWeight(e.target.value)} style={inputStyle} />
               </div>
 
-              {/* Fit preference */}
-              <div style={{ marginBottom: 24 }}>
-                <label style={{ fontSize: 10, letterSpacing: '0.10em', textTransform: 'uppercase', color: 'var(--dust)', fontWeight: 500, display: 'block', marginBottom: 8 }}>Preferred Fit</label>
+              {/* Body Shape — the key Indian fit input */}
+              <div style={{ marginBottom: 18 }}>
+                <label style={{ fontSize: 10, letterSpacing: '0.10em', textTransform: 'uppercase', color: 'var(--dust)', fontWeight: 500, display: 'block', marginBottom: 8 }}>
+                  Body Type
+                  <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0, marginLeft: 6, fontSize: 10 }}>— helps with the waist vs. frame issue</span>
+                </label>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
                   {([
-                    { id: 'slim', label: 'Slim', desc: 'Close to body' },
-                    { id: 'regular', label: 'Regular', desc: 'Classic fit' },
-                    { id: 'loose', label: 'Loose', desc: 'Relaxed fit' },
-                  ] as const).map(f => (
-                    <button key={f.id} onClick={() => setFit(f.id)}
-                      style={{ padding: '12px 8px', border: fit === f.id ? '1.5px solid var(--black)' : '1px solid var(--border)', background: fit === f.id ? 'rgba(26,26,26,0.05)' : 'transparent', cursor: 'pointer', textAlign: 'center', fontFamily: 'DM Sans, sans-serif', transition: 'all 0.15s', borderRadius: 4 }}>
-                      <p style={{ fontSize: 13, fontWeight: fit === f.id ? 600 : 400, color: 'var(--black)', marginBottom: 2 }}>{f.label}</p>
-                      <p style={{ fontSize: 10, color: 'var(--dust)' }}>{f.desc}</p>
+                    { id: 'slim',    label: 'Lean Frame',   desc: 'Slim throughout' },
+                    { id: 'average', label: 'Average Build', desc: 'Proportionate' },
+                    { id: 'fuller',  label: 'Fuller Middle', desc: 'Waist > Frame' },
+                  ] as const).map(s => (
+                    <button key={s.id} onClick={() => setBodyShape(s.id)}
+                      style={{
+                        padding: '11px 6px', textAlign: 'center',
+                        border: bodyShape === s.id ? '1.5px solid var(--black)' : '1px solid var(--border)',
+                        background: bodyShape === s.id ? 'rgba(26,26,26,0.05)' : 'transparent',
+                        cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', borderRadius: 6, transition: 'all 0.15s',
+                      }}>
+                      <p style={{ fontSize: 12, fontWeight: bodyShape === s.id ? 600 : 400, color: 'var(--black)', marginBottom: 2, lineHeight: 1.2 }}>{s.label}</p>
+                      <p style={{ fontSize: 10, color: 'var(--dust)' }}>{s.desc}</p>
                     </button>
                   ))}
                 </div>
               </div>
 
-              {error && <p style={{ fontSize: 12, color: '#DC2626', marginBottom: 12 }}>{error}</p>}
+              {/* Fit Preference */}
+              <div style={{ marginBottom: 24 }}>
+                <label style={{ fontSize: 10, letterSpacing: '0.10em', textTransform: 'uppercase', color: 'var(--dust)', fontWeight: 500, display: 'block', marginBottom: 8 }}>Preferred Fit</label>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  {([
+                    { id: 'slim',    label: 'Slim',    sub: 'Close to body' },
+                    { id: 'regular', label: 'Regular', sub: 'Classic Indian' },
+                    { id: 'loose',   label: 'Relaxed', sub: 'Room to breathe' },
+                  ] as const).map(f => (
+                    <button key={f.id} onClick={() => setFit(f.id)}
+                      style={{
+                        flex: 1, padding: '11px 4px', textAlign: 'center',
+                        border: fit === f.id ? '1.5px solid var(--black)' : '1px solid var(--border)',
+                        background: fit === f.id ? 'rgba(26,26,26,0.05)' : 'transparent',
+                        cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', borderRadius: 6, transition: 'all 0.15s',
+                      }}>
+                      <p style={{ fontSize: 12, fontWeight: fit === f.id ? 600 : 400, color: 'var(--black)', marginBottom: 2 }}>{f.label}</p>
+                      <p style={{ fontSize: 10, color: 'var(--dust)' }}>{f.sub}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {error && <p style={{ fontSize: 12, color: '#DC2626', marginBottom: 14 }}>{error}</p>}
 
               {!result && (
-                <motion.button onClick={handleFind}
-                  whileTap={{ scale: 0.97 }}
+                <motion.button onClick={handleFind} whileTap={{ scale: 0.97 }}
                   style={{ width: '100%', height: 52, background: 'var(--black)', color: 'var(--cream)', border: 'none', fontSize: 12, letterSpacing: '0.10em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', fontWeight: 500 }}>
                   Find My Size
                 </motion.button>
               )}
 
+              {/* Result */}
               <AnimatePresence>
                 {result && (
                   <motion.div
-                    initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                    transition={{ duration: 0.28 }}
-                    style={{ border: '1px solid var(--border)', padding: 20 }}
+                    initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
                   >
-                    <p style={{ fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--dust)', marginBottom: 6, textAlign: 'center' }}>Your Recommended Size</p>
-                    <p style={{ fontSize: 56, fontWeight: 300, lineHeight: 1, textAlign: 'center', marginBottom: 4 }}>{result.size}</p>
-
-                    {sizeUnavailable && (
-                      <p style={{ fontSize: 11, color: '#D97706', marginBottom: 12, textAlign: 'center', fontWeight: 500 }}>
-                        {result.size} is currently unavailable — try {result.secondary} for a roomier fit.
+                    {/* Size display */}
+                    <div style={{ border: '1px solid var(--border)', padding: '20px 20px 16px', marginBottom: 12 }}>
+                      <p style={{ fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--dust)', textAlign: 'center', marginBottom: 6 }}>
+                        {sizeUnavail ? 'Closest available size' : 'Your recommended size'}
                       </p>
-                    )}
+                      <p style={{ fontSize: 64, fontWeight: 300, lineHeight: 1, textAlign: 'center', marginBottom: 4, letterSpacing: '-0.02em' }}>
+                        {recommendedSize}
+                      </p>
+                      {sizeUnavail && (
+                        <p style={{ fontSize: 11, color: '#D97706', textAlign: 'center', fontWeight: 500, marginBottom: 4 }}>
+                          Your ideal size {result.size} is unavailable — {result.alt} is next best.
+                        </p>
+                      )}
+                      <p style={{ fontSize: 12, color: 'var(--dust)', lineHeight: 1.6, marginTop: 10, borderTop: '1px solid var(--border)', paddingTop: 12 }}>
+                        {result.primaryNote}
+                      </p>
+                    </div>
 
-                    <div style={{ background: 'rgba(26,26,26,0.04)', padding: '10px 14px', marginBottom: 16, borderRadius: 4 }}>
-                      <p style={{ fontSize: 11, color: 'var(--dust)', lineHeight: 1.6 }}>
+                    {/* Cotton shrinkage note */}
+                    <div style={{ background: 'rgba(26,26,26,0.04)', padding: '10px 14px', marginBottom: 14, borderRadius: 4 }}>
+                      <p style={{ fontSize: 11, color: 'var(--dust)', lineHeight: 1.65 }}>
                         <strong style={{ color: 'var(--black)', fontWeight: 600 }}>Cotton shrinks ~3–5%</strong> on the first wash.
-                        If you&apos;re between sizes, go one size up.
+                        {' '}If you are between two sizes, always go one size up.
                       </p>
                     </div>
 
                     <div style={{ display: 'flex', gap: 8 }}>
                       {onSelect && (
                         <motion.button whileTap={{ scale: 0.97 }}
-                          onClick={() => { onSelect(sizeUnavailable ? result.secondary : result.size); handleClose(); }}
+                          onClick={() => { onSelect(recommendedSize!); handleClose(); }}
                           style={{ flex: 2, height: 48, background: 'var(--black)', color: 'var(--cream)', border: 'none', fontSize: 12, letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', fontWeight: 500 }}>
-                          Select {sizeUnavailable ? result.secondary : result.size}
+                          Select {recommendedSize}
                         </motion.button>
                       )}
                       <motion.button whileTap={{ scale: 0.97 }}
                         onClick={() => setResult(null)}
-                        style={{ flex: 1, height: 48, background: 'transparent', color: 'var(--black)', border: '1px solid var(--border)', fontSize: 12, letterSpacing: '0.06em', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
+                        style={{ flex: 1, height: 48, background: 'transparent', color: 'var(--black)', border: '1px solid var(--border)', fontSize: 11, letterSpacing: '0.06em', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
                         Try again
                       </motion.button>
                     </div>

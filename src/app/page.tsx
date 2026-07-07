@@ -21,6 +21,7 @@ import TrustStrip from '@/components/shared/TrustStrip';
 import TrustBadges from '@/components/shared/TrustBadges';
 import PromoBanner from '@/components/shared/PromoBanner';
 import ShopTheLook from '@/components/ShopTheLook';
+import FounderVideo from '@/components/shared/FounderVideo';
 import { categories } from '@/lib/dummy-data';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { productsService } from '@/lib/services/products.service';
@@ -348,6 +349,7 @@ export default function HomePage() {
         </section>
 
       </div>
+      <FounderVideo />
       </PageTransition>
     );
   }
@@ -581,6 +583,7 @@ export default function HomePage() {
 
       <TrustStrip />
     </div>
+    <FounderVideo />
     </PageTransition>
   );
 }
