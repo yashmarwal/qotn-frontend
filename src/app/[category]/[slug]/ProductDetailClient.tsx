@@ -319,15 +319,9 @@ export default function ProductDetailClient({ product }: Props) {
                 <span style={{ fontSize: 11, letterSpacing: '0.10em', fontWeight: 500, textTransform: 'uppercase' }}>
                   Size{selectedSize && ` — ${selectedSize}`}
                 </span>
-                <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                  <button onClick={() => setFindMySizeOpen(true)} style={{ background: 'none', border: 'none', fontSize: 11, color: 'var(--black)', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', fontWeight: 600, letterSpacing: '0.04em', padding: 0 }}>
-                    Find My Size
-                  </button>
-                  <span style={{ fontSize: 10, color: 'var(--border)' }}>|</span>
-                  <button onClick={() => setSizeGuideOpen(true)} style={{ background: 'none', border: 'none', fontSize: 11, color: 'var(--dust)', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'DM Sans, sans-serif', padding: 0 }}>
-                    Size Guide
-                  </button>
-                </div>
+                <button onClick={() => setSizeGuideOpen(true)} style={{ background: 'none', border: 'none', fontSize: 11, color: 'var(--dust)', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'DM Sans, sans-serif', padding: 0 }}>
+                  Size Guide
+                </button>
               </div>
               <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 4, scrollbarWidth: 'none' }}>
                 {product.sizes.map((size) => {
@@ -426,30 +420,32 @@ export default function ProductDetailClient({ product }: Props) {
 
             {/* Find My Size pill — above custom stitching */}
             <motion.button
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.45, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
-              whileHover={{ scale: 1.015 }}
-              whileTap={{ scale: 0.97 }}
+              initial={{ opacity: 0, scale: 0.94, y: 8 }}
+              animate={{ opacity: 1, scale: 1, y: 0, borderColor: ['#D4CFC6', '#1A1A1A', '#D4CFC6'] }}
+              transition={{
+                opacity: { duration: 0.35, delay: 0.2 },
+                scale: { type: 'spring', stiffness: 320, damping: 22, delay: 0.2 },
+                y: { type: 'spring', stiffness: 320, damping: 22, delay: 0.2 },
+                borderColor: { duration: 2.4, delay: 1.8, repeat: Infinity, ease: 'easeInOut' },
+              }}
+              whileHover={{ scale: 1.018, boxShadow: '0 2px 16px rgba(26,26,26,0.10)' }}
+              whileTap={{ scale: 0.96 }}
               onClick={() => setFindMySizeOpen(true)}
               style={{
                 width: '100%', height: 50, marginBottom: 10,
-                background: 'transparent',
-                border: '1px solid var(--border)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+                background: 'transparent', border: '1px solid var(--border)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9,
                 cursor: 'pointer', fontFamily: 'DM Sans, sans-serif',
                 position: 'relative', overflow: 'hidden',
               }}
             >
-              {/* Shimmer sweep */}
-              <motion.div
-                animate={{ x: ['-120%', '220%'] }}
-                transition={{ duration: 1.1, delay: 2, repeat: Infinity, repeatDelay: 5 }}
-                style={{ position: 'absolute', top: 0, left: 0, width: '38%', height: '100%', background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.45),transparent)', pointerEvents: 'none' }}
-              />
-              <span style={{ fontSize: 14 }}>📐</span>
+              <motion.span
+                animate={{ rotate: [0, -12, 12, -8, 0] }}
+                transition={{ duration: 0.6, delay: 2.5, repeat: Infinity, repeatDelay: 4 }}
+                style={{ fontSize: 15, display: 'inline-block' }}
+              >📐</motion.span>
               <span style={{ fontSize: 11, letterSpacing: '0.10em', fontWeight: 600, textTransform: 'uppercase', color: 'var(--black)' }}>Find My Size</span>
-              <span style={{ fontSize: 10, color: 'var(--dust)', letterSpacing: '0.04em' }}>— Indian guide</span>
+              <span style={{ fontSize: 10, color: 'var(--dust)' }}>— Indian guide</span>
             </motion.button>
 
             {product.category !== 'kids' && (
@@ -624,13 +620,7 @@ export default function ProductDetailClient({ product }: Props) {
               <div style={{ marginBottom: 24 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                   <span style={{ fontSize: 11, letterSpacing: '0.10em', fontWeight: 500, textTransform: 'uppercase' }}>Size{selectedSize && ` — ${selectedSize}`}</span>
-                  <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                    <button onClick={() => setFindMySizeOpen(true)} style={{ background: 'none', border: 'none', fontSize: 11, color: 'var(--black)', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', fontWeight: 600, padding: 0 }}>
-                      Find My Size
-                    </button>
-                    <span style={{ fontSize: 10, color: 'var(--border)' }}>|</span>
-                    <button onClick={() => setSizeGuideOpen(true)} style={{ background: 'none', border: 'none', fontSize: 11, color: 'var(--dust)', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'DM Sans, sans-serif', padding: 0 }}>Size Guide</button>
-                  </div>
+                  <button onClick={() => setSizeGuideOpen(true)} style={{ background: 'none', border: 'none', fontSize: 11, color: 'var(--dust)', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'DM Sans, sans-serif', padding: 0 }}>Size Guide</button>
                 </div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                   {product.sizes.map((size) => {
@@ -718,28 +708,32 @@ export default function ProductDetailClient({ product }: Props) {
 
               {/* Find My Size pill — desktop */}
               <motion.button
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.45, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                whileHover={{ scale: 1.012 }}
-                whileTap={{ scale: 0.97 }}
+                initial={{ opacity: 0, scale: 0.94, y: 8 }}
+                animate={{ opacity: 1, scale: 1, y: 0, borderColor: ['#D4CFC6', '#1A1A1A', '#D4CFC6'] }}
+                transition={{
+                  opacity: { duration: 0.35, delay: 0.25 },
+                  scale: { type: 'spring', stiffness: 320, damping: 22, delay: 0.25 },
+                  y: { type: 'spring', stiffness: 320, damping: 22, delay: 0.25 },
+                  borderColor: { duration: 2.4, delay: 2, repeat: Infinity, ease: 'easeInOut' },
+                }}
+                whileHover={{ scale: 1.014, boxShadow: '0 2px 16px rgba(26,26,26,0.10)' }}
+                whileTap={{ scale: 0.96 }}
                 onClick={() => setFindMySizeOpen(true)}
                 style={{
                   width: '100%', height: 48, marginBottom: 10,
                   background: 'transparent', border: '1px solid var(--border)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9,
                   cursor: 'pointer', fontFamily: 'DM Sans, sans-serif',
                   position: 'relative', overflow: 'hidden',
                 }}
               >
-                <motion.div
-                  animate={{ x: ['-120%', '220%'] }}
-                  transition={{ duration: 1.1, delay: 2.5, repeat: Infinity, repeatDelay: 5 }}
-                  style={{ position: 'absolute', top: 0, left: 0, width: '38%', height: '100%', background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.45),transparent)', pointerEvents: 'none' }}
-                />
-                <span style={{ fontSize: 14 }}>📐</span>
+                <motion.span
+                  animate={{ rotate: [0, -12, 12, -8, 0] }}
+                  transition={{ duration: 0.6, delay: 3, repeat: Infinity, repeatDelay: 4 }}
+                  style={{ fontSize: 15, display: 'inline-block' }}
+                >📐</motion.span>
                 <span style={{ fontSize: 11, letterSpacing: '0.10em', fontWeight: 600, textTransform: 'uppercase', color: 'var(--black)' }}>Find My Size</span>
-                <span style={{ fontSize: 10, color: 'var(--dust)', letterSpacing: '0.04em' }}>— Indian sizing guide</span>
+                <span style={{ fontSize: 10, color: 'var(--dust)' }}>— Indian sizing guide</span>
               </motion.button>
 
               {product.category !== 'kids' && (

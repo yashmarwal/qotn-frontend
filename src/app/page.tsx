@@ -34,6 +34,7 @@ const stagger = { animate: { transition: { staggerChildren: 0.15 } } };
 
 export default function HomePage() {
   const isMobile = useIsMobile();
+  const [mounted, setMounted] = useState(false);
   const [newArrivals, setNewArrivals] = useState<Product[]>([]);
   const [bestsellers, setBestsellers] = useState<Product[]>([]);
   const [apiCategories, setApiCategories] = useState<any[]>([]);
@@ -42,6 +43,8 @@ export default function HomePage() {
   const [activeTab, setActiveTab] = useState<'men' | 'women' | 'kids'>('women');
   const [tabProducts, setTabProducts] = useState<Product[]>([]);
   const [tabLoading, setTabLoading] = useState(false);
+
+  useEffect(() => { setMounted(true); }, []);
 
   // Hero slideshow state — always declared, only used by mobile branch
   const [heroImages, setHeroImages] = useState<string[]>([]);
@@ -125,7 +128,7 @@ export default function HomePage() {
   if (isMobile) {
     return (
       <PageTransition>
-      <div style={{ backgroundColor: 'var(--cream)' }}>
+      <div style={{ backgroundColor: 'var(--cream)', opacity: mounted ? 1 : 0, transition: 'opacity 0.18s ease' }}>
 
         {/* Hero — 60% slideshow / 40% content */}
         <section style={{ height: '100svh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -357,7 +360,7 @@ export default function HomePage() {
   /* ── DESKTOP ── */
   return (
     <PageTransition>
-    <div style={{ backgroundColor: 'var(--cream)' }}>
+    <div style={{ backgroundColor: 'var(--cream)', opacity: mounted ? 1 : 0, transition: 'opacity 0.18s ease' }}>
       {/* Hero */}
       <section style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', padding: '0 24px' }}>
         <motion.div variants={stagger} initial="initial" animate="animate" style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24 }}>
