@@ -418,35 +418,23 @@ export default function ProductDetailClient({ product }: Props) {
               </button>
             </div>
 
-            {/* Find My Size pill — above custom stitching */}
-            <motion.button
-              initial={{ opacity: 0, scale: 0.94, y: 8 }}
-              animate={{ opacity: 1, scale: 1, y: 0, borderColor: ['#D4CFC6', '#1A1A1A', '#D4CFC6'] }}
-              transition={{
-                opacity: { duration: 0.35, delay: 0.2 },
-                scale: { type: 'spring', stiffness: 320, damping: 22, delay: 0.2 },
-                y: { type: 'spring', stiffness: 320, damping: 22, delay: 0.2 },
-                borderColor: { duration: 2.4, delay: 1.8, repeat: Infinity, ease: 'easeInOut' },
-              }}
-              whileHover={{ scale: 1.018, boxShadow: '0 2px 16px rgba(26,26,26,0.10)' }}
-              whileTap={{ scale: 0.96 }}
-              onClick={() => setFindMySizeOpen(true)}
-              style={{
-                width: '100%', height: 50, marginBottom: 10,
-                background: 'transparent', border: '1px solid var(--border)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9,
-                cursor: 'pointer', fontFamily: 'DM Sans, sans-serif',
-                position: 'relative', overflow: 'hidden',
-              }}
+            {/* Find My Size — blob animated pill above custom stitching */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 24, delay: 0.2 }}
             >
-              <motion.span
-                animate={{ rotate: [0, -12, 12, -8, 0] }}
-                transition={{ duration: 0.6, delay: 2.5, repeat: Infinity, repeatDelay: 4 }}
-                style={{ fontSize: 15, display: 'inline-block' }}
-              >📐</motion.span>
-              <span style={{ fontSize: 11, letterSpacing: '0.10em', fontWeight: 600, textTransform: 'uppercase', color: 'var(--black)' }}>Find My Size</span>
-              <span style={{ fontSize: 10, color: 'var(--dust)' }}>— Indian guide</span>
-            </motion.button>
+              <button className="fms-btn" onClick={() => setFindMySizeOpen(true)}>
+                <div className="fms-blob fms-blob-1" />
+                <div className="fms-blob fms-blob-2" />
+                <div className="fms-blob fms-blob-3" />
+                <span className="fms-label">
+                  <span style={{ fontSize: 14 }}>📐</span>
+                  <span style={{ fontSize: 11, letterSpacing: '0.10em', fontWeight: 600, textTransform: 'uppercase' }}>Find My Size</span>
+                  <span style={{ fontSize: 10, opacity: 0.55, letterSpacing: '0.04em' }}>— Indian guide</span>
+                </span>
+              </button>
+            </motion.div>
 
             {product.category !== 'kids' && (
               <CustomStitchingButton
@@ -706,35 +694,23 @@ export default function ProductDetailClient({ product }: Props) {
                 </button>
               </div>
 
-              {/* Find My Size pill — desktop */}
-              <motion.button
-                initial={{ opacity: 0, scale: 0.94, y: 8 }}
-                animate={{ opacity: 1, scale: 1, y: 0, borderColor: ['#D4CFC6', '#1A1A1A', '#D4CFC6'] }}
-                transition={{
-                  opacity: { duration: 0.35, delay: 0.25 },
-                  scale: { type: 'spring', stiffness: 320, damping: 22, delay: 0.25 },
-                  y: { type: 'spring', stiffness: 320, damping: 22, delay: 0.25 },
-                  borderColor: { duration: 2.4, delay: 2, repeat: Infinity, ease: 'easeInOut' },
-                }}
-                whileHover={{ scale: 1.014, boxShadow: '0 2px 16px rgba(26,26,26,0.10)' }}
-                whileTap={{ scale: 0.96 }}
-                onClick={() => setFindMySizeOpen(true)}
-                style={{
-                  width: '100%', height: 48, marginBottom: 10,
-                  background: 'transparent', border: '1px solid var(--border)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9,
-                  cursor: 'pointer', fontFamily: 'DM Sans, sans-serif',
-                  position: 'relative', overflow: 'hidden',
-                }}
+              {/* Find My Size — blob animated pill — desktop */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 24, delay: 0.25 }}
               >
-                <motion.span
-                  animate={{ rotate: [0, -12, 12, -8, 0] }}
-                  transition={{ duration: 0.6, delay: 3, repeat: Infinity, repeatDelay: 4 }}
-                  style={{ fontSize: 15, display: 'inline-block' }}
-                >📐</motion.span>
-                <span style={{ fontSize: 11, letterSpacing: '0.10em', fontWeight: 600, textTransform: 'uppercase', color: 'var(--black)' }}>Find My Size</span>
-                <span style={{ fontSize: 10, color: 'var(--dust)' }}>— Indian sizing guide</span>
-              </motion.button>
+                <button className="fms-btn" onClick={() => setFindMySizeOpen(true)}>
+                  <div className="fms-blob fms-blob-1" />
+                  <div className="fms-blob fms-blob-2" />
+                  <div className="fms-blob fms-blob-3" />
+                  <span className="fms-label">
+                    <span style={{ fontSize: 14 }}>📐</span>
+                    <span style={{ fontSize: 11, letterSpacing: '0.10em', fontWeight: 600, textTransform: 'uppercase' }}>Find My Size</span>
+                    <span style={{ fontSize: 10, opacity: 0.55, letterSpacing: '0.04em' }}>— Indian guide</span>
+                  </span>
+                </button>
+              </motion.div>
 
               {product.category !== 'kids' && (
                 <CustomStitchingButton
