@@ -144,7 +144,8 @@ export default function ShopTheLook() {
       el.removeEventListener('touchcancel', onTouchEnd);
       if (resumeTimerRef.current !== null) clearTimeout(resumeTimerRef.current);
     };
-  }, []);
+  // Re-run when videos load so containerRef.current is actually set (first render returns null)
+  }, [videos.length]);
 
   if (videos.length === 0) return null;
 
