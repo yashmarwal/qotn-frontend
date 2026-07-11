@@ -28,7 +28,11 @@ export default function ShopTheLook() {
   const offsetRef = useRef(0);
   const draggingRef = useRef(false);
   const pausedRef = useRef(false); // desktop hover pause
-  const resumeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Momentum state
+  const velocityRef = useRef(0);          // px/ms at moment of release
+  const lastTouchXRef = useRef(0);
+  const lastTouchTimeRef = useRef(0);
+  const momentumRafRef = useRef(0);
 
   useEffect(() => {
     fetch('/api/look-videos', { credentials: 'include' })
@@ -87,18 +91,24 @@ export default function ShopTheLook() {
     let startY = 0;
     let startOffset = 0;
 
-    const onTouchStart = (e: TouchEvent) => {
-      // Cancel any pending resume so touching again mid-delay keeps manual control
-      if (resumeTimerRef.current !== null) {
-        clearTimeout(resumeTimerRef.current);
-        resumeTimerRef.current = null;
+    const cancelMomentum = () => {
+      if (momentumRafRef.current) {
+        cancelAnimationFrame(momentumRafRef.current);
+        momentumRafRef.current = 0;
       }
+    };
+
+    const onTouchStart = (e: TouchEvent) => {
+      cancelMomentum();
       dragging = true;
       draggingRef.current = true;
       horizontalLock = null;
       startX = e.touches[0].clientX;
       startY = e.touches[0].clientY;
       startOffset = offsetRef.current;
+      velocityRef.current = 0;
+      lastTouchXRef.current = startX;
+      lastTouchTimeRef.current = performance.now();
     };
 
     const onTouchMove = (e: TouchEvent) => {
@@ -110,7 +120,6 @@ export default function ShopTheLook() {
         if (Math.abs(dx) < DRAG_LOCK_THRESHOLD && Math.abs(dy) < DRAG_LOCK_THRESHOLD) return;
         horizontalLock = Math.abs(dx) > Math.abs(dy);
         if (!horizontalLock) {
-          // Vertical swipe — let the page scroll normally instead.
           dragging = false;
           draggingRef.current = false;
           return;
@@ -121,15 +130,46 @@ export default function ShopTheLook() {
       const w = stripWidthRef.current;
       offsetRef.current = (((startOffset - dx) % w) + w) % w;
       applyTransform();
+
+      // Track velocity: px per ms (negative = swiping right = scrolling backward)
+      const now = performance.now();
+      const dt = now - lastTouchTimeRef.current;
+      if (dt > 0) {
+        const rawV = (lastTouchXRef.current - e.touches[0].clientX) / dt;
+        // Exponential smoothing so fast flicks register but jitter doesn't
+        velocityRef.current = velocityRef.current * 0.6 + rawV * 0.4;
+      }
+      lastTouchXRef.current = e.touches[0].clientX;
+      lastTouchTimeRef.current = now;
     };
 
     const onTouchEnd = () => {
       dragging = false;
-      // Wait 2s before resuming auto-scroll so the user's final position settles
-      resumeTimerRef.current = setTimeout(() => {
+      const releaseVelocity = velocityRef.current; // px/ms
+
+      // If flick was fast enough, run momentum deceleration
+      if (Math.abs(releaseVelocity) > 0.05) {
+        let v = releaseVelocity;
+        const FRICTION = 0.92; // multiply per frame (~16ms)
+
+        const step = () => {
+          const w = stripWidthRef.current;
+          offsetRef.current = (((offsetRef.current + v * 16) % w) + w) % w;
+          applyTransform();
+          v *= FRICTION;
+          if (Math.abs(v) > 0.012) {
+            momentumRafRef.current = requestAnimationFrame(step);
+          } else {
+            // Momentum exhausted — hand back to auto-scroll
+            draggingRef.current = false;
+            momentumRafRef.current = 0;
+          }
+        };
+        momentumRafRef.current = requestAnimationFrame(step);
+      } else {
+        // Slow drag — resume auto-scroll immediately
         draggingRef.current = false;
-        resumeTimerRef.current = null;
-      }, 2000);
+      }
     };
 
     el.addEventListener('touchstart', onTouchStart, { passive: true });
@@ -142,7 +182,7 @@ export default function ShopTheLook() {
       el.removeEventListener('touchmove', onTouchMove);
       el.removeEventListener('touchend', onTouchEnd);
       el.removeEventListener('touchcancel', onTouchEnd);
-      if (resumeTimerRef.current !== null) clearTimeout(resumeTimerRef.current);
+      cancelMomentum();
     };
   // Re-run when videos load so containerRef.current is actually set (first render returns null)
   }, [videos.length]);
