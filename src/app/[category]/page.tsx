@@ -42,10 +42,34 @@ export async function generateMetadata({
   };
 }
 
-export default function CategoryPage({ params }: { params: Promise<{ category: string }> }) {
+const categoryLabels: Record<string, string> = {
+  men: "Men's Clothing",
+  women: "Women's Clothing",
+  kids: "Kids' Clothing",
+};
+
+export default async function CategoryPage({ params }: { params: Promise<{ category: string }> }) {
+  const { category } = await params;
+  const label = categoryLabels[category] || category;
+
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: SITE },
+      { '@type': 'ListItem', position: 2, name: label, item: `${SITE}/${category}` },
+    ],
+  };
+
   return (
-    <Suspense fallback={<div style={{ minHeight: '60vh', backgroundColor: 'var(--cream)' }} />}>
-      <CategoryPageClient params={params} />
-    </Suspense>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <Suspense fallback={<div style={{ minHeight: '60vh', backgroundColor: 'var(--cream)' }} />}>
+        <CategoryPageClient params={params} />
+      </Suspense>
+    </>
   );
 }

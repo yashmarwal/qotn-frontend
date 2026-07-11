@@ -78,19 +78,28 @@ export const metadata: Metadata = {
   },
 };
 
-const jsonLd = {
+const organizationJsonLd = {
   '@context': 'https://schema.org',
-  '@type': 'ClothingStore',
+  '@type': ['Organization', 'ClothingStore'],
+  '@id': 'https://qotn.in/#organization',
   name: 'QOTN',
-  description: 'Pure cotton clothing for men, women and kids. Made in India.',
+  alternateName: 'Quality Of The Nation',
+  description: '100% pure cotton clothing for men, women and kids. No blends, no shortcuts. Made in India.',
   url: 'https://qotn.in',
-  logo: 'https://qotn.in/logo-square-512.png',
+  logo: {
+    '@type': 'ImageObject',
+    url: 'https://qotn.in/logo-square-512.png',
+    width: 512,
+    height: 512,
+  },
   image: 'https://qotn.in/og-image.png',
   email: 'Helloqotn@gmail.com',
+  foundingDate: '2024',
   contactPoint: {
     '@type': 'ContactPoint',
     email: 'Helloqotn@gmail.com',
     contactType: 'customer service',
+    availableLanguage: ['English', 'Hindi'],
   },
   address: {
     '@type': 'PostalAddress',
@@ -100,7 +109,23 @@ const jsonLd = {
     postalCode: '302033',
     addressCountry: 'IN',
   },
-  sameAs: ['https://www.instagram.com/qotn.in'],
+  sameAs: [
+    'https://www.instagram.com/qotn.in',
+  ],
+};
+
+const websiteJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  '@id': 'https://qotn.in/#website',
+  name: 'QOTN',
+  url: 'https://qotn.in',
+  publisher: { '@id': 'https://qotn.in/#organization' },
+  potentialAction: {
+    '@type': 'SearchAction',
+    target: { '@type': 'EntryPoint', urlTemplate: 'https://qotn.in/men?search={search_term_string}' },
+    'query-input': 'required name=search_term_string',
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -113,9 +138,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="msapplication-config" content="/browserconfig.xml" />
         <link rel="mask-icon" href="/logo-cream-on-black.png" color="#1A1A1A" />
         <Script
-          id="schema-org"
+          id="schema-org-organization"
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+        />
+        <Script
+          id="schema-org-website"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
         />
       </head>
       <body>

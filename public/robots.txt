@@ -1,6 +1,6 @@
-User-agent: *
+# ── Googlebot — always allow ─────────────────────────────────────────────────
+User-agent: Googlebot
 Allow: /
-
 Disallow: /admin
 Disallow: /api
 Disallow: /checkout
@@ -12,5 +12,113 @@ Disallow: /wishlist
 Disallow: /track
 Disallow: /verify-email
 Disallow: /reset-password
+Disallow: /forgot-password
+
+# ── AI search / citation crawlers — allow (needed for AI Overviews & citations)
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /admin
+Disallow: /api
+Disallow: /checkout
+Disallow: /account
+
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /admin
+Disallow: /api
+Disallow: /checkout
+Disallow: /account
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /admin
+Disallow: /api
+Disallow: /checkout
+Disallow: /account
+
+User-agent: Claude-SearchBot
+Allow: /
+Disallow: /admin
+Disallow: /api
+Disallow: /checkout
+Disallow: /account
+
+User-agent: Claude-User
+Allow: /
+Disallow: /admin
+Disallow: /api
+Disallow: /checkout
+Disallow: /account
+
+# ── AI training crawlers — allow (opt in to model training) ──────────────────
+User-agent: GPTBot
+Allow: /
+Disallow: /admin
+Disallow: /api
+Disallow: /checkout
+Disallow: /account
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /admin
+Disallow: /api
+Disallow: /checkout
+Disallow: /account
+
+User-agent: anthropic-ai
+Allow: /
+Disallow: /admin
+Disallow: /api
+
+User-agent: Google-Extended
+Allow: /
+Disallow: /admin
+Disallow: /api
+
+User-agent: Applebot-Extended
+Allow: /
+Disallow: /admin
+Disallow: /api
+
+# ── Other search engines ──────────────────────────────────────────────────────
+User-agent: Bingbot
+Allow: /
+Disallow: /admin
+Disallow: /api
+Disallow: /checkout
+Disallow: /account
+
+User-agent: Applebot
+Allow: /
+Disallow: /admin
+Disallow: /api
+Disallow: /checkout
+Disallow: /account
+
+# ── Block abusive / high-load bots ───────────────────────────────────────────
+User-agent: Bytespider
+Disallow: /
+
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+# ── Default: allow everything public ─────────────────────────────────────────
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api
+Disallow: /checkout
+Disallow: /account
+Disallow: /order-confirmation
+Disallow: /orders
+Disallow: /addresses
+Disallow: /wishlist
+Disallow: /track
+Disallow: /verify-email
+Disallow: /reset-password
+Disallow: /forgot-password
 
 Sitemap: https://qotn.in/sitemap.xml
