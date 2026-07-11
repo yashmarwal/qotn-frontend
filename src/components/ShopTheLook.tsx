@@ -28,6 +28,7 @@ export default function ShopTheLook() {
   const offsetRef = useRef(0);
   const draggingRef = useRef(false);
   const pausedRef = useRef(false); // desktop hover pause
+  const resumeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     fetch('/api/look-videos', { credentials: 'include' })
@@ -87,6 +88,11 @@ export default function ShopTheLook() {
     let startOffset = 0;
 
     const onTouchStart = (e: TouchEvent) => {
+      // Cancel any pending resume so touching again mid-delay keeps manual control
+      if (resumeTimerRef.current !== null) {
+        clearTimeout(resumeTimerRef.current);
+        resumeTimerRef.current = null;
+      }
       dragging = true;
       draggingRef.current = true;
       horizontalLock = null;
@@ -119,7 +125,11 @@ export default function ShopTheLook() {
 
     const onTouchEnd = () => {
       dragging = false;
-      draggingRef.current = false;
+      // Wait 2s before resuming auto-scroll so the user's final position settles
+      resumeTimerRef.current = setTimeout(() => {
+        draggingRef.current = false;
+        resumeTimerRef.current = null;
+      }, 2000);
     };
 
     el.addEventListener('touchstart', onTouchStart, { passive: true });
@@ -132,6 +142,7 @@ export default function ShopTheLook() {
       el.removeEventListener('touchmove', onTouchMove);
       el.removeEventListener('touchend', onTouchEnd);
       el.removeEventListener('touchcancel', onTouchEnd);
+      if (resumeTimerRef.current !== null) clearTimeout(resumeTimerRef.current);
     };
   }, []);
 
