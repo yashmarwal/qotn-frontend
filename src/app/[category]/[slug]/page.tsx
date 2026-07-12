@@ -34,7 +34,16 @@ export async function generateMetadata({
       description: product.description || '',
       url,
       type: 'website',
-      images: imageUrl ? [{ url: imageUrl, alt: product.name }] : [],
+      images: imageUrl
+        ? [{ url: imageUrl, width: 800, height: 1000, alt: product.name }]
+        : [{ url: 'https://qotn.in/og-image.png', width: 1200, height: 630, alt: 'QOTN — Pure Cotton. Nothing Else.' }],
+    },
+    twitter: {
+      card: 'summary_large_image' as const,
+      site: '@shopqotn',
+      title,
+      description: (product.description || '').slice(0, 200),
+      images: imageUrl ? [imageUrl] : ['https://qotn.in/og-image.png'],
     },
   };
 }
@@ -67,7 +76,7 @@ export default async function ProductPage({
     image: imageUrl,
     sku: raw?.slug || '',
     url: productUrl,
-    brand: { '@type': 'Brand', name: 'QOTN' },
+    brand: { '@type': 'Brand', name: 'QOTN', '@id': 'https://qotn.in/#organization' },
     material: '100% Cotton',
     itemCondition: 'https://schema.org/NewCondition',
     offers: {

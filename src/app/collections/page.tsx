@@ -10,6 +10,14 @@ export const metadata: Metadata = {
     title: 'Collections — Pure Cotton Curated Sets | QOTN',
     description: 'Explore QOTN curated collections of 100% pure cotton apparel for men, women and kids.',
     url: 'https://qotn.in/collections',
+    images: [{ url: 'https://qotn.in/og-image.png', width: 1200, height: 630, alt: 'QOTN Collections' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    site: '@shopqotn',
+    title: 'Collections — Pure Cotton Curated Sets | QOTN',
+    description: 'Explore QOTN curated collections of 100% pure cotton apparel.',
+    images: ['https://qotn.in/og-image.png'],
   },
 };
 

@@ -130,13 +130,24 @@ const websiteJsonLd = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en-IN">
       <head>
         <meta name="theme-color" content="#1A1A1A" />
         <meta name="msapplication-TileColor" content="#F5F0E8" />
         <meta name="msapplication-TileImage" content="/mstile-144x144.png" />
         <meta name="msapplication-config" content="/browserconfig.xml" />
+        <meta name="geo.region" content="IN-RJ" />
+        <meta name="geo.placename" content="Jaipur, Rajasthan, India" />
+        <meta name="geo.position" content="26.8467;75.8020" />
+        <meta name="ICBM" content="26.8467, 75.8020" />
         <link rel="mask-icon" href="/logo-cream-on-black.png" color="#1A1A1A" />
+        <link rel="alternate" hrefLang="en-IN" href="https://qotn.in" />
+        <link rel="alternate" hrefLang="x-default" href="https://qotn.in" />
+        <link rel="preconnect" href="https://res.cloudinary.com" />
+        <link rel="dns-prefetch" href="https://res.cloudinary.com" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="alternate" type="application/rss+xml" title="QOTN Cotton Journal" href="https://qotn.in/rss.xml" />
         <Script
           id="schema-org-organization"
           type="application/ld+json"
@@ -149,6 +160,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
+        <a href="#main-content" style={{ position: 'absolute', left: '-9999px', top: 'auto', width: 1, height: 1, overflow: 'hidden' }} tabIndex={0} onFocus={(e) => { (e.target as HTMLAnchorElement).style.left = '0'; (e.target as HTMLAnchorElement).style.width = 'auto'; (e.target as HTMLAnchorElement).style.height = 'auto'; }}>
+          Skip to main content
+        </a>
         <AuthProvider>
           <CartProvider>
             <WishlistProvider>

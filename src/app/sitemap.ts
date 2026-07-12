@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { fetchPublic } from '@/lib/api';
+import { articles } from './blog/articles';
 
 const SITE = 'https://qotn.in';
 
@@ -44,5 +45,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(c.updatedAt || c.createdAt || Date.now()),
     }));
 
-  return [...staticPages, ...productPages, ...collectionPages];
+  const blogPages: MetadataRoute.Sitemap = articles.map((a) => ({
+    url: `${SITE}/blog/${a.slug}`,
+    lastModified: new Date(a.publishedAt),
+  }));
+
+  return [...staticPages, ...blogPages, ...productPages, ...collectionPages];
 }

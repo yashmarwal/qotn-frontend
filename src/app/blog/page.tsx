@@ -13,6 +13,14 @@ export const metadata: Metadata = {
     title: 'Cotton Journal | QOTN',
     description: 'In-depth guides on cotton — fabric, care, and sustainability.',
     url: 'https://qotn.in/blog',
+    images: [{ url: 'https://qotn.in/og-image.png', width: 1200, height: 630, alt: 'QOTN Cotton Journal' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    site: '@shopqotn',
+    title: 'Cotton Journal | QOTN',
+    description: 'In-depth guides on cotton — fabric, care, and sustainability.',
+    images: ['https://qotn.in/og-image.png'],
   },
 };
 

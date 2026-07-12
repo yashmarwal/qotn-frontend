@@ -29,6 +29,14 @@ export async function generateMetadata({
       type: 'article',
       publishedTime: article.publishedAt,
       authors: ['QOTN'],
+      images: [{ url: 'https://qotn.in/og-image.png', width: 1200, height: 630, alt: article.title }],
+    },
+    twitter: {
+      card: 'summary_large_image' as const,
+      site: '@shopqotn',
+      title: article.title,
+      description: article.description,
+      images: ['https://qotn.in/og-image.png'],
     },
   };
 }
@@ -48,19 +56,24 @@ export default async function BlogArticlePage({
 
   const articleJsonLd = {
     '@context': 'https://schema.org',
-    '@type': 'Article',
+    '@type': 'BlogPosting',
     headline: article.title,
     description: article.description,
     datePublished: article.publishedAt,
-    author: { '@type': 'Organization', name: 'QOTN', url: 'https://qotn.in' },
+    dateModified: article.publishedAt,
+    image: 'https://qotn.in/og-image.png',
+    author: { '@type': 'Organization', name: 'QOTN', url: 'https://qotn.in', '@id': 'https://qotn.in/#organization' },
     publisher: {
       '@type': 'Organization',
       name: 'QOTN',
       url: 'https://qotn.in',
-      logo: { '@type': 'ImageObject', url: 'https://qotn.in/logo-square-512.png' },
+      '@id': 'https://qotn.in/#organization',
+      logo: { '@type': 'ImageObject', url: 'https://qotn.in/logo-square-512.png', width: 512, height: 512 },
     },
     url: `https://qotn.in/blog/${slug}`,
     mainEntityOfPage: { '@type': 'WebPage', '@id': `https://qotn.in/blog/${slug}` },
+    keywords: article.category,
+    inLanguage: 'en-IN',
   };
 
   const breadcrumbJsonLd = {

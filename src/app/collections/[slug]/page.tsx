@@ -34,7 +34,16 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       title,
       description,
       url,
-      images: col.thumbnail ? [{ url: col.thumbnail, alt: col.name }] : [],
+      images: col.thumbnail
+        ? [{ url: col.thumbnail, width: 800, height: 800, alt: col.name }]
+        : [{ url: 'https://qotn.in/og-image.png', width: 1200, height: 630, alt: col.name }],
+    },
+    twitter: {
+      card: 'summary_large_image' as const,
+      site: '@shopqotn',
+      title,
+      description,
+      images: col.thumbnail ? [col.thumbnail] : ['https://qotn.in/og-image.png'],
     },
   };
 }
@@ -50,8 +59,31 @@ export default async function CollectionDetailPage({ params }: { params: Promise
   if (!col) notFound();
 
   const products: any[] = col.products || [];
+  const collectionUrl = `https://qotn.in/collections/${slug}`;
+
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://qotn.in' },
+      { '@type': 'ListItem', position: 2, name: 'Collections', item: 'https://qotn.in/collections' },
+      { '@type': 'ListItem', position: 3, name: col.name, item: collectionUrl },
+    ],
+  };
+
+  const collectionPageJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: col.name,
+    description: col.description || '',
+    url: collectionUrl,
+    publisher: { '@id': 'https://qotn.in/#organization' },
+  };
 
   return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionPageJsonLd) }} />
     <div style={{ backgroundColor: 'var(--cream)', minHeight: '100vh' }}>
       {/* Hero */}
       <div style={{ backgroundColor: 'var(--black)', padding: '64px 40px', textAlign: 'center', minHeight: 260, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
@@ -90,6 +122,7 @@ export default async function CollectionDetailPage({ params }: { params: Promise
         )}
       </div>
     </div>
+    </>
   );
 }
 
