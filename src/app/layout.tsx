@@ -161,9 +161,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
-        <a href="#main-content" style={{ position: 'absolute', left: '-9999px', top: 'auto', width: 1, height: 1, overflow: 'hidden' }} tabIndex={0} onFocus={(e) => { (e.target as HTMLAnchorElement).style.left = '0'; (e.target as HTMLAnchorElement).style.width = 'auto'; (e.target as HTMLAnchorElement).style.height = 'auto'; }}>
-          Skip to main content
-        </a>
+        <a href="#main-content" className="skip-to-content">Skip to main content</a>
         <AuthProvider>
           <CartProvider>
             <WishlistProvider>

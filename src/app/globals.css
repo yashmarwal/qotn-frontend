@@ -10,6 +10,22 @@
   --border: #D4CFC6;
 }
 
+.skip-to-content {
+  position: absolute;
+  left: -9999px;
+  top: 8px;
+  z-index: 9999;
+  padding: 8px 16px;
+  background: var(--black);
+  color: var(--cream);
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  text-decoration: none;
+}
+.skip-to-content:focus {
+  left: 8px;
+}
+
 * {
   margin: 0;
   padding: 0;
