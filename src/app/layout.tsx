@@ -111,6 +111,7 @@ const organizationJsonLd = {
   },
   sameAs: [
     'https://www.instagram.com/qotn.in',
+    'https://www.wikidata.org/wiki/Q140518399',
   ],
 };
 
