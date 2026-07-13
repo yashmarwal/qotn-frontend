@@ -15,18 +15,6 @@ const nextConfig: NextConfig = {
   compress: true,
   trailingSlash: false,
 
-  async redirects() {
-    return [
-      // www → non-www
-      {
-        source: '/:path*',
-        has: [{ type: 'host', value: 'www.qotn.in' }],
-        destination: 'https://qotn.in/:path*',
-        permanent: true,
-      },
-    ];
-  },
-
   async rewrites() {
     return [
       {
