@@ -24,7 +24,7 @@ export default function RootLayoutClient({ children }: { children: React.ReactNo
     <>
       <AnnouncementBar />
       {isMobile ? <MobileNavbar /> : <DesktopNavbar />}
-      <main style={showBottomNav ? { paddingBottom: 'calc(56px + env(safe-area-inset-bottom, 0px))' } : undefined}>
+      <main>
         {children}
       </main>
       {isMobile ? <MobileFooter /> : <DesktopFooter />}

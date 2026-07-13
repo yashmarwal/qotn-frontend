@@ -168,15 +168,13 @@ export default function MobileNavbar() {
     return () => clearInterval(t);
   }, [searchOpen, trendingNames.length, pillNames.length]);
 
-  const navH = compact ? 44 : 52;
-
   return (
     <>
       <header style={{
-        position: 'sticky', top: 0, zIndex: 50, height: navH,
+        position: 'sticky', top: 0, zIndex: 50, height: 52,
         backgroundColor: 'var(--cream)', borderBottom: '1px solid var(--border)',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '0 4px', transition: 'height 0.2s ease',
+        padding: '0 4px',
       }}>
         <button onClick={() => setDrawerOpen(true)} aria-label="Open menu"
           style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', width: 48, height: 48 }}>
