@@ -80,7 +80,7 @@ input, textarea, select {
 @media (max-width: 767px) {
   button, a { min-height: 44px; }
   body { overflow-x: hidden; }
-  section { padding-top: 32px !important; padding-bottom: 32px !important; }
+  section:not(.trust-badges) { padding-top: 32px !important; padding-bottom: 32px !important; }
 }
 
 @keyframes marquee {

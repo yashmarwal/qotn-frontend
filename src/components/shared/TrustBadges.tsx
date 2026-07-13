@@ -8,7 +8,7 @@ const badges = [
 
 export default function TrustBadges() {
   return (
-    <section style={{ background: 'var(--cream)', padding: '32px 24px' }}>
+    <section className="trust-badges" style={{ background: 'var(--cream)', padding: '16px 24px' }}>
       <div style={{ display: 'flex', gap: 16, overflowX: 'auto', justifyContent: 'center', flexWrap: 'wrap', width: 'fit-content', margin: '0 auto', maxWidth: '100%' }}>
         {badges.map((b) => (
           <div key={b.label} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 18px', border: '1px solid var(--border)', borderRadius: 24, whiteSpace: 'nowrap', flexShrink: 0 }}>
