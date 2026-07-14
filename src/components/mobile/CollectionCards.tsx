@@ -9,6 +9,7 @@ interface Collection {
   slug: string;
   name: string;
   thumbnail?: string;
+  mobileThumbnail?: string;
   description?: string;
   _count?: { products: number };
 }
@@ -76,9 +77,9 @@ export default function MobileCollectionCards({ collections }: { collections: Co
                 borderRadius: 6,
                 backgroundColor: 'var(--raw-cotton)',
               }}>
-                {/* Media */}
-                {col.thumbnail ? (
-                  <CollectionMedia url={col.thumbnail} name={col.name} />
+                {/* Media — prefer mobileThumbnail (video/GIF), fall back to thumbnail */}
+                {(col.mobileThumbnail || col.thumbnail) ? (
+                  <CollectionMedia url={col.mobileThumbnail || col.thumbnail!} name={col.name} />
                 ) : (
                   <div style={{
                     position: 'absolute', inset: 0,

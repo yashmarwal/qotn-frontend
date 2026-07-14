@@ -5,6 +5,7 @@ import { Plus, Edit2, Trash2, X, Search, Check } from 'lucide-react';
 import AdminSidebar from '@/components/AdminSidebar';
 import AdminGuard from '@/components/AdminGuard';
 import ImageUploader from '@/components/admin/ImageUploader';
+import MediaUploader from '@/components/admin/MediaUploader';
 import { adminService } from '@/lib/services/admin.service';
 import { productsService } from '@/lib/services/products.service';
 import { adaptApiProductList } from '@/lib/adapters';
@@ -14,7 +15,7 @@ const API =
     ? 'http://localhost:3001/api'
     : '/api';
 
-const empty = () => ({ name: '', slug: '', description: '', thumbnail: '', isActive: true, sortOrder: 0 });
+const empty = () => ({ name: '', slug: '', description: '', thumbnail: '', mobileThumbnail: '', isActive: true, sortOrder: 0 });
 
 function makeSlug(name: string) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -60,6 +61,7 @@ export default function AdminCollectionsPage() {
       slug: col.slug,
       description: col.description || '',
       thumbnail: col.thumbnail || '',
+      mobileThumbnail: col.mobileThumbnail || '',
       isActive: col.isActive,
       sortOrder: col.sortOrder,
     });
@@ -239,14 +241,29 @@ export default function AdminCollectionsPage() {
                 <label style={labelCls}>Description</label>
                 <textarea style={{ ...inputCls, height: 80, resize: 'vertical' }} value={form.description} onChange={e => f('description', e.target.value)} placeholder="Optional description..." />
               </div>
+              {/* Thumbnails — desktop (image) + mobile (video/GIF/image) */}
               <div>
-                <label style={labelCls}>Thumbnail</label>
-                <ImageUploader
-                  images={form.thumbnail ? [form.thumbnail] : []}
-                  onChange={urls => f('thumbnail', urls[0] || '')}
-                  maxImages={1}
-                  minImages={0}
-                />
+                <label style={labelCls}>Thumbnails</label>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                  <div>
+                    <p style={{ fontSize: 11, color: 'var(--dust)', marginBottom: 8, letterSpacing: '0.06em' }}>Desktop · Image / GIF</p>
+                    <ImageUploader
+                      images={form.thumbnail ? [form.thumbnail] : []}
+                      onChange={urls => f('thumbnail', urls[0] || '')}
+                      maxImages={1}
+                      minImages={0}
+                    />
+                  </div>
+                  <div>
+                    <p style={{ fontSize: 11, color: 'var(--dust)', marginBottom: 8, letterSpacing: '0.06em' }}>Mobile Card · Video / GIF / Image</p>
+                    <MediaUploader
+                      value={form.mobileThumbnail}
+                      onChange={url => f('mobileThumbnail', url)}
+                      label={'Upload Video / GIF'}
+                      hint="MP4, WebM, GIF or image. Shown as full-width card on mobile."
+                    />
+                  </div>
+                </div>
               </div>
               <div style={{ display: 'flex', gap: 16 }}>
                 <div style={{ flex: 1 }}>
