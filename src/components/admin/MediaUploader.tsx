@@ -33,18 +33,17 @@ export default function MediaUploader({ value, onChange, label = 'Upload', hint 
     setLoading(true);
     setProgress('Uploading…');
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('qotn_token') : null;
-      const form = new FormData();
-      form.append('file', file);
+      const token = localStorage.getItem('qotn_token') || '';
+      const fd = new FormData();
+      fd.append('file', file);
 
       const isVid = file.type.startsWith('video/');
       const endpoint = isVid ? `${API_BASE}/upload/video` : `${API_BASE}/upload/image`;
 
       const res = await fetch(endpoint, {
         method: 'POST',
-        credentials: 'include',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        body: form,
+        headers: { Authorization: `Bearer ${token}` },
+        body: fd,
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || 'Upload failed');
