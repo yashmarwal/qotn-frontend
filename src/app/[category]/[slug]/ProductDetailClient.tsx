@@ -419,6 +419,7 @@ export default function ProductDetailClient({ product }: Props) {
             </div>
 
             {/* Find My Size — blob animated pill above custom stitching */}
+            {product.category !== 'kids' && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -435,6 +436,7 @@ export default function ProductDetailClient({ product }: Props) {
                 </span>
               </button>
             </motion.div>
+            )}
 
             {product.category !== 'kids' && (
               <CustomStitchingButton
@@ -695,6 +697,7 @@ export default function ProductDetailClient({ product }: Props) {
               </div>
 
               {/* Find My Size — blob animated pill — desktop */}
+              {product.category !== 'kids' && (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -711,6 +714,7 @@ export default function ProductDetailClient({ product }: Props) {
                   </span>
                 </button>
               </motion.div>
+              )}
 
               {product.category !== 'kids' && (
                 <CustomStitchingButton
