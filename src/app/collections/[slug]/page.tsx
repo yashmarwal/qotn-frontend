@@ -85,42 +85,75 @@ export default async function CollectionDetailPage({ params }: { params: Promise
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionPageJsonLd) }} />
     <div style={{ backgroundColor: 'var(--cream)', minHeight: '100vh' }}>
-      {/* Hero */}
-      <div style={{ backgroundColor: 'var(--black)', padding: '64px 40px', textAlign: 'center', minHeight: 260, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+      <style>{`
+        .col-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 12px;
+          padding: 24px 12px;
+        }
+        @media (min-width: 640px) {
+          .col-grid { grid-template-columns: repeat(3, 1fr); gap: 16px; padding: 32px 24px; }
+        }
+        @media (min-width: 1024px) {
+          .col-grid { grid-template-columns: repeat(4, 1fr); gap: 20px; padding: 48px 40px; max-width: 1200px; margin: 0 auto; }
+        }
+        .col-desc-marquee {
+          overflow: hidden;
+          background: var(--black);
+          border-top: 1px solid rgba(245,240,232,0.08);
+        }
+        .col-desc-track {
+          display: flex;
+          white-space: nowrap;
+          animation: marquee 18s linear infinite;
+          height: 32px;
+          align-items: center;
+        }
+      `}</style>
+
+      {/* Hero — title only */}
+      <div style={{ backgroundColor: 'var(--black)', padding: '48px 24px 32px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
         <Link href="/collections"
-          style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'rgba(245,240,232,0.45)', letterSpacing: '0.10em', textTransform: 'uppercase', marginBottom: 20, textDecoration: 'none' }}>
+          style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'rgba(245,240,232,0.45)', letterSpacing: '0.10em', textTransform: 'uppercase', marginBottom: 16, textDecoration: 'none' }}>
           ← All Collections
         </Link>
-        <h1 style={{ fontSize: 'clamp(36px, 7vw, 80px)', fontWeight: 300, letterSpacing: '0.12em', color: 'var(--cream)', lineHeight: 1, textTransform: 'uppercase' }}>
+        <h1 style={{ fontSize: 'clamp(32px, 7vw, 72px)', fontWeight: 300, letterSpacing: '0.12em', color: 'var(--cream)', lineHeight: 1, textTransform: 'uppercase' }}>
           {col.name}
         </h1>
-        {col.description && (
-          <p style={{ fontSize: 14, color: 'rgba(245,240,232,0.5)', marginTop: 14, maxWidth: 480, lineHeight: 1.6, letterSpacing: '0.03em' }}>
-            {col.description}
-          </p>
-        )}
-        <p style={{ fontSize: 11, color: 'rgba(245,240,232,0.35)', marginTop: 12, letterSpacing: '0.08em' }}>
+        <p style={{ fontSize: 11, color: 'rgba(245,240,232,0.30)', marginTop: 10, letterSpacing: '0.08em' }}>
           {col._count?.products ?? products.length} products
         </p>
       </div>
 
-      {/* Product grid */}
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '48px 40px' }}>
-        {products.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '80px 0' }}>
-            <p style={{ fontSize: 15, color: 'var(--dust)', marginBottom: 24 }}>No products in this collection yet.</p>
-            <Link href="/" style={{ fontSize: 12, letterSpacing: '0.10em', textTransform: 'uppercase', borderBottom: '1px solid var(--black)', paddingBottom: 2 }}>
-              Continue Shopping
-            </Link>
-          </div>
-        ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 24 }}>
-            {products.map((p: any) => (
-              <CollectionProductCard key={p.id} product={p} />
+      {/* Description marquee */}
+      {col.description && (
+        <div className="col-desc-marquee">
+          <div className="col-desc-track">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <span key={i} style={{ fontSize: 11, letterSpacing: '0.10em', color: 'rgba(245,240,232,0.45)', paddingRight: 48 }}>
+                {col.description}
+              </span>
             ))}
           </div>
-        )}
-      </div>
+        </div>
+      )}
+
+      {/* Product grid */}
+      {products.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '80px 0' }}>
+          <p style={{ fontSize: 15, color: 'var(--dust)', marginBottom: 24 }}>No products in this collection yet.</p>
+          <Link href="/" style={{ fontSize: 12, letterSpacing: '0.10em', textTransform: 'uppercase', borderBottom: '1px solid var(--black)', paddingBottom: 2 }}>
+            Continue Shopping
+          </Link>
+        </div>
+      ) : (
+        <div className="col-grid">
+          {products.map((p: any) => (
+            <CollectionProductCard key={p.id} product={p} />
+          ))}
+        </div>
+      )}
     </div>
     </>
   );
@@ -159,21 +192,21 @@ function CollectionProductCard({ product }: { product: any }) {
             </span>
           )}
         </div>
-        <div style={{ paddingTop: 12 }}>
-          <p style={{ fontSize: 14, fontWeight: 400, color: 'var(--black)', marginBottom: 4 }}>{product.name}</p>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+        <div style={{ paddingTop: 8 }}>
+          <p style={{ fontSize: 12, fontWeight: 400, color: 'var(--black)', marginBottom: 3, letterSpacing: '0.01em', lineHeight: 1.3 }}>{product.name}</p>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
             {minPrice > 0 && (
-              <span style={{ fontSize: 14, fontWeight: 500 }}>
+              <span style={{ fontSize: 12, fontWeight: 500 }}>
                 {formatPrice(minPrice)}
               </span>
             )}
             {originalPrice && (
-              <span style={{ fontSize: 12, color: 'var(--dust)', textDecoration: 'line-through' }}>
+              <span style={{ fontSize: 11, color: 'var(--dust)', textDecoration: 'line-through' }}>
                 {formatPrice(originalPrice)}
               </span>
             )}
             {discount && (
-              <span style={{ fontSize: 11, color: '#2E7D32', fontWeight: 500 }}>{discount}% off</span>
+              <span style={{ fontSize: 10, color: '#2E7D32', fontWeight: 500 }}>{discount}% off</span>
             )}
           </div>
         </div>
