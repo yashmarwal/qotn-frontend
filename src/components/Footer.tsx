@@ -76,22 +76,6 @@ export default function Footer() {
         </p>
       </div>
 
-      <div style={{ overflow: 'hidden', lineHeight: 0.8, padding: '0 24px' }}>
-        <span
-          className="brand-wordmark"
-          style={{
-            display: 'block',
-            width: '100%',
-            textAlign: 'center',
-            fontSize: 'clamp(60px, 14vw, 220px)',
-            color: 'var(--cream)',
-            opacity: 0.9,
-          }}
-        >
-          QOTN
-        </span>
-      </div>
-
       <style jsx>{`
         @media (max-width: 768px) {
           .footer-grid { grid-template-columns: 1fr 1fr !important; gap: 40px !important; padding: 48px 24px 40px !important; }
