@@ -82,6 +82,22 @@ export default function MobileFooter() {
         <p style={{ fontSize: 11, color: 'rgba(245,240,232,0.3)', marginBottom: 4 }}>© 2025 Qotn. All rights reserved.</p>
         <p style={{ fontSize: 11, color: 'rgba(245,240,232,0.3)' }}>Made in India 🇮🇳</p>
       </div>
+
+      <div style={{ overflow: 'hidden', lineHeight: 0.8, marginTop: 24 }}>
+        <span
+          className="brand-wordmark"
+          style={{
+            display: 'block',
+            width: '100%',
+            textAlign: 'center',
+            fontSize: 'clamp(48px, 16vw, 90px)',
+            color: '#F5F0E8',
+            opacity: 0.9,
+          }}
+        >
+          QOTN
+        </span>
+      </div>
     </footer>
   );
 }
