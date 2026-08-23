@@ -35,6 +35,8 @@ const sections = [
   },
 ];
 
+const whatsappHref = `https://wa.me/918595475007?text=${encodeURIComponent("Hello, I’m interested in developing a website.")}`;
+
 function AccordionSection({ title, links }: { title: string; links: { href: string; label: string }[] }) {
   const [open, setOpen] = useState(false);
   return (
@@ -80,7 +82,14 @@ export default function MobileFooter() {
 
       <div style={{ marginTop: 24, textAlign: 'center' }}>
         <p style={{ fontSize: 11, color: 'rgba(245,240,232,0.3)', marginBottom: 4 }}>© 2025 Qotn. All rights reserved.</p>
-        <p style={{ fontSize: 11, color: 'rgba(245,240,232,0.3)' }}>Made in India 🇮🇳</p>
+        <p style={{ fontSize: 11, color: 'rgba(245,240,232,0.3)', marginBottom: 4 }}>Made in India 🇮🇳</p>
+        <p style={{ fontSize: 11, color: 'rgba(245,240,232,0.3)' }}>
+          Developed by{' '}
+          <a href={whatsappHref} target="_blank" rel="noopener noreferrer"
+            style={{ color: 'rgba(245,240,232,0.5)', textDecoration: 'underline' }}>
+            Yash Marwal
+          </a>
+        </p>
       </div>
     </footer>
   );
