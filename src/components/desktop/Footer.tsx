@@ -24,6 +24,8 @@ const linkStyle = {
   opacity: 0.8, transition: 'opacity 0.2s',
 } as const;
 
+const whatsappHref = `https://wa.me/918595475007?text=${encodeURIComponent("Hello, I’m interested in developing a website.")}`;
+
 export default function DesktopFooter() {
   return (
     <footer style={{ backgroundColor: 'var(--black)', color: 'var(--cream)' }}>
@@ -77,6 +79,13 @@ export default function DesktopFooter() {
       <div style={{ borderTop: '1px solid rgba(245,240,232,0.15)', padding: '20px 40px', textAlign: 'center' }}>
         <p style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(245,240,232,0.4)' }}>
           Made in India · 100% Cotton · Nothing Else.
+        </p>
+        <p style={{ fontSize: 11, marginTop: 8, color: 'rgba(245,240,232,0.4)' }}>
+          Developed by{' '}
+          <a href={whatsappHref} target="_blank" rel="noopener noreferrer"
+            style={{ color: 'rgba(245,240,232,0.6)', textDecoration: 'underline' }}>
+            Yash Marwal
+          </a>
         </p>
       </div>
     </footer>
