@@ -5,7 +5,7 @@ import type { Metadata } from 'next';
 
 const API =
   process.env.NODE_ENV === 'production'
-    ? 'https://qotn-backend-production.up.railway.app/api'
+    ? 'https://qotn-backend.onrender.com/api'
     : 'http://localhost:3001/api';
 
 async function getCollection(slug: string) {

@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 
 const API =
   process.env.NODE_ENV === 'production'
-    ? 'https://qotn-backend-production.up.railway.app/api'
+    ? 'https://qotn-backend.onrender.com/api'
     : 'http://localhost:3001/api';
 
 async function getCollections() {

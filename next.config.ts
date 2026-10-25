@@ -19,7 +19,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: 'https://qotn-backend-production.up.railway.app/api/:path*',
+        destination: 'https://qotn-backend.onrender.com/api/:path*',
       },
     ];
   },

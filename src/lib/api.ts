@@ -122,7 +122,7 @@ export const api = {
 // Server-side RSC fetch always needs an absolute URL (relative URLs break during ISR revalidation).
 const SERVER_URL =
   process.env.NODE_ENV === 'production'
-    ? 'https://qotn-backend-production.up.railway.app/api'
+    ? 'https://qotn-backend.onrender.com/api'
     : 'http://localhost:3001/api';
 
 export async function fetchPublic<T>(path: string, revalidate = 60): Promise<T | null> {
