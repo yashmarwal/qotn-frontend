@@ -3,6 +3,7 @@
 import { useRef, useState, useCallback } from 'react';
 import { Upload, Trash2, Loader } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { compressImage, formatBytes } from '@/lib/compressImage';
 
 const API_BASE =
   typeof window !== 'undefined' && window.location.hostname === 'localhost'
@@ -29,6 +30,7 @@ export default function ImageUploader({ images, onChange, maxImages = 6, minImag
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [slotLoading, setSlotLoading] = useState<number | null>(null);
   const [error, setError] = useState('');
+  const [note, setNote] = useState('');
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
@@ -50,11 +52,15 @@ export default function ImageUploader({ images, onChange, maxImages = 6, minImag
     e.target.value = '';
 
     setError('');
+    setNote('');
     setSlotLoading(slotIndex);
     try {
       const token = typeof window !== 'undefined' ? localStorage.getItem('qotn_token') : null;
       const formData = new FormData();
-      formData.append('file', file);
+      // Shrink in the browser first: smaller upload, and phone photos no longer hit the 5 MB cap
+      const { file: slim, before, after } = await compressImage(file);
+      if (after < before) setNote(`Compressed ${formatBytes(before)} to ${formatBytes(after)}`);
+      formData.append('file', slim);
 
       const res = await fetch(`${API_BASE}/upload/image`, {
         method: 'POST',
@@ -256,12 +262,15 @@ export default function ImageUploader({ images, onChange, maxImages = 6, minImag
 
       {/* Hint + validation */}
       <p style={{ fontSize: 11, color: '#9E9987', marginTop: 8, letterSpacing: '0.04em' }}>
-        First image is the primary product image. Drag to reorder. JPG, PNG, WebP · max 5 MB. GIF · max 15 MB.
+        First image is the primary product image. Drag to reorder. JPG, PNG, WebP are compressed automatically before upload. GIF · max 15 MB, uploaded as is.
       </p>
       {tooFew && images.length > 0 && (
         <p style={{ fontSize: 11, color: '#B45309', marginTop: 4, letterSpacing: '0.04em' }}>
           ⚠ Upload at least {minImages} images ({images.length}/{minImages} added)
         </p>
+      )}
+      {note && !error && (
+        <p style={{ fontSize: 11, color: '#4D7C4D', marginTop: 4, letterSpacing: '0.04em' }}>{note}</p>
       )}
       {error && (
         <p style={{ fontSize: 12, color: '#DC2626', marginTop: 6, background: '#FEF2F2', padding: '6px 10px', borderRadius: 4 }}>

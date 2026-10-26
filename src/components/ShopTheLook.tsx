@@ -18,6 +18,42 @@ const CARD_GAP = 12;
 const SPEED_PX_PER_SEC = 40;
 const DRAG_LOCK_THRESHOLD = 6;
 
+// Cards are 180px wide, so ask Cloudinary for 2x that, at eco quality, in the best format for the browser
+function sizedVideoUrl(url: string) {
+  return url.includes('/video/upload/')
+    ? url.replace('/video/upload/', `/video/upload/w_${CARD_WIDTH * 2},c_limit,q_auto:eco,f_auto/`)
+    : url;
+}
+
+// Downloads and plays only while near the screen, so the 20 strip copies cost nothing until scrolled to
+function LookVideoPlayer({ src }: { src: string }) {
+  const ref = useRef<HTMLVideoElement>(null);
+  const [near, setNear] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) { setNear(true); el.play().catch(() => {}); } else el.pause();
+    }, { rootMargin: '200px' });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  return (
+    <video
+      ref={ref}
+      src={near ? sizedVideoUrl(src) : undefined}
+      autoPlay
+      muted
+      loop
+      playsInline
+      preload="none"
+      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+    />
+  );
+}
+
 export default function ShopTheLook() {
   const [videos, setVideos] = useState<LookVideo[]>([]);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
@@ -233,14 +269,7 @@ export default function ShopTheLook() {
                   cursor: productHref ? 'pointer' : 'default',
                 }}
               >
-                <video
-                  src={video.videoUrl}
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                />
+                <LookVideoPlayer src={video.videoUrl} />
 
                 {productHref && (
                   <Link
