@@ -8,6 +8,7 @@ import ProductCard from '@/components/shared/ProductCard';
 import ProductCardSkeleton from '@/components/shared/ProductCardSkeleton';
 import PageTransition from '@/components/shared/PageTransition';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { useBackClose } from '@/hooks/useBackClose';
 import { productsService } from '@/lib/services/products.service';
 import { adaptApiProductList } from '@/lib/adapters';
 import { Product } from '@/types';
@@ -36,6 +37,7 @@ export default function CategoryPageClient({ params }: { params: Promise<{ categ
   const [showSizeFilter, setShowSizeFilter] = useState(false);
   const [showColorFilter, setShowColorFilter] = useState(false);
   const [showMobileFilter, setShowMobileFilter] = useState(false);
+  useBackClose(showMobileFilter, () => setShowMobileFilter(false));
   const [filtered, setFiltered] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);

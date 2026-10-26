@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Copy, Check, Tag, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useBackClose } from '@/hooks/useBackClose';
 
 let _shownThisLoad = false;
 const NOTCH = 14;
@@ -85,6 +86,7 @@ function TicketCard({ coupon, copied, onCopy }: { coupon: any; copied: boolean; 
 export default function CouponPopup() {
   const [coupons, setCoupons] = useState<any[]>([]);
   const [visible, setVisible] = useState(false);
+  useBackClose(visible, () => setVisible(false));
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
   const [activeIdx, setActiveIdx] = useState(0);
   const [isMobile, setIsMobile] = useState(false);

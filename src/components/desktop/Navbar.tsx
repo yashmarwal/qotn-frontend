@@ -8,6 +8,7 @@ import { Search, User, ShoppingBag, X, Clock, TrendingUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
+import { useBackClose } from '@/hooks/useBackClose';
 import { formatPrice } from '@/lib/utils';
 
 const API =
@@ -51,6 +52,7 @@ function HighlightMatch({ text, query }: { text: string; query: string }) {
 export default function DesktopNavbar() {
   const [scrolled, setScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  useBackClose(searchOpen, () => setSearchOpen(false));
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [searching, setSearching] = useState(false);

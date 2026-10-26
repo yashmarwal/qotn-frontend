@@ -10,6 +10,7 @@ import { Product } from '@/types';
 import { useWishlist } from '@/context/WishlistContext';
 import { useCart } from '@/context/CartContext';
 import { formatPrice } from '@/lib/utils';
+import { useBackClose } from '@/hooks/useBackClose';
 
 interface ProductCardProps {
   product: Product;
@@ -20,6 +21,7 @@ function QuickAddSheet({ product, onClose }: { product: Product; onClose: () => 
   const [selectedSize, setSelectedSize] = useState('');
   const [added, setAdded] = useState(false);
   const { addItem } = useCart();
+  useBackClose(true, onClose);
 
   const handleAdd = () => {
     if (!selectedSize || added) return;

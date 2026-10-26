@@ -10,6 +10,7 @@ import { Product } from '@/types';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 import SizeGuide from '@/components/shared/SizeGuide';
+import { useBackClose } from '@/hooks/useBackClose';
 import FindMySize from '@/components/shared/FindMySize';
 import ProductCard from '@/components/shared/ProductCard';
 import MobileBottomBar from '@/components/mobile/BottomBar';
@@ -72,6 +73,8 @@ export default function ProductDetailClient({ product }: Props) {
   const [stockError, setStockError] = useState('');
   const [shareCopied, setShareCopied] = useState(false);
   const [findMySizeOpen, setFindMySizeOpen] = useState(false);
+  useBackClose(sizeGuideOpen, () => setSizeGuideOpen(false));
+  useBackClose(findMySizeOpen, () => setFindMySizeOpen(false));
 
   const colorHexMap: Record<string, string> = Object.fromEntries(
     (product?._variants ?? []).filter(v => v.colorHex).map(v => [v.color, v.colorHex as string])

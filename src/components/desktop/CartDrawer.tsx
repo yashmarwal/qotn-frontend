@@ -5,9 +5,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
 import { formatPrice } from '@/lib/utils';
+import { useBackClose } from '@/hooks/useBackClose';
 
 export default function CartDrawer() {
   const { items, isOpen, closeCart, removeItem, updateQuantity, totalItems, totalPrice } = useCart();
+  useBackClose(isOpen, closeCart);
   const stitchingItems = items.filter(i => i.customStitchingId);
   const stitchingCharge = stitchingItems.length * 24900;
   const grandTotal = totalPrice + stitchingCharge;

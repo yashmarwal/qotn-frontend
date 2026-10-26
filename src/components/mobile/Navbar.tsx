@@ -8,6 +8,7 @@ import { Menu, X, Search, ShoppingBag, Heart, User, ChevronLeft, Clock, Trending
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '@/context/CartContext';
 import { formatPrice } from '@/lib/utils';
+import { useBackClose } from '@/hooks/useBackClose';
 
 const API =
   typeof window !== 'undefined' && window.location.hostname === 'localhost'
@@ -53,6 +54,8 @@ export default function MobileNavbar() {
   const [compact, setCompact] = useState(false);
   const [lastScroll, setLastScroll] = useState(0);
   const [searchOpen, setSearchOpen] = useState(false);
+  useBackClose(drawerOpen, () => setDrawerOpen(false));
+  useBackClose(searchOpen, () => setSearchOpen(false));
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [searching, setSearching] = useState(false);

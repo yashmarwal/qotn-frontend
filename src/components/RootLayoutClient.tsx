@@ -2,6 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { useSkipStaleOverlayEntries } from '@/hooks/useBackClose';
 import DesktopNavbar from '@/components/desktop/Navbar';
 import DesktopFooter from '@/components/desktop/Footer';
 import CartDrawer from '@/components/desktop/CartDrawer';
@@ -14,6 +15,7 @@ import CouponPopup from '@/components/shared/CouponPopup';
 export default function RootLayoutClient({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isMobile = useIsMobile();
+  useSkipStaleOverlayEntries();
   const isAdmin = pathname.startsWith('/admin');
   // Bottom nav is hidden on checkout + cart (pages have their own action bars) and admin
   const showBottomNav = isMobile && !isAdmin && pathname !== '/checkout' && pathname !== '/cart';

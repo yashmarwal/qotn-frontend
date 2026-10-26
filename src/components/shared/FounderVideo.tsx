@@ -1,9 +1,23 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, type PanInfo } from 'framer-motion';
 import { X } from 'lucide-react';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { useBackClose } from '@/hooks/useBackClose';
+
+// Swipe-down closes the video once it is pulled this far, or flicked this fast
+const SWIPE_CLOSE_DISTANCE = 110;
+const SWIPE_CLOSE_VELOCITY = 600;
+
+const cardVariants = {
+  enter: { scale: 1, opacity: 1, y: 0 },
+  hidden: { scale: 0.08, opacity: 0 },
+  exit: (swiped: boolean) =>
+    swiped
+      ? { y: '110vh', opacity: 0, transition: { duration: 0.32, ease: [0.4, 0, 1, 1] as const } }
+      : { scale: 0.08, opacity: 0 },
+};
 
 const VIDEO_SRC    = '/videos/VID_20260706_060213_779_bsl.mp4';
 const FOUNDER_NAME = 'Punit Dhanopia';
@@ -14,11 +28,37 @@ export default function FounderVideo() {
   const [visible,  setVisible]  = useState(false);
   const [expanded, setExpanded] = useState(false);
   const bubbleVideoRef = useRef<HTMLVideoElement>(null);
+  // Decides which exit animation plays: slide down after a swipe, shrink otherwise
+  const [swiped, setSwiped] = useState(false);
+
+  useBackClose(expanded, () => setExpanded(false));
 
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), 3200);
     return () => clearTimeout(t);
   }, []);
+
+  // Freeze the page behind the open video so scrolling can't move it
+  useEffect(() => {
+    if (!expanded) return;
+    const html = document.documentElement;
+    const prev = { html: html.style.overflow, body: document.body.style.overflow };
+    html.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+    return () => {
+      html.style.overflow = prev.html;
+      document.body.style.overflow = prev.body;
+    };
+  }, [expanded]);
+
+  const openVideo = () => { setSwiped(false); setExpanded(true); };
+  const closeVideo = () => { setSwiped(false); setExpanded(false); };
+  const onCardDragEnd = (_: unknown, info: PanInfo) => {
+    if (info.offset.y > SWIPE_CLOSE_DISTANCE || info.velocity.y > SWIPE_CLOSE_VELOCITY) {
+      setSwiped(true);
+      setExpanded(false);
+    }
+  };
 
   // Ensure bubble video plays whenever bubble is shown (browsers may pause after modal closes)
   useEffect(() => {
@@ -78,7 +118,7 @@ export default function FounderVideo() {
 
               {/* Circle — click to expand */}
               <div
-                onClick={() => setExpanded(true)}
+                onClick={openVideo}
                 style={{
                   width: 72, height: 72, borderRadius: '50%', overflow: 'hidden',
                   border: '2.5px solid var(--black)',
@@ -96,7 +136,7 @@ export default function FounderVideo() {
 
             {/* Name + role */}
             <div
-              onClick={() => setExpanded(true)}
+              onClick={openVideo}
               style={{ textAlign: 'center', marginTop: 7 }}
             >
               <p style={{ fontSize: 9.5, fontWeight: 600, color: 'var(--black)', letterSpacing: '0.03em', lineHeight: 1.3 }}>
@@ -111,15 +151,15 @@ export default function FounderVideo() {
       </AnimatePresence>
 
       {/* ── Expanded modal ──────────────────────────────── */}
-      <AnimatePresence>
+      <AnimatePresence custom={swiped}>
         {expanded && (
           <>
-            {/* Backdrop */}
+            {/* Backdrop: touch-action/overscroll stop touches from scrolling the page behind */}
             <motion.div
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               transition={{ duration: 0.22 }}
-              onClick={() => setExpanded(false)}
-              style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.88)', zIndex: 600 }}
+              onClick={closeVideo}
+              style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.88)', zIndex: 600, touchAction: 'none', overscrollBehavior: 'contain' }}
             />
 
             {/* 9:16 card — flex wrapper avoids CSS transform conflict with framer-motion */}
@@ -129,10 +169,16 @@ export default function FounderVideo() {
               pointerEvents: 'none',
             }}>
               <motion.div
-                initial={{ scale: 0.08, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.08, opacity: 0 }}
+                custom={swiped}
+                variants={cardVariants}
+                initial="hidden"
+                animate="enter"
+                exit="exit"
                 transition={{ type: 'spring', damping: 24, stiffness: 200 }}
+                drag="y"
+                dragConstraints={{ top: 0, bottom: 0 }}
+                dragElastic={{ top: 0, bottom: 0.6 }}
+                onDragEnd={onCardDragEnd}
                 style={{
                   width: 'min(88vw, 360px)',
                   aspectRatio: '9 / 16',
@@ -169,7 +215,8 @@ export default function FounderVideo() {
 
                 {/* Close */}
                 <button
-                  onClick={() => setExpanded(false)}
+                  onClick={closeVideo}
+                  aria-label="Close video"
                   style={{
                     position: 'absolute', top: 14, right: 14,
                     width: 36, height: 36, borderRadius: '50%',
