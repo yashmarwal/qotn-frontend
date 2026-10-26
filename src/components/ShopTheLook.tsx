@@ -18,37 +18,51 @@ const CARD_GAP = 12;
 const SPEED_PX_PER_SEC = 40;
 const DRAG_LOCK_THRESHOLD = 6;
 
-// Cards are 180px wide, so ask Cloudinary for 2x that, at eco quality, in the best format for the browser
+// Cards are 180px wide, so 3x covers any phone screen. Audio is dropped (the videos are muted), which
+// saves ~15% on its own; q_auto:good keeps the footage as sharp as the 720p originals look at this size.
 function sizedVideoUrl(url: string) {
   return url.includes('/video/upload/')
-    ? url.replace('/video/upload/', `/video/upload/w_${CARD_WIDTH * 2},c_limit,q_auto:eco,f_auto/`)
+    ? url.replace('/video/upload/', `/video/upload/w_${CARD_WIDTH * 3},c_limit,q_auto:good,ac_none,f_auto/`)
     : url;
 }
 
-// Downloads and plays only while near the screen, so the 20 strip copies cost nothing until scrolled to
+// First frame as a small JPEG, so a card shows a picture the moment it appears instead of a black box
+function posterUrl(url: string) {
+  return url.includes('/video/upload/')
+    ? url.replace('/video/upload/', `/video/upload/so_0,w_${CARD_WIDTH * 2},c_limit,q_auto,f_auto/`).replace(/\.[a-z0-9]+$/i, '.jpg')
+    : undefined;
+}
+
+// Starts loading well before the strip is on screen (so cards are ready when you scroll to them) but only
+// plays while actually visible, so the 20 strip copies cost almost nothing until you get near them.
 function LookVideoPlayer({ src }: { src: string }) {
   const ref = useRef<HTMLVideoElement>(null);
-  const [near, setNear] = useState(false);
+  const [load, setLoad] = useState(false);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const io = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) { setNear(true); el.play().catch(() => {}); } else el.pause();
-    }, { rootMargin: '200px' });
-    io.observe(el);
-    return () => io.disconnect();
+    const loader = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) { setLoad(true); loader.disconnect(); }
+    }, { rootMargin: '1200px 400px' });
+    const player = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) el.play().catch(() => {}); else el.pause();
+    }, { rootMargin: '100px' });
+    loader.observe(el);
+    player.observe(el);
+    return () => { loader.disconnect(); player.disconnect(); };
   }, []);
 
   return (
     <video
       ref={ref}
-      src={near ? sizedVideoUrl(src) : undefined}
+      src={load ? sizedVideoUrl(src) : undefined}
+      poster={load ? posterUrl(src) : undefined}
       autoPlay
       muted
       loop
       playsInline
-      preload="none"
+      preload="auto"
       style={{ width: '100%', height: '100%', objectFit: 'cover' }}
     />
   );
