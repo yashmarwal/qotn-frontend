@@ -2,7 +2,7 @@ import { Lock, RotateCcw, Leaf, MapPin } from 'lucide-react';
 
 const items = [
   { icon: Lock, title: '100% Secure Payments', sub: 'UPI, Cards, NetBanking, COD' },
-  { icon: RotateCcw, title: 'Easy Returns', sub: '7-day hassle-free return policy' },
+  { icon: RotateCcw, title: '24-Hour Returns', sub: 'For damaged items. See our return policy' },
   { icon: Leaf, title: 'Pure Cotton Certified', sub: 'No blends, ever. Our promise.' },
   { icon: MapPin, title: 'Made in India', sub: 'Proudly crafted in India' },
 ];

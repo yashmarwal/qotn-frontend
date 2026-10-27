@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, use, useCallback, useRef } from 'react';
-import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, SlidersHorizontal, X } from 'lucide-react';
 import ProductCard from '@/components/shared/ProductCard';
@@ -17,45 +17,63 @@ const categoryLabels: Record<string, string> = { men: 'Men', women: 'Women', kid
 const allSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '2-3Y', '3-4Y', '4-5Y', '5-6Y', '6-7Y', '7-8Y'];
 const allColors = ['White', 'Black', 'Cream', 'Olive', 'Blue', 'Beige', 'Grey', 'Navy', 'Terracotta', 'Sage', 'Blush'];
 
-export default function CategoryPageClient({ params }: { params: Promise<{ category: string }> }) {
+interface Props {
+  params: Promise<{ category: string }>;
+  // Page 1 of the unfiltered list, rendered on the server; undefined if the API was unreachable
+  initialProducts?: Product[];
+  initialTotal?: number;
+}
+
+export default function CategoryPageClient({ params, initialProducts, initialTotal = 0 }: Props) {
   const { category } = use(params);
   const isMobile = useIsMobile();
-  const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
 
   // Initialise from URL so shared/bookmarked links restore filters
-  const [sortBy, setSortBy] = useState(() => searchParams.get('sort') || '');
-  const [selectedSizes, setSelectedSizes] = useState<string[]>(() => {
-    const s = searchParams.get('sizes');
-    return s ? s.split(',').filter(Boolean) : [];
-  });
-  const [selectedColors, setSelectedColors] = useState<string[]>(() => {
-    const c = searchParams.get('colors');
-    return c ? c.split(',').filter(Boolean) : [];
-  });
+  // The page is static, so filters from a shared link (?sort=&sizes=&colors=) are read from the URL after load
+  const [sortBy, setSortBy] = useState('');
+  const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
+  const [selectedColors, setSelectedColors] = useState<string[]>([]);
+  const [urlReady, setUrlReady] = useState(false);
   const [showSizeFilter, setShowSizeFilter] = useState(false);
   const [showColorFilter, setShowColorFilter] = useState(false);
   const [showMobileFilter, setShowMobileFilter] = useState(false);
   useBackClose(showMobileFilter, () => setShowMobileFilter(false));
-  const [filtered, setFiltered] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [total, setTotal] = useState(0);
+  const LIMIT = 24;
+  const hasInitial = !!initialProducts && initialProducts.length > 0;
+  const [filtered, setFiltered] = useState<Product[]>(initialProducts ?? []);
+  const [loading, setLoading] = useState(!hasInitial);
+  const [total, setTotal] = useState(initialTotal);
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(false);
+  const [hasMore, setHasMore] = useState(hasInitial && (initialProducts?.length ?? 0) === LIMIT && initialTotal > LIMIT);
+  // True while the grid on screen is the one the server rendered: it appears at once, with no fade-in
+  const [fromServer, setFromServer] = useState(hasInitial);
+  const skipFirstFetch = useRef(hasInitial);
   const sentinelRef = useRef<HTMLDivElement>(null);
-  const LIMIT = 24;
+
+  useEffect(() => {
+    // One-time read of the browser URL, which the static server render cannot know about
+    /* eslint-disable react-hooks/set-state-in-effect */
+    const q = new URLSearchParams(window.location.search);
+    setSortBy(q.get('sort') || '');
+    setSelectedSizes((q.get('sizes') || '').split(',').filter(Boolean));
+    setSelectedColors((q.get('colors') || '').split(',').filter(Boolean));
+    setUrlReady(true);
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, []);
 
   // Keep URL in sync with filter state (enables sharing + back-button)
   useEffect(() => {
+    if (!urlReady) return; // don't wipe the URL's filters before they have been read
     const params = new URLSearchParams();
     if (sortBy) params.set('sort', sortBy);
     if (selectedSizes.length) params.set('sizes', selectedSizes.join(','));
     if (selectedColors.length) params.set('colors', selectedColors.join(','));
     const query = params.toString();
     router.replace(`${pathname}${query ? `?${query}` : ''}`, { scroll: false });
-  }, [sortBy, selectedSizes, selectedColors, pathname]);
+  }, [sortBy, selectedSizes, selectedColors, pathname, urlReady]);
 
   const label = categoryLabels[category] || category;
 
@@ -67,6 +85,8 @@ export default function CategoryPageClient({ params }: { params: Promise<{ categ
 
   // Reset and load page 1 whenever filters/sort/category change
   useEffect(() => {
+    if (skipFirstFetch.current) { skipFirstFetch.current = false; return; }
+    setFromServer(false);
     setLoading(true);
     setPage(1);
     setHasMore(false);
@@ -134,7 +154,7 @@ export default function CategoryPageClient({ params }: { params: Promise<{ categ
       <div style={{ backgroundColor: 'var(--cream)', minHeight: '100vh' }}>
         {/* Hero banner */}
         <div style={{ height: 160, backgroundColor: 'var(--black)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-          <motion.h1 initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }} style={{ fontSize: 32, fontWeight: 300, letterSpacing: '0.12em', color: 'var(--cream)', textTransform: 'uppercase', textAlign: 'center', lineHeight: 1 }}>{label}</motion.h1>
+          <motion.h1 initial={false} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }} style={{ fontSize: 32, fontWeight: 300, letterSpacing: '0.12em', color: 'var(--cream)', textTransform: 'uppercase', textAlign: 'center', lineHeight: 1 }}>{label}<span className="sr-only"> pure cotton clothing</span></motion.h1>
           {!loading && (
             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35, delay: 0.25 }} style={{ fontSize: 11, color: 'rgba(245,240,232,0.55)', marginTop: 6, letterSpacing: '0.06em' }}>{total} products</motion.p>
           )}
@@ -259,8 +279,8 @@ export default function CategoryPageClient({ params }: { params: Promise<{ categ
               <p style={{ fontSize: 11, color: 'var(--dust)', marginBottom: 12, letterSpacing: '0.04em' }}>Showing {filtered.length} of {total} products</p>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, alignItems: 'start' }}>
                 {filtered.map((p, i) => (
-                  <motion.div key={p.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25, delay: Math.min(i * 0.03, 0.3) }} style={{ minWidth: 0, overflow: 'hidden' }}>
-                    <ProductCard product={p} variant="mobile" />
+                  <motion.div key={p.id} initial={fromServer ? false : { opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25, delay: Math.min(i * 0.03, 0.3) }} style={{ minWidth: 0, overflow: 'hidden' }}>
+                    <ProductCard product={p} variant="mobile" priority={i < 2} />
                   </motion.div>
                 ))}
               </div>
@@ -284,8 +304,8 @@ export default function CategoryPageClient({ params }: { params: Promise<{ categ
     <div style={{ backgroundColor: 'var(--cream)', minHeight: '100vh' }}>
       {/* Hero Banner */}
       <div style={{ height: 260, backgroundColor: 'var(--black)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} style={{ textAlign: 'center' }}>
-          <h1 style={{ fontSize: 'clamp(48px, 8vw, 96px)', fontWeight: 300, letterSpacing: '0.12em', color: 'var(--cream)', textTransform: 'uppercase' }}>{label}</h1>
+        <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} style={{ textAlign: 'center' }}>
+          <h1 style={{ fontSize: 'clamp(48px, 8vw, 96px)', fontWeight: 300, letterSpacing: '0.12em', color: 'var(--cream)', textTransform: 'uppercase' }}>{label}<span className="sr-only"> pure cotton clothing</span></h1>
           <p style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(245,240,232,0.5)', marginTop: 8 }}>Pure Cotton. Nothing Else.</p>
         </motion.div>
       </div>
@@ -355,8 +375,8 @@ export default function CategoryPageClient({ params }: { params: Promise<{ categ
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 24 }}>
             {filtered.map((p, i) => (
-              <motion.div key={p.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: Math.min(i * 0.05, 0.4) }}>
-                <ProductCard product={p} variant="desktop" />
+              <motion.div key={p.id} initial={fromServer ? false : { opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: Math.min(i * 0.05, 0.4) }}>
+                <ProductCard product={p} variant="desktop" priority={i < 4} />
               </motion.div>
             ))}
           </div>

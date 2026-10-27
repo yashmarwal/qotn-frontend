@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 
 const tabs = ['Men', 'Women', 'Kids'] as const;
@@ -94,6 +95,25 @@ export default function SizeGuidePage() {
             <span style={{ color: '#1A1A1A', fontWeight: 500 }}>Custom Stitching</span> option available on every product page.
           </p>
         </div>
+
+        <h2 style={{ fontSize: 20, fontWeight: 400, margin: '48px 0 16px' }}>How to measure yourself</h2>
+        <p style={{ fontSize: 14, color: '#555', lineHeight: 1.8, marginBottom: 16 }}>
+          Use a soft measuring tape over light clothing and keep it level and snug, not tight. Then compare your numbers with the table above.
+        </p>
+        <ul style={{ fontSize: 14, color: '#555', lineHeight: 1.9, paddingLeft: 20, marginBottom: 24 }}>
+          <li><strong style={{ color: '#1A1A1A', fontWeight: 500 }}>Chest:</strong> around the fullest part of the chest, under the arms.</li>
+          <li><strong style={{ color: '#1A1A1A', fontWeight: 500 }}>Waist:</strong> around the natural waistline, the narrowest part of the torso.</li>
+          <li><strong style={{ color: '#1A1A1A', fontWeight: 500 }}>Hips:</strong> around the fullest part of the hips.</li>
+          <li><strong style={{ color: '#1A1A1A', fontWeight: 500 }}>Height:</strong> standing straight against a wall, without shoes.</li>
+        </ul>
+        <p style={{ fontSize: 14, color: '#555', lineHeight: 1.8 }}>
+          Between two sizes, choose the larger one. For a fit made to your own measurements, choose Custom Stitching on a product page (custom stitched orders cannot be returned, see the{' '}
+          <Link href="/return-policy" style={{ color: '#1A1A1A', textDecoration: 'underline' }}>return policy</Link>). More questions about sizing are answered in the{' '}
+          <Link href="/faq" style={{ color: '#1A1A1A', textDecoration: 'underline' }}>FAQ</Link>, or browse{' '}
+          <Link href="/men" style={{ color: '#1A1A1A', textDecoration: 'underline' }}>men</Link>,{' '}
+          <Link href="/women" style={{ color: '#1A1A1A', textDecoration: 'underline' }}>women</Link> and{' '}
+          <Link href="/kids" style={{ color: '#1A1A1A', textDecoration: 'underline' }}>kids</Link> clothing.
+        </p>
       </div>
     </div>
   );

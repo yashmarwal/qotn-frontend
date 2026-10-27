@@ -52,7 +52,7 @@ function AnimatedStat({
 }
 
 const stats = [
-  { value: 24, suffix: ' Hr', label: 'EASY RETURNS' },
+  { value: 24, suffix: ' Hr', label: 'RETURN WINDOW' },
   { value: 100, suffix: '%', label: 'PURE COTTON' },
   { value: 249, prefix: '₹', label: 'CUSTOM STITCHING' },
   { value: 1499, prefix: '₹', suffix: '+', label: 'FREE SHIPPING' },

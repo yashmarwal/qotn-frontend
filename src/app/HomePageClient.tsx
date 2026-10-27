@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import { ArrowRight, Leaf, Droplets, MapPin, ChevronDown } from 'lucide-react';
 
 const FALLBACK_IMAGES = [
@@ -20,8 +21,9 @@ import StatsBanner from '@/components/shared/StatsBanner';
 import TrustStrip from '@/components/shared/TrustStrip';
 import TrustBadges from '@/components/shared/TrustBadges';
 import PromoBanner from '@/components/shared/PromoBanner';
-import ShopTheLook from '@/components/ShopTheLook';
-import FounderVideo from '@/components/shared/FounderVideo';
+// Below the fold or appears seconds after load: kept out of the first JavaScript bundle
+const ShopTheLook = dynamic(() => import('@/components/ShopTheLook'), { ssr: false });
+const FounderVideo = dynamic(() => import('@/components/shared/FounderVideo'), { ssr: false });
 import { categories } from '@/lib/dummy-data';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { productsService } from '@/lib/services/products.service';
@@ -32,7 +34,7 @@ import { Product } from '@/types';
 const fadeUp = { initial: { opacity: 0, y: 30 }, animate: { opacity: 1, y: 0 } };
 const stagger = { animate: { transition: { staggerChildren: 0.15 } } };
 
-export default function HomePageClient() {
+export default function HomePageClient({ initialHeroImages = [] }: { initialHeroImages?: string[] }) {
   const isMobile = useIsMobile();
   const [mounted, setMounted] = useState(false);
   const [newArrivals, setNewArrivals] = useState<Product[]>([]);
@@ -47,7 +49,7 @@ export default function HomePageClient() {
   useEffect(() => { setMounted(true); }, []);
 
   // Hero slideshow state — always declared, only used by mobile branch
-  const [heroImages, setHeroImages] = useState<string[]>([]);
+  const [heroImages, setHeroImages] = useState<string[]>(initialHeroImages);
   const [heroIndex, setHeroIndex] = useState(0);
   const heroTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -83,6 +85,7 @@ export default function HomePageClient() {
 
   // Fetch hero banner images (runs unconditionally)
   useEffect(() => {
+    if (initialHeroImages.length > 0) return; // already provided by the server
     fetch('/api/banners?position=HERO', { credentials: 'include' })
       .then(r => r.ok ? r.json() : null)
       .then(d => {
@@ -133,7 +136,7 @@ export default function HomePageClient() {
         {/* Hero — 60% slideshow / 40% content */}
         <section style={{ height: '100svh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           <div onClick={handleHeroTap} style={{ flex: '0 0 60%', position: 'relative', backgroundColor: 'var(--raw-cotton)', overflow: 'hidden', cursor: 'pointer' }}>
-            <AnimatePresence mode="wait">
+            <AnimatePresence mode="wait" initial={false}>
               {heroImages.length > 0 && (
                 <motion.div
                   key={heroIndex}
@@ -159,7 +162,7 @@ export default function HomePageClient() {
           </div>
           <div style={{ flex: '0 0 40%', backgroundColor: 'var(--cream)', padding: '20px 16px 12px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
             <motion.p initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.3 }} style={{ fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--dust)', marginBottom: 6 }}>NEW COLLECTION</motion.p>
-            <motion.h1 initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.4 }} className="brand-wordmark" style={{ fontSize: 52, lineHeight: 1, color: 'var(--black)', marginBottom: 6 }}>QOTN</motion.h1>
+            <motion.h1 initial={false} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.4 }} className="brand-wordmark" style={{ fontSize: 52, lineHeight: 1, color: 'var(--black)', marginBottom: 6 }}>QOTN<span className="sr-only">: pure cotton clothing for men, women and kids</span></motion.h1>
             <motion.p initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.52 }} style={{ fontSize: 12, color: 'var(--dust)', marginBottom: 18 }}>Pure Cotton. Nothing Else.</motion.p>
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.64 }} style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
               <Link href="/men" style={{ flex: 1, minHeight: 'unset' }}>
@@ -338,7 +341,7 @@ export default function HomePageClient() {
           <div style={{ display: 'flex', gap: 8, width: 'max-content' }}>
             {[
               { icon: '🔒', label: 'Secure Payments' },
-              { icon: '↩', label: 'Easy Returns' },
+              { icon: '↩', label: '24-Hour Returns' },
               { icon: '🌿', label: '100% Cotton' },
               { icon: '🇮🇳', label: 'Made in India' },
               { icon: '✂', label: 'Custom Stitching' },
@@ -363,11 +366,11 @@ export default function HomePageClient() {
     <div style={{ backgroundColor: 'var(--cream)', opacity: mounted ? 1 : 0, transition: 'opacity 0.18s ease' }}>
       {/* Hero */}
       <section style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', padding: '0 24px' }}>
-        <motion.div variants={stagger} initial="initial" animate="animate" style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24 }}>
+        <motion.div variants={stagger} initial={false} animate="animate" style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24 }}>
           <motion.h1 variants={fadeUp} transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
             className="brand-wordmark"
             style={{ fontSize: 'clamp(80px, 15vw, 180px)', color: 'var(--black)', lineHeight: 1 }}>
-            QOTN
+            QOTN<span className="sr-only">: pure cotton clothing for men, women and kids</span>
           </motion.h1>
           <motion.p variants={fadeUp} transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             style={{ fontSize: 13, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--dust)' }}>

@@ -2,9 +2,9 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Return Policy | QOTN',
+  title: 'Return Policy',
   description: 'QOTN return policy — 24 hour return window on damaged items only. No returns on custom stitched orders.',
-  alternates: { canonical: 'https://qotn.in/return-policy' },
+  alternates: { canonical: 'https://www.qotn.in/return-policy' },
 };
 
 const sections = [

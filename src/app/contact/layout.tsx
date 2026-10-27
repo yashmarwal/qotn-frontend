@@ -2,22 +2,22 @@ import type { Metadata } from 'next';
 import Script from 'next/script';
 
 export const metadata: Metadata = {
-  title: 'Contact Us — QOTN',
+  title: 'Contact Us',
   description:
     'Get in touch with QOTN. We are here to help with orders, custom stitching, returns and all things cotton. Email: Helloqotn@gmail.com | Instagram: @qotn.in',
-  alternates: { canonical: 'https://qotn.in/contact' },
+  alternates: { canonical: 'https://www.qotn.in/contact' },
   openGraph: {
-    title: 'Contact Us — QOTN',
+    title: 'Contact Us | QOTN',
     description: 'Reach QOTN for order support, custom stitching enquiries, and all things cotton.',
-    url: 'https://qotn.in/contact',
-    images: [{ url: 'https://qotn.in/og-image.png', width: 1200, height: 630, alt: 'Contact QOTN' }],
+    url: 'https://www.qotn.in/contact',
+    images: [{ url: 'https://www.qotn.in/og-image.png', width: 1200, height: 630, alt: 'Contact QOTN' }],
   },
   twitter: {
     card: 'summary_large_image',
     site: '@shopqotn',
     title: 'Contact Us — QOTN',
     description: 'Reach QOTN for order support, custom stitching enquiries, and all things cotton.',
-    images: ['https://qotn.in/og-image.png'],
+    images: ['https://www.qotn.in/og-image.png'],
   },
 };
 
@@ -25,18 +25,18 @@ const contactPageJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'ContactPage',
   name: 'Contact QOTN',
-  url: 'https://qotn.in/contact',
+  url: 'https://www.qotn.in/contact',
   description: 'Get in touch with QOTN for orders, returns, and support.',
-  mainEntity: { '@id': 'https://qotn.in/#organization' },
+  mainEntity: { '@id': 'https://www.qotn.in/#organization' },
 };
 
 const localBusinessJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'ClothingStore',
-  '@id': 'https://qotn.in/#organization',
+  '@id': 'https://www.qotn.in/#organization',
   name: 'QOTN',
   email: 'Helloqotn@gmail.com',
-  url: 'https://qotn.in',
+  url: 'https://www.qotn.in',
   sameAs: ['https://www.instagram.com/qotn.in'],
   address: {
     '@type': 'PostalAddress',
@@ -58,8 +58,8 @@ const breadcrumbJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'BreadcrumbList',
   itemListElement: [
-    { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://qotn.in' },
-    { '@type': 'ListItem', position: 2, name: 'Contact', item: 'https://qotn.in/contact' },
+    { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.qotn.in' },
+    { '@type': 'ListItem', position: 2, name: 'Contact', item: 'https://www.qotn.in/contact' },
   ],
 };
 

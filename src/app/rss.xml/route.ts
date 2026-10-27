@@ -4,7 +4,7 @@ export const dynamic = 'force-static';
 export const revalidate = 86400;
 
 export function GET() {
-  const SITE = 'https://qotn.in';
+  const SITE = 'https://www.qotn.in';
 
   const items = articles
     .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())

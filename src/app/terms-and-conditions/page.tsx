@@ -2,9 +2,9 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Terms & Conditions | QOTN',
+  title: 'Terms & Conditions',
   description: 'Terms and conditions for using qotn.in — QOTN pure cotton clothing.',
-  alternates: { canonical: 'https://qotn.in/terms-and-conditions' },
+  alternates: { canonical: 'https://www.qotn.in/terms-and-conditions' },
 };
 
 const sections = [

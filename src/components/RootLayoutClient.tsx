@@ -1,6 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { useSkipStaleOverlayEntries } from '@/hooks/useBackClose';
 import DesktopNavbar from '@/components/desktop/Navbar';
@@ -10,7 +11,8 @@ import MobileNavbar from '@/components/mobile/Navbar';
 import MobileFooter from '@/components/mobile/Footer';
 import MobileBottomNav from '@/components/mobile/BottomNav';
 import AnnouncementBar from '@/components/shared/AnnouncementBar';
-import CouponPopup from '@/components/shared/CouponPopup';
+// The popup only shows after the visitor scrolls, so it is loaded separately from the first bundle
+const CouponPopup = dynamic(() => import('@/components/shared/CouponPopup'), { ssr: false });
 
 export default function RootLayoutClient({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();

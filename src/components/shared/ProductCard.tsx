@@ -15,6 +15,8 @@ import { useBackClose } from '@/hooks/useBackClose';
 interface ProductCardProps {
   product: Product;
   variant?: 'desktop' | 'mobile';
+  // First visible cards: load the photo eagerly so it can be the page's LCP image
+  priority?: boolean;
 }
 
 function QuickAddSheet({ product, onClose }: { product: Product; onClose: () => void }) {
@@ -113,7 +115,7 @@ function QuickAddSheet({ product, onClose }: { product: Product; onClose: () => 
   );
 }
 
-export default function ProductCard({ product, variant = 'desktop' }: ProductCardProps) {
+export default function ProductCard({ product, variant = 'desktop', priority = false }: ProductCardProps) {
   const [hovered, setHovered] = useState(false);
   const [quickAddOpen, setQuickAddOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -142,7 +144,8 @@ export default function ProductCard({ product, variant = 'desktop' }: ProductCar
                 fill
                 style={{ objectFit: 'cover' }}
                 sizes="50vw"
-                loading="lazy"
+                priority={priority}
+                loading={priority ? undefined : 'lazy'}
               />
               {/* Badge — NEW takes priority */}
               {(product.isNew || product.isBestseller) && (
@@ -227,6 +230,7 @@ export default function ProductCard({ product, variant = 'desktop' }: ProductCar
           src={product.images[0]}
           alt={product.name}
           fill
+          priority={priority}
           style={{
             objectFit: 'cover',
             transition: hasSecondImage ? 'opacity 0.45s ease' : 'transform 0.4s ease',

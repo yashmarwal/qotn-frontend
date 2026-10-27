@@ -1,5 +1,5 @@
 # QOTN — Pure Cotton. Nothing Else.
-# https://qotn.in
+# https://www.qotn.in
 
 > QOTN is a D2C Indian brand selling 100% pure cotton clothing for men, women, and kids. No blends, no synthetic fibres. Made in Jaipur, Rajasthan.
 
@@ -15,16 +15,16 @@ QOTN (Quality Of The Nation) makes everyday cotton clothing — kurtas, shirts, 
 
 ## Pages
 
-- Homepage: https://qotn.in
-- Men's clothing: https://qotn.in/men
-- Women's clothing: https://qotn.in/women
-- Kids' clothing: https://qotn.in/kids
-- Collections: https://qotn.in/collections
-- Size guide: https://qotn.in/size-guide
-- About: https://qotn.in/about
-- Contact: https://qotn.in/contact
-- FAQ: https://qotn.in/faq
-- Blog: https://qotn.in/blog
+- Homepage: https://www.qotn.in
+- Men's clothing: https://www.qotn.in/men
+- Women's clothing: https://www.qotn.in/women
+- Kids' clothing: https://www.qotn.in/kids
+- Collections: https://www.qotn.in/collections
+- Size guide: https://www.qotn.in/size-guide
+- About: https://www.qotn.in/about
+- Contact: https://www.qotn.in/contact
+- FAQ: https://www.qotn.in/faq
+- Blog: https://www.qotn.in/blog
 
 ## Contact
 

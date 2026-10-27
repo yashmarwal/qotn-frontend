@@ -27,7 +27,7 @@ export default function AboutPage() {
       {/* Hero */}
       <section style={{ backgroundColor: 'var(--black)', padding: isMobile ? '80px 24px' : '120px 40px', textAlign: 'center' }}>
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}>
-          <h1 className="brand-wordmark" style={{ fontSize: isMobile ? 'clamp(56px, 18vw, 96px)' : 'clamp(56px, 10vw, 120px)', color: 'var(--cream)', marginBottom: 20 }}>QOTN</h1>
+          <h1 className="brand-wordmark" style={{ fontSize: isMobile ? 'clamp(56px, 18vw, 96px)' : 'clamp(56px, 10vw, 120px)', color: 'var(--cream)', marginBottom: 20 }}>QOTN<span className="sr-only">: about our pure cotton clothing brand</span></h1>
           <p style={{ fontSize: 13, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(245,240,232,0.5)' }}>Pure Cotton. Nothing Else.</p>
         </motion.div>
       </section>

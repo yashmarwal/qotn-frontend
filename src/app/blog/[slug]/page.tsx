@@ -17,9 +17,9 @@ export async function generateMetadata({
   const article = getArticle(slug);
   if (!article) return { title: 'QOTN' };
 
-  const url = `https://qotn.in/blog/${slug}`;
+  const url = `https://www.qotn.in/blog/${slug}`;
   return {
-    title: `${article.title} | QOTN`,
+    title: article.title,
     description: article.description,
     alternates: { canonical: url },
     openGraph: {
@@ -29,14 +29,14 @@ export async function generateMetadata({
       type: 'article',
       publishedTime: article.publishedAt,
       authors: ['QOTN'],
-      images: [{ url: 'https://qotn.in/og-image.png', width: 1200, height: 630, alt: article.title }],
+      images: [{ url: 'https://www.qotn.in/og-image.png', width: 1200, height: 630, alt: article.title }],
     },
     twitter: {
       card: 'summary_large_image' as const,
       site: '@shopqotn',
       title: article.title,
       description: article.description,
-      images: ['https://qotn.in/og-image.png'],
+      images: ['https://www.qotn.in/og-image.png'],
     },
   };
 }
@@ -61,17 +61,17 @@ export default async function BlogArticlePage({
     description: article.description,
     datePublished: article.publishedAt,
     dateModified: article.publishedAt,
-    image: 'https://qotn.in/og-image.png',
-    author: { '@type': 'Organization', name: 'QOTN', url: 'https://qotn.in', '@id': 'https://qotn.in/#organization' },
+    image: 'https://www.qotn.in/og-image.png',
+    author: { '@type': 'Organization', name: 'QOTN', url: 'https://www.qotn.in', '@id': 'https://www.qotn.in/#organization' },
     publisher: {
       '@type': 'Organization',
       name: 'QOTN',
-      url: 'https://qotn.in',
-      '@id': 'https://qotn.in/#organization',
-      logo: { '@type': 'ImageObject', url: 'https://qotn.in/logo-square-512.png', width: 512, height: 512 },
+      url: 'https://www.qotn.in',
+      '@id': 'https://www.qotn.in/#organization',
+      logo: { '@type': 'ImageObject', url: 'https://www.qotn.in/logo-square-512.png', width: 512, height: 512 },
     },
-    url: `https://qotn.in/blog/${slug}`,
-    mainEntityOfPage: { '@type': 'WebPage', '@id': `https://qotn.in/blog/${slug}` },
+    url: `https://www.qotn.in/blog/${slug}`,
+    mainEntityOfPage: { '@type': 'WebPage', '@id': `https://www.qotn.in/blog/${slug}` },
     keywords: article.category,
     inLanguage: 'en-IN',
   };
@@ -80,9 +80,9 @@ export default async function BlogArticlePage({
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://qotn.in' },
-      { '@type': 'ListItem', position: 2, name: 'Cotton Journal', item: 'https://qotn.in/blog' },
-      { '@type': 'ListItem', position: 3, name: article.title, item: `https://qotn.in/blog/${slug}` },
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.qotn.in' },
+      { '@type': 'ListItem', position: 2, name: 'Cotton Journal', item: 'https://www.qotn.in/blog' },
+      { '@type': 'ListItem', position: 3, name: article.title, item: `https://www.qotn.in/blog/${slug}` },
     ],
   };
 

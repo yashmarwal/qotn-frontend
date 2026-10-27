@@ -7,7 +7,7 @@ import { WishlistProvider } from '@/context/WishlistContext';
 import RootLayoutClient from '@/components/RootLayoutClient';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://qotn.in'),
+  metadataBase: new URL('https://www.qotn.in'),
 
   title: {
     default: 'QOTN — Pure Cotton Clothing for Men, Women & Kids | Made in India',
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     'pure cotton clothing india, cotton kurta online, cotton dress women, cotton shirt men, D2C cotton brand, buy cotton clothes online india, handblock print cotton, QOTN',
 
   applicationName: 'QOTN',
-  authors: [{ name: 'QOTN', url: 'https://qotn.in' }],
+  authors: [{ name: 'QOTN', url: 'https://www.qotn.in' }],
   generator: 'Next.js',
   referrer: 'origin-when-cross-origin',
   creator: 'QOTN',
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     title: 'QOTN — Pure Cotton Clothing for Men, Women & Kids | Made in India',
     description:
       'Shop 100% pure cotton clothing. No blends, no shortcuts. Free shipping above ₹1499. Made in India.',
-    url: 'https://qotn.in',
+    url: 'https://www.qotn.in',
     siteName: 'QOTN',
     type: 'website',
     locale: 'en_IN',
@@ -81,18 +81,18 @@ export const metadata: Metadata = {
 const organizationJsonLd = {
   '@context': 'https://schema.org',
   '@type': ['Organization', 'ClothingStore'],
-  '@id': 'https://qotn.in/#organization',
+  '@id': 'https://www.qotn.in/#organization',
   name: 'QOTN',
   alternateName: 'Quality Of The Nation',
   description: '100% pure cotton clothing for men, women and kids. No blends, no shortcuts. Made in India.',
-  url: 'https://qotn.in',
+  url: 'https://www.qotn.in',
   logo: {
     '@type': 'ImageObject',
-    url: 'https://qotn.in/logo-square-512.png',
+    url: 'https://www.qotn.in/logo-square-512.png',
     width: 512,
     height: 512,
   },
-  image: 'https://qotn.in/og-image.png',
+  image: 'https://www.qotn.in/og-image.png',
   email: 'Helloqotn@gmail.com',
   foundingDate: '2024',
   contactPoint: {
@@ -118,13 +118,13 @@ const organizationJsonLd = {
 const websiteJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
-  '@id': 'https://qotn.in/#website',
+  '@id': 'https://www.qotn.in/#website',
   name: 'QOTN',
-  url: 'https://qotn.in',
-  publisher: { '@id': 'https://qotn.in/#organization' },
+  url: 'https://www.qotn.in',
+  publisher: { '@id': 'https://www.qotn.in/#organization' },
   potentialAction: {
     '@type': 'SearchAction',
-    target: { '@type': 'EntryPoint', urlTemplate: 'https://qotn.in/men?search={search_term_string}' },
+    target: { '@type': 'EntryPoint', urlTemplate: 'https://www.qotn.in/men?search={search_term_string}' },
     'query-input': 'required name=search_term_string',
   },
 };
@@ -142,13 +142,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="geo.position" content="26.8467;75.8020" />
         <meta name="ICBM" content="26.8467, 75.8020" />
         <link rel="mask-icon" href="/logo-cream-on-black.png" color="#1A1A1A" />
-        <link rel="alternate" hrefLang="en-IN" href="https://qotn.in" />
-        <link rel="alternate" hrefLang="x-default" href="https://qotn.in" />
         <link rel="preconnect" href="https://res.cloudinary.com" />
         <link rel="dns-prefetch" href="https://res.cloudinary.com" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link rel="alternate" type="application/rss+xml" title="QOTN Cotton Journal" href="https://qotn.in/rss.xml" />
+        <link rel="alternate" type="application/rss+xml" title="QOTN Cotton Journal" href="https://www.qotn.in/rss.xml" />
         <Script
           id="schema-org-organization"
           type="application/ld+json"

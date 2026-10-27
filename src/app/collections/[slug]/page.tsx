@@ -2,6 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
+import { cleanText } from '@/lib/seo';
 
 const API =
   process.env.NODE_ENV === 'production'
@@ -23,9 +24,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const col = await getCollection(slug);
   if (!col) return { title: 'Collection Not Found — QOTN' };
-  const title = `${col.name} — Pure Cotton Collection | QOTN`;
-  const description = col.description || `Shop ${col.name} — 100% pure cotton apparel. Made in India. No blends.`;
-  const url = `https://qotn.in/collections/${slug}`;
+  const title = `${col.name} — Pure Cotton Collection`;
+  const description = cleanText(col.description || `Shop ${col.name} — 100% pure cotton apparel. Made in India. No blends.`);
+  const url = `https://www.qotn.in/collections/${slug}`;
   return {
     title,
     description,
@@ -36,14 +37,14 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       url,
       images: col.thumbnail
         ? [{ url: col.thumbnail, width: 800, height: 800, alt: col.name }]
-        : [{ url: 'https://qotn.in/og-image.png', width: 1200, height: 630, alt: col.name }],
+        : [{ url: 'https://www.qotn.in/og-image.png', width: 1200, height: 630, alt: col.name }],
     },
     twitter: {
       card: 'summary_large_image' as const,
       site: '@shopqotn',
       title,
       description,
-      images: col.thumbnail ? [col.thumbnail] : ['https://qotn.in/og-image.png'],
+      images: col.thumbnail ? [col.thumbnail] : ['https://www.qotn.in/og-image.png'],
     },
   };
 }
@@ -59,14 +60,14 @@ export default async function CollectionDetailPage({ params }: { params: Promise
   if (!col) notFound();
 
   const products: any[] = col.products || [];
-  const collectionUrl = `https://qotn.in/collections/${slug}`;
+  const collectionUrl = `https://www.qotn.in/collections/${slug}`;
 
   const breadcrumbJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://qotn.in' },
-      { '@type': 'ListItem', position: 2, name: 'Collections', item: 'https://qotn.in/collections' },
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.qotn.in' },
+      { '@type': 'ListItem', position: 2, name: 'Collections', item: 'https://www.qotn.in/collections' },
       { '@type': 'ListItem', position: 3, name: col.name, item: collectionUrl },
     ],
   };
@@ -77,7 +78,7 @@ export default async function CollectionDetailPage({ params }: { params: Promise
     name: col.name,
     description: col.description || '',
     url: collectionUrl,
-    publisher: { '@id': 'https://qotn.in/#organization' },
+    publisher: { '@id': 'https://www.qotn.in/#organization' },
   };
 
   return (

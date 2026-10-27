@@ -69,7 +69,7 @@ export default function CartPage() {
         <div style={{ display: 'flex', justifyContent: 'space-around', gap: 8 }}>
           {[
             { icon: '🔒', label: 'Secure Payments' },
-            { icon: '↩', label: 'Easy Returns' },
+            { icon: '↩', label: '24-Hour Returns' },
             { icon: '🌿', label: '100% Cotton' },
             { icon: '🇮🇳', label: 'Made in India' },
           ].map(item => (

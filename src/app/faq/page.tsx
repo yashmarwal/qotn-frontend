@@ -3,14 +3,15 @@ import Script from 'next/script';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Frequently Asked Questions | QOTN',
+  title: 'Frequently Asked Questions',
   description:
     'Answers to common questions about QOTN — shipping, returns, sizing, cotton quality, custom stitching, and more.',
-  alternates: { canonical: 'https://qotn.in/faq' },
+  alternates: { canonical: 'https://www.qotn.in/faq' },
   openGraph: {
     title: 'FAQs | QOTN',
     description: 'Everything you need to know about ordering, shipping, and returns at QOTN.',
-    url: 'https://qotn.in/faq',
+    url: 'https://www.qotn.in/faq',
+    images: [{ url: 'https://www.qotn.in/og-image.png', width: 1200, height: 630, alt: 'QOTN — Pure Cotton. Nothing Else.' }],
   },
 };
 
@@ -18,7 +19,7 @@ const faqs = [
   {
     question: 'What does QOTN stand for?',
     answer:
-      'QOTN stands for "Queen of the Night" — inspired by the rare cotton flower that blooms only at night, symbolising the understated luxury of pure cotton.',
+      'QOTN stands for "Quality Of The Nation". We are an Indian brand that makes clothing from 100% pure cotton, with no blends.',
   },
   {
     question: 'Is all your clothing 100% pure cotton?',
@@ -104,8 +105,8 @@ const breadcrumbJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'BreadcrumbList',
   itemListElement: [
-    { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://qotn.in' },
-    { '@type': 'ListItem', position: 2, name: 'FAQ', item: 'https://qotn.in/faq' },
+    { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.qotn.in' },
+    { '@type': 'ListItem', position: 2, name: 'FAQ', item: 'https://www.qotn.in/faq' },
   ],
 };
 

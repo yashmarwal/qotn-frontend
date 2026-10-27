@@ -1,6 +1,6 @@
 const badges = [
   { emoji: '🔒', label: 'Secure Payments' },
-  { emoji: '↩', label: '7-Day Returns' },
+  { emoji: '↩', label: '24-Hour Returns' },
   { emoji: '🌿', label: '100% Cotton' },
   { emoji: '🇮🇳', label: 'Made in India' },
   { emoji: '✂', label: 'Custom Stitching' },

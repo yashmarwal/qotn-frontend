@@ -5,22 +5,22 @@ import { articles } from './articles';
 import BlogCard from './BlogCard';
 
 export const metadata: Metadata = {
-  title: 'Cotton Journal — Care, Fabric & Sustainability | QOTN',
+  title: 'Cotton Journal — Care, Fabric & Sustainability',
   description:
     'Guides on caring for cotton, understanding fabric weaves, BCI cotton, and why pure cotton outperforms blends. Written by QOTN.',
-  alternates: { canonical: 'https://qotn.in/blog' },
+  alternates: { canonical: 'https://www.qotn.in/blog' },
   openGraph: {
     title: 'Cotton Journal | QOTN',
     description: 'In-depth guides on cotton — fabric, care, and sustainability.',
-    url: 'https://qotn.in/blog',
-    images: [{ url: 'https://qotn.in/og-image.png', width: 1200, height: 630, alt: 'QOTN Cotton Journal' }],
+    url: 'https://www.qotn.in/blog',
+    images: [{ url: 'https://www.qotn.in/og-image.png', width: 1200, height: 630, alt: 'QOTN Cotton Journal' }],
   },
   twitter: {
     card: 'summary_large_image',
     site: '@shopqotn',
     title: 'Cotton Journal | QOTN',
     description: 'In-depth guides on cotton — fabric, care, and sustainability.',
-    images: ['https://qotn.in/og-image.png'],
+    images: ['https://www.qotn.in/og-image.png'],
   },
 };
 
@@ -28,8 +28,8 @@ const breadcrumbJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'BreadcrumbList',
   itemListElement: [
-    { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://qotn.in' },
-    { '@type': 'ListItem', position: 2, name: 'Cotton Journal', item: 'https://qotn.in/blog' },
+    { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.qotn.in' },
+    { '@type': 'ListItem', position: 2, name: 'Cotton Journal', item: 'https://www.qotn.in/blog' },
   ],
 };
 

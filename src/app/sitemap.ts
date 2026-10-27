@@ -2,47 +2,50 @@ import type { MetadataRoute } from 'next';
 import { fetchPublic } from '@/lib/api';
 import { articles } from './blog/articles';
 
-const SITE = 'https://qotn.in';
+const SITE = 'https://www.qotn.in';
+// The products API rejects limit > 48, so the catalogue is read page by page
+const PAGE_SIZE = 48;
+const MAX_PAGES = 20;
+
+async function fetchAllProducts(): Promise<any[]> {
+  const all: any[] = [];
+  for (let page = 1; page <= MAX_PAGES; page++) {
+    const res = await fetchPublic<any>(`/products?limit=${PAGE_SIZE}&page=${page}`, 3600);
+    const batch: any[] = res?.data || [];
+    all.push(...batch);
+    const totalPages = res?.meta?.totalPages ?? 1;
+    if (batch.length === 0 || page >= totalPages) break;
+  }
+  return all;
+}
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [productsRes, collectionsRes] = await Promise.all([
-    fetchPublic<any>('/products?limit=500&page=1', 3600),
+  const [products, collectionsRes] = await Promise.all([
+    fetchAllProducts(),
     fetchPublic<any>('/collections?limit=100', 3600),
   ]);
-
-  const products: any[] = productsRes?.data || [];
   const collections: any[] = collectionsRes?.data || [];
 
-  // priority and changeFrequency are ignored by Google — omitted intentionally
-  const staticPages: MetadataRoute.Sitemap = [
-    { url: SITE,                            lastModified: new Date('2025-01-01') },
-    { url: `${SITE}/men`,                   lastModified: new Date('2025-01-01') },
-    { url: `${SITE}/women`,                 lastModified: new Date('2025-01-01') },
-    { url: `${SITE}/kids`,                  lastModified: new Date('2025-01-01') },
-    { url: `${SITE}/collections`,           lastModified: new Date('2025-01-01') },
-    { url: `${SITE}/about`,                 lastModified: new Date('2025-01-01') },
-    { url: `${SITE}/contact`,               lastModified: new Date('2025-01-01') },
-    { url: `${SITE}/size-guide`,            lastModified: new Date('2025-01-01') },
-    { url: `${SITE}/faq`,                   lastModified: new Date('2025-01-01') },
-    { url: `${SITE}/blog`,                  lastModified: new Date('2025-01-01') },
-    { url: `${SITE}/shipping-policy`,       lastModified: new Date('2025-01-01') },
-    { url: `${SITE}/return-policy`,         lastModified: new Date('2025-01-01') },
-    { url: `${SITE}/terms-and-conditions`,  lastModified: new Date('2025-01-01') },
-    { url: `${SITE}/privacy-policy`,        lastModified: new Date('2025-01-01') },
+  // No lastModified on static pages: a made-up date is worse than none, because Google
+  // stops trusting lastmod once it is wrong. priority/changeFrequency are ignored by Google.
+  const staticPaths = [
+    '', '/men', '/women', '/kids', '/collections', '/about', '/contact', '/size-guide',
+    '/faq', '/blog', '/shipping-policy', '/return-policy', '/terms-and-conditions', '/privacy-policy',
   ];
+  const staticPages: MetadataRoute.Sitemap = staticPaths.map((path) => ({ url: `${SITE}${path}` }));
 
   const productPages: MetadataRoute.Sitemap = products
     .filter((p) => p.slug && p.category?.slug)
     .map((p) => ({
       url: `${SITE}/${p.category.slug}/${p.slug}`,
-      lastModified: new Date(p.updatedAt || p.createdAt || Date.now()),
+      lastModified: new Date(p.updatedAt || p.createdAt),
     }));
 
   const collectionPages: MetadataRoute.Sitemap = collections
     .filter((c) => c.slug)
     .map((c) => ({
       url: `${SITE}/collections/${c.slug}`,
-      lastModified: new Date(c.updatedAt || c.createdAt || Date.now()),
+      lastModified: new Date(c.updatedAt || c.createdAt),
     }));
 
   const blogPages: MetadataRoute.Sitemap = articles.map((a) => ({

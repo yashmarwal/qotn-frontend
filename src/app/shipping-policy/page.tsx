@@ -2,9 +2,9 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Shipping Policy | QOTN',
+  title: 'Shipping Policy',
   description: 'QOTN shipping policy — free shipping above ₹1499 on standard delivery across India. COD available.',
-  alternates: { canonical: 'https://qotn.in/shipping-policy' },
+  alternates: { canonical: 'https://www.qotn.in/shipping-policy' },
 };
 
 const deliveryCards = [

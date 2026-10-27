@@ -2,9 +2,9 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy | QOTN',
+  title: 'Privacy Policy',
   description: 'QOTN privacy policy — how we collect, use and protect your personal information.',
-  alternates: { canonical: 'https://qotn.in/privacy-policy' },
+  alternates: { canonical: 'https://www.qotn.in/privacy-policy' },
 };
 
 const sections = [

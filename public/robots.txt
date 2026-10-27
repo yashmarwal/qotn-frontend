@@ -121,4 +121,4 @@ Disallow: /verify-email
 Disallow: /reset-password
 Disallow: /forgot-password
 
-Sitemap: https://qotn.in/sitemap.xml
+Sitemap: https://www.qotn.in/sitemap.xml

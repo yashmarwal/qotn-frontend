@@ -3,21 +3,21 @@ import Image from 'next/image';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Collections — Pure Cotton Curated Sets | QOTN',
+  title: 'Collections — Pure Cotton Curated Sets',
   description: 'Explore QOTN curated collections of 100% pure cotton apparel for men, women and kids. Each collection is thoughtfully put together — no blends, no shortcuts.',
-  alternates: { canonical: 'https://qotn.in/collections' },
+  alternates: { canonical: 'https://www.qotn.in/collections' },
   openGraph: {
     title: 'Collections — Pure Cotton Curated Sets | QOTN',
     description: 'Explore QOTN curated collections of 100% pure cotton apparel for men, women and kids.',
-    url: 'https://qotn.in/collections',
-    images: [{ url: 'https://qotn.in/og-image.png', width: 1200, height: 630, alt: 'QOTN Collections' }],
+    url: 'https://www.qotn.in/collections',
+    images: [{ url: 'https://www.qotn.in/og-image.png', width: 1200, height: 630, alt: 'QOTN Collections' }],
   },
   twitter: {
     card: 'summary_large_image',
     site: '@shopqotn',
     title: 'Collections — Pure Cotton Curated Sets | QOTN',
     description: 'Explore QOTN curated collections of 100% pure cotton apparel.',
-    images: ['https://qotn.in/og-image.png'],
+    images: ['https://www.qotn.in/og-image.png'],
   },
 };
 
@@ -90,6 +90,16 @@ export default async function CollectionsPage() {
           </>
         )}
       </div>
+
+      <section style={{ maxWidth: 760, margin: '0 auto', padding: '0 24px 72px' }}>
+        <h2 style={{ fontSize: 18, fontWeight: 400, letterSpacing: '0.04em', marginBottom: 12 }}>What is a QOTN collection?</h2>
+        <p style={{ fontSize: 14, lineHeight: 1.8, color: 'var(--dust)', marginBottom: 12 }}>
+          A collection groups pieces made from 100% pure cotton around one idea, so you can browse a complete set in one place instead of piece by piece. Every item in every collection is cotton with no polyester or other blends, and every collection page lists its pieces with prices.
+        </p>
+        <p style={{ fontSize: 13, color: 'var(--dust)' }}>
+          Prefer to shop by person? Go to <Link href="/men" style={{ color: 'var(--black)', textDecoration: 'underline' }}>men</Link>, <Link href="/women" style={{ color: 'var(--black)', textDecoration: 'underline' }}>women</Link> or <Link href="/kids" style={{ color: 'var(--black)', textDecoration: 'underline' }}>kids</Link>, or check the <Link href="/size-guide" style={{ color: 'var(--black)', textDecoration: 'underline' }}>size guide</Link>.
+        </p>
+      </section>
     </div>
   );
 }
