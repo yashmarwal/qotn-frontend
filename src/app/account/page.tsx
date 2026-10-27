@@ -430,14 +430,16 @@ export default function AccountPage() {
                   <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.22, ease: 'easeOut' }}
                     style={{ marginBottom: 8, position: 'relative' }}>
                     <label style={labelStyle}>Password</label>
+                    <div style={{ position: 'relative' }}>
                     <input type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)}
                       autoComplete="current-password" style={{ ...inputStyle, paddingRight: 40 }}
                       onFocus={e => (e.target.style.borderBottomColor = '#1A1A1A')}
                       onBlur={e => (e.target.style.borderBottomColor = 'rgba(26,26,26,0.2)')} />
                     <button type="button" onClick={() => setShowPassword(p => !p)}
-                      style={{ position: 'absolute', right: 0, bottom: 14, background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: '#9E9987', fontSize: 11, letterSpacing: '0.06em', fontFamily: 'DM Sans, sans-serif' }}>
+                      style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', minHeight: 0, minWidth: 0, lineHeight: 1, background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: '#9E9987', fontSize: 11, letterSpacing: '0.06em', fontFamily: 'DM Sans, sans-serif' }}>
                       {showPassword ? 'hide' : 'show'}
                     </button>
+                    </div>
                   </motion.div>
 
                   <AnimatePresence>
@@ -515,14 +517,16 @@ export default function AccountPage() {
                   <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.22, ease: 'easeOut' }}
                     style={{ marginBottom: 8, position: 'relative' }}>
                     <label style={labelStyle}>Password</label>
+                    <div style={{ position: 'relative' }}>
                     <input type={showPassword ? 'text' : 'password'} value={regPassword} onChange={e => setRegPassword(e.target.value)}
                       autoComplete="new-password" style={{ ...inputStyle, paddingRight: 40 }}
                       onFocus={e => (e.target.style.borderBottomColor = '#1A1A1A')}
                       onBlur={e => (e.target.style.borderBottomColor = 'rgba(26,26,26,0.2)')} />
                     <button type="button" onClick={() => setShowPassword(p => !p)}
-                      style={{ position: 'absolute', right: 0, bottom: 14, background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: '#9E9987', fontSize: 11, letterSpacing: '0.06em', fontFamily: 'DM Sans, sans-serif' }}>
+                      style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', minHeight: 0, minWidth: 0, lineHeight: 1, background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: '#9E9987', fontSize: 11, letterSpacing: '0.06em', fontFamily: 'DM Sans, sans-serif' }}>
                       {showPassword ? 'hide' : 'show'}
                     </button>
+                    </div>
                     <p style={{ fontSize: 10, color: '#C8C3BA', marginTop: 7 }}>Min 8 characters, at least one letter and one number</p>
                   </motion.div>
 
