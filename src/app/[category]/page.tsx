@@ -4,6 +4,7 @@ import Link from 'next/link';
 import CategoryPageClient from './CategoryPageClient';
 import { fetchPublic } from '@/lib/api';
 import { adaptApiProductList } from '@/lib/adapters';
+import { safeJsonLd } from '@/lib/jsonld';
 
 const SITE = 'https://www.qotn.in';
 // Must match LIMIT in CategoryPageClient so the server-rendered page is exactly page 1 of the client's list
@@ -102,7 +103,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbJsonLd) }} />
       <Suspense fallback={<div style={{ minHeight: '60vh', backgroundColor: 'var(--cream)' }} />}>
         <CategoryPageClient
           params={params}

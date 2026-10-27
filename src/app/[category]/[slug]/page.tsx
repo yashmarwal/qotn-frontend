@@ -4,6 +4,7 @@ import { fetchPublic } from '@/lib/api';
 import { adaptApiProduct } from '@/lib/adapters';
 import ProductDetailClient from './ProductDetailClient';
 import { cleanText } from '@/lib/seo';
+import { safeJsonLd } from '@/lib/jsonld';
 
 // Mirrors /shipping-policy and /return-policy. Update both places together.
 const FREE_SHIPPING_FROM_RUPEES = 1499;
@@ -151,11 +152,11 @@ export default async function ProductPage({
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(productJsonLd) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbJsonLd) }}
       />
       <ProductDetailClient product={product} />
     </>

@@ -7,6 +7,7 @@ export const ordersService = {
     paymentMethod: string;
     couponCode?: string;
     customerNotes?: string;
+    codToken?: string;
   }) => api.post<{ data: any }>('/orders', data),
 
   getOrders: (page = 1) => api.get<{ data: any[]; meta: any }>(`/orders?page=${page}`),

@@ -38,7 +38,13 @@ function cancelBlockReason(order: any): string | null {
   return null;
 }
 
+// The backend only records a return request (status stays DELIVERED) as a timeline entry "Return requested: <reason>"
+function returnRequested(order: any): boolean {
+  return (order.timeline || []).some((t: any) => typeof t.message === 'string' && t.message.startsWith('Return requested'));
+}
+
 function returnBlockReason(order: any): string | null {
+  if (returnRequested(order)) return 'Return already requested. We will contact you by email.';
   if (order.customStitching?.length > 0) return 'Custom stitched orders cannot be returned.';
   if (order.status !== 'DELIVERED') return 'Return can only be requested after delivery.';
   const deliveredEntry = (order.timeline || []).find((t: any) => t.status === 'DELIVERED');
@@ -312,7 +318,7 @@ export default function OrdersPage() {
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexShrink: 0 }}>
                         <span style={{ fontSize: 10, letterSpacing: '0.10em', textTransform: 'uppercase', color: STATUS_COLOR[order.status] || '#9E9987', fontWeight: 600 }}>
-                          {order.status || 'PENDING'}
+                          {returnRequested(order) ? 'RETURN REQUESTED' : (order.status || 'PENDING')}
                         </span>
                         <motion.div animate={{ rotate: expandedId === order.id ? 180 : 0 }} transition={{ duration: 0.2 }}>
                           <ChevronDown size={14} strokeWidth={1.5} color="#9E9987" />
@@ -376,7 +382,7 @@ export default function OrdersPage() {
                                       fontFamily: 'DM Sans, sans-serif', color: '#1A1A1A',
                                       opacity: returnBlocked ? 0.4 : 1, transition: 'opacity 0.2s',
                                     }}>
-                                    Request Return
+                                    {returnRequested(order) ? 'Return Requested' : 'Request Return'}
                                   </button>
                                 </div>
 

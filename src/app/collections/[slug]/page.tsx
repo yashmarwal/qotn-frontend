@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { cleanText } from '@/lib/seo';
+import { safeJsonLd } from '@/lib/jsonld';
 
 const API =
   process.env.NODE_ENV === 'production'
@@ -83,8 +84,8 @@ export default async function CollectionDetailPage({ params }: { params: Promise
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionPageJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(collectionPageJsonLd) }} />
     <div style={{ backgroundColor: 'var(--cream)', minHeight: '100vh' }}>
       <style>{`
         .col-grid {

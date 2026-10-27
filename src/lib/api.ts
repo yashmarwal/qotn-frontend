@@ -10,27 +10,30 @@ export class ApiError extends Error {
   }
 }
 
-function getToken(): string | null {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem('qotn_token');
+// Sign-in lives entirely in httpOnly cookies that the browser attaches by itself, so no script on the page can
+// read or steal the login. This flag is NOT a secret: it only remembers "this browser was signed in", so guests
+// do not trigger a pointless /auth/me call on every page load.
+const SIGNED_IN_FLAG = 'qotn_signed_in';
+const LEGACY_TOKEN_KEY = 'qotn_token'; // older versions stored the access token here; it is cleaned up, never used
+
+export function markSignedIn() {
+  try { localStorage.setItem(SIGNED_IN_FLAG, '1'); localStorage.removeItem(LEGACY_TOKEN_KEY); } catch { /* storage unavailable */ }
+}
+export function markSignedOut() {
+  try { localStorage.removeItem(SIGNED_IN_FLAG); localStorage.removeItem(LEGACY_TOKEN_KEY); } catch { /* storage unavailable */ }
+}
+export function wasSignedIn(): boolean {
+  try { return !!localStorage.getItem(SIGNED_IN_FLAG) || !!localStorage.getItem(LEGACY_TOKEN_KEY); } catch { return false; }
 }
 
-// Refresh the access token using the httpOnly refresh_token cookie.
-// Returns true if a new access token was stored in localStorage.
+// Ask for a new access cookie using the httpOnly refresh cookie. Resolves true when it worked.
 let _refreshing: Promise<boolean> | null = null;
 async function tryRefresh(): Promise<boolean> {
   if (_refreshing) return _refreshing;
   _refreshing = (async () => {
     try {
-      const res = await fetch(`${BASE_URL}/auth/refresh`, {
-        method: 'POST',
-        credentials: 'include',
-      });
-      if (!res.ok) return false;
-      const data = await res.json();
-      const token: string | undefined = data?.data?.token ?? data?.token;
-      if (token) { localStorage.setItem('qotn_token', token); return true; }
-      return false;
+      const res = await fetch(`${BASE_URL}/auth/refresh`, { method: 'POST', credentials: 'include' });
+      return res.ok;
     } catch {
       return false;
     } finally {
@@ -41,11 +44,8 @@ async function tryRefresh(): Promise<boolean> {
 }
 
 async function fetchAPI<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const token = getToken();
-
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...(options.headers as Record<string, string>),
   };
 
@@ -63,32 +63,21 @@ async function fetchAPI<T>(endpoint: string, options: RequestInit = {}): Promise
     throw new ApiError(0, 'Network error — is the backend running?');
   }
 
-  // On 401, attempt a silent token refresh then retry once
+  // On 401, attempt a silent session refresh then retry once
   if (response.status === 401 && !endpoint.includes('/auth/')) {
     const refreshed = await tryRefresh();
     if (refreshed) {
-      const newToken = getToken();
-      const retryHeaders: HeadersInit = {
-        'Content-Type': 'application/json',
-        ...(newToken ? { Authorization: `Bearer ${newToken}` } : {}),
-        ...(options.headers as Record<string, string>),
-      };
       try {
-        const retryRes = await fetch(`${BASE_URL}${endpoint}`, {
-          ...options,
-          headers: retryHeaders,
-          credentials: 'include',
-        });
+        const retryRes = await fetch(`${BASE_URL}${endpoint}`, { ...options, headers, credentials: 'include' });
         if (retryRes.ok) {
           try { return await retryRes.json() as T; } catch { return {} as T; }
         }
       } catch {}
     }
-    // Refresh failed or retry still 401 — log out only if there was a token
-    if (typeof window !== 'undefined') {
-      const hadToken = !!localStorage.getItem('qotn_token');
-      localStorage.removeItem('qotn_token');
-      if (hadToken) window.location.href = '/account';
+    // Refresh failed or the retry was still refused: if this browser thought it was signed in, send it to sign in again
+    if (typeof window !== 'undefined' && wasSignedIn()) {
+      markSignedOut();
+      window.location.href = '/account';
     }
   }
 
@@ -120,10 +109,10 @@ export const api = {
 };
 
 // Server-side RSC fetch always needs an absolute URL (relative URLs break during ISR revalidation).
-const SERVER_URL =
-  process.env.NODE_ENV === 'production'
-    ? 'https://qotn-backend.onrender.com/api'
-    : 'http://localhost:3001/api';
+// API_ORIGIN (also read by next.config.ts) points a local build at a local backend.
+const SERVER_ORIGIN =
+  process.env.API_ORIGIN || (process.env.NODE_ENV === 'production' ? 'https://qotn-backend.onrender.com' : 'http://localhost:3001');
+const SERVER_URL = `${SERVER_ORIGIN}/api`;
 
 export async function fetchPublic<T>(path: string, revalidate = 60): Promise<T | null> {
   try {

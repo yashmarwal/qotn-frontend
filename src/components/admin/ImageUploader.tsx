@@ -55,7 +55,6 @@ export default function ImageUploader({ images, onChange, maxImages = 6, minImag
     setNote('');
     setSlotLoading(slotIndex);
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('qotn_token') : null;
       const formData = new FormData();
       // Shrink in the browser first: smaller upload, and phone photos no longer hit the 5 MB cap
       const { file: slim, before, after } = await compressImage(file);
@@ -65,8 +64,7 @@ export default function ImageUploader({ images, onChange, maxImages = 6, minImag
       const res = await fetch(`${API_BASE}/upload/image`, {
         method: 'POST',
         credentials: 'include',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        body: formData,
+        body: formData, // the admin's login travels in an httpOnly cookie
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || 'Upload failed');
@@ -93,13 +91,9 @@ export default function ImageUploader({ images, onChange, maxImages = 6, minImag
 
     if (publicId) {
       try {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('qotn_token') : null;
         await fetch(`${API_BASE}/upload/image`, {
           method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
+          headers: { 'Content-Type': 'application/json' },
           credentials: 'include' as const,
           body: JSON.stringify({ publicId }),
         });

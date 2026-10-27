@@ -3,6 +3,7 @@ import Script from 'next/script';
 import Link from 'next/link';
 import { articles } from './articles';
 import BlogCard from './BlogCard';
+import { safeJsonLd } from '@/lib/jsonld';
 
 export const metadata: Metadata = {
   title: 'Cotton Journal — Care, Fabric & Sustainability',
@@ -36,7 +37,7 @@ const breadcrumbJsonLd = {
 export default function BlogPage() {
   return (
     <>
-      <Script id="blog-breadcrumb" type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
+      <Script id="blog-breadcrumb" type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbJsonLd) }} />
 
       <div style={{ backgroundColor: 'var(--cream)', minHeight: '100vh' }}>
         {/* Hero */}

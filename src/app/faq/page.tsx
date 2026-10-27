@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Script from 'next/script';
 import Link from 'next/link';
+import { safeJsonLd } from '@/lib/jsonld';
 
 export const metadata: Metadata = {
   title: 'Frequently Asked Questions',
@@ -113,8 +114,8 @@ const breadcrumbJsonLd = {
 export default function FAQPage() {
   return (
     <>
-      <Script id="faq-schema" type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
-      <Script id="faq-breadcrumb" type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
+      <Script id="faq-schema" type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(faqJsonLd) }} />
+      <Script id="faq-breadcrumb" type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbJsonLd) }} />
 
       <div style={{ backgroundColor: 'var(--cream)', minHeight: '100vh' }}>
         {/* Hero */}

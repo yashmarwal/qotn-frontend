@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Script from 'next/script';
+import { safeJsonLd } from '@/lib/jsonld';
 
 export const metadata: Metadata = {
   title: 'About QOTN — Pure Cotton. Nothing Else. | Made in India',
@@ -42,8 +43,8 @@ const breadcrumbJsonLd = {
 export default function AboutLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <Script id="about-schema" type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(aboutJsonLd) }} />
-      <Script id="about-breadcrumb" type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
+      <Script id="about-schema" type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(aboutJsonLd) }} />
+      <Script id="about-breadcrumb" type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbJsonLd) }} />
       {children}
     </>
   );

@@ -5,6 +5,7 @@ import { AuthProvider } from '@/context/AuthContext';
 import { CartProvider } from '@/context/CartContext';
 import { WishlistProvider } from '@/context/WishlistContext';
 import RootLayoutClient from '@/components/RootLayoutClient';
+import { safeJsonLd } from '@/lib/jsonld';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.qotn.in'),
@@ -150,12 +151,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Script
           id="schema-org-organization"
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+          dangerouslySetInnerHTML={{ __html: safeJsonLd(organizationJsonLd) }}
         />
         <Script
           id="schema-org-website"
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+          dangerouslySetInnerHTML={{ __html: safeJsonLd(websiteJsonLd) }}
         />
       </head>
       <body>

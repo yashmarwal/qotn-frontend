@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Script from 'next/script';
+import { safeJsonLd } from '@/lib/jsonld';
 
 export const metadata: Metadata = {
   title: 'Size Guide — Find Your Perfect Cotton Fit',
@@ -46,8 +47,8 @@ const webPageJsonLd = {
 export default function SizeGuideLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <Script id="size-guide-breadcrumb" type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
-      <Script id="size-guide-page" type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(webPageJsonLd) }} />
+      <Script id="size-guide-breadcrumb" type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbJsonLd) }} />
+      <Script id="size-guide-page" type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(webPageJsonLd) }} />
       {children}
     </>
   );

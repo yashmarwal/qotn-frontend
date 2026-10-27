@@ -3,7 +3,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { authService } from '@/lib/services/auth.service';
-import { ApiError } from '@/lib/api';
+import { ApiError, markSignedIn, markSignedOut, wasSignedIn } from '@/lib/api';
 
 interface User {
   id: string;
@@ -39,34 +39,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('qotn_token') : null;
-    if (!token) {
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      if (payload.exp * 1000 < Date.now()) {
-        localStorage.removeItem('qotn_token');
-        setIsLoading(false);
-        return;
-      }
-    } catch {
-      localStorage.removeItem('qotn_token');
+    // Guests (never signed in on this browser) skip the check. The login itself is in httpOnly cookies.
+    if (!wasSignedIn()) {
       setIsLoading(false);
       return;
     }
 
     authService
       .me()
-      .then((res: any) => setUser(res.data ?? null))
+      .then((res: any) => {
+        setUser(res.data ?? null);
+        markSignedIn(); // also upgrades a browser that still had the old stored token
+      })
       .catch((err: unknown) => {
         const status = err instanceof ApiError ? err.status : 0;
         if (process.env.NODE_ENV === 'development') {
           console.warn('[Auth] /auth/me failed — status:', status);
         }
-        localStorage.removeItem('qotn_token');
+        // Only a refused session ends the sign-in; a network hiccup should not sign anyone out
+        if (status === 401 || status === 403) markSignedOut();
         setUser(null);
       })
       .finally(() => setIsLoading(false));
@@ -74,9 +65,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     const res: any = await authService.login({ email, password });
-    const { token, user: newUser } = res.data;
-    if (token) localStorage.setItem('qotn_token', token);
-    setUser(newUser);
+    markSignedIn();
+    setUser(res.data.user);
   };
 
   const register = async (data: {
@@ -87,14 +77,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     password: string;
   }): Promise<{ requiresVerification?: boolean }> => {
     const res: any = await authService.register(data);
-    const { token, user: newUser, requiresVerification } = res.data;
-    if (token) localStorage.setItem('qotn_token', token);
-    setUser(newUser);
-    return { requiresVerification };
+    markSignedIn();
+    setUser(res.data.user);
+    return { requiresVerification: res.data.requiresVerification };
   };
 
   const logout = async () => {
-    localStorage.removeItem('qotn_token');
+    markSignedOut();
     setUser(null);
     authService.logout().catch(() => {});
     router.push('/');

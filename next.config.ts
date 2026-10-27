@@ -21,7 +21,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: 'https://qotn-backend.onrender.com/api/:path*',
+        destination: `${process.env.API_ORIGIN || 'https://qotn-backend.onrender.com'}/api/:path*`,
       },
     ];
   },

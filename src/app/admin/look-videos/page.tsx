@@ -95,12 +95,11 @@ export default function AdminLookVideosPage() {
     setUploading(true);
     setUploadProgress('Uploading to Cloudinary…');
     try {
-      const token = localStorage.getItem('qotn_token') || '';
       const fd = new FormData();
       fd.append('file', file);
       const res = await fetch('/api/upload/video', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
+        credentials: 'include', // the admin's httpOnly login cookie
         body: fd,
       });
       if (!res.ok) {

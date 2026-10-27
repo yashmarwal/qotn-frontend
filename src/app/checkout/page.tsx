@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
@@ -120,6 +120,7 @@ export default function CheckoutPage() {
   const [otpVerifying, setOtpVerifying] = useState(false);
   const [otpError, setOtpError] = useState('');
   const [otpVerified, setOtpVerified] = useState(false);
+  const codTokenRef = useRef('');
 
   // ── Computed prices (all in paise) ───────────────────────────────────────
   const stitchingCharge = items.filter(i => i.customStitchingId).length * 24900;
@@ -198,20 +199,15 @@ export default function CheckoutPage() {
   };
 
   // ── OTP helpers ──────────────────────────────────────────────────────────
+  // The code is sent and checked by the API. A correct code returns a single-use token that the order must carry.
   const sendOTP = async (): Promise<boolean> => {
     setOtpSending(true); setOtpError('');
     try {
-      const res = await fetch('/api/otp/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: otpEmail }),
-      });
-      const data = await res.json();
-      if (!res.ok) { setOtpError(data.message || 'Failed to send code.'); return false; }
+      await authService.sendCodOtp(otpEmail);
       setOtpSent(true);
       return true;
-    } catch {
-      setOtpError('Network error. Please try again.');
+    } catch (err: any) {
+      setOtpError(err?.message || 'Failed to send code.');
       return false;
     } finally {
       setOtpSending(false);
@@ -222,17 +218,12 @@ export default function CheckoutPage() {
     if (!otpValue.trim()) { setOtpError('Please enter the code.'); return false; }
     setOtpVerifying(true); setOtpError('');
     try {
-      const res = await fetch('/api/otp/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: otpEmail, otp: otpValue.trim() }),
-      });
-      const data = await res.json();
-      if (!res.ok) { setOtpError(data.message || 'Incorrect code.'); return false; }
+      const res = await authService.verifyCodOtp(otpEmail, otpValue.trim());
+      codTokenRef.current = res.data.codToken;
       setOtpVerified(true);
       return true;
-    } catch {
-      setOtpError('Network error. Please try again.');
+    } catch (err: any) {
+      setOtpError(err?.message || 'Incorrect code.');
       return false;
     } finally {
       setOtpVerifying(false);
@@ -298,7 +289,7 @@ export default function CheckoutPage() {
         phone: addrForm.phone.trim(),
         password,
       });
-      return localStorage.getItem('qotn_token');
+      return null; // the new account's login is now held in httpOnly cookies, not in a readable token
     } catch (err: any) {
       const msg: string = err?.message ?? '';
       if (msg.toLowerCase().includes('already') || msg.toLowerCase().includes('exist')) {
@@ -351,10 +342,14 @@ export default function CheckoutPage() {
         deliveryMethod: 'COD',
         paymentMethod: 'COD',
         couponCode: couponData?.coupon?.code,
+        codToken: codTokenRef.current,
       });
+      codTokenRef.current = ''; // single use
       clearCart();
       router.push(`/order-confirmation?order=${res.data.order.orderNumber}`);
     } catch (err: any) {
+      // A refused or used-up verification means the customer has to verify again
+      if (/verif/i.test(err?.message ?? '')) { codTokenRef.current = ''; setOtpVerified(false); }
       setOrderError(err.message || 'Failed to place order. Please try again.');
       setLoading(false);
     }
