@@ -30,16 +30,18 @@ export default function PhaselineCredit() {
     const pop = popRef.current;
     const root = rootRef.current;
     if (!open || !pop || !root) return;
+    // Measure from layout (not the animated transform): the card is right-aligned to the pill.
     const fit = () => {
       pop.style.left = pop.style.right = "";
-      const r = pop.getBoundingClientRect();
       const b = root.getBoundingClientRect();
+      const left = b.right - pop.offsetWidth;
+      const right = b.right;
       let s = 0;
-      if (r.left < 8) s = 8 - r.left;
-      else if (r.right > window.innerWidth - 8) s = window.innerWidth - 8 - r.right;
+      if (left < 8) s = 8 - left;
+      else if (right > window.innerWidth - 8) s = window.innerWidth - 8 - right;
       if (s) {
         pop.style.right = "auto";
-        pop.style.left = r.left - b.left + s + "px";
+        pop.style.left = left - b.left + s + "px";
       }
     };
     fit();
@@ -96,7 +98,7 @@ export default function PhaselineCredit() {
           </svg>
           <span>Phaseline</span>
         </button>
-        <div className="pl-pop" id="pl-pop" role="dialog" aria-label="Phaseline" hidden={!open} ref={popRef}>
+        <div className="pl-pop" id="pl-pop" role="dialog" aria-label="Phaseline" data-open={open} ref={popRef}>
           <div className="pl-head">
             <svg className="pl-mark" aria-hidden="true" focusable="false">
               <use href="#pl-mark" />
