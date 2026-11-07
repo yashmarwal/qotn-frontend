@@ -84,10 +84,10 @@ export default function MobileFooter() {
         <p style={{ fontSize: 11, color: 'rgba(245,240,232,0.3)', marginBottom: 4 }}>© 2025 Qotn. All rights reserved.</p>
         <p style={{ fontSize: 11, color: 'rgba(245,240,232,0.3)', marginBottom: 4 }}>Made in India 🇮🇳</p>
         <p style={{ fontSize: 11, color: 'rgba(245,240,232,0.3)' }}>
-          Developed by{' '}
+          Built by{' '}
           <a href={whatsappHref} target="_blank" rel="noopener noreferrer"
             style={{ color: 'rgba(245,240,232,0.5)', textDecoration: 'underline' }}>
-            Yash Marwal
+            Phaseline
           </a>
         </p>
       </div>

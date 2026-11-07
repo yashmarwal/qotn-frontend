@@ -81,10 +81,10 @@ export default function DesktopFooter() {
           Made in India · 100% Cotton · Nothing Else.
         </p>
         <p style={{ fontSize: 11, marginTop: 8, color: 'rgba(245,240,232,0.4)' }}>
-          Developed by{' '}
+          Built by{' '}
           <a href={whatsappHref} target="_blank" rel="noopener noreferrer"
             style={{ color: 'rgba(245,240,232,0.6)', textDecoration: 'underline' }}>
-            Yash Marwal
+            Phaseline
           </a>
         </p>
       </div>
