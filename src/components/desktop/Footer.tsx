@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import PhaselineCredit from '../PhaselineCredit';
 
 const shopLinks = [
   { href: '/men', label: 'Men' },
@@ -23,8 +24,6 @@ const linkStyle = {
   fontSize: 14, color: 'var(--cream)', textDecoration: 'none',
   opacity: 0.8, transition: 'opacity 0.2s',
 } as const;
-
-const whatsappHref = `https://wa.me/918595475007?text=${encodeURIComponent("Hello, I’m interested in developing a website.")}`;
 
 export default function DesktopFooter() {
   return (
@@ -80,13 +79,9 @@ export default function DesktopFooter() {
         <p style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(245,240,232,0.4)' }}>
           Made in India · 100% Cotton · Nothing Else.
         </p>
-        <p style={{ fontSize: 11, marginTop: 8, color: 'rgba(245,240,232,0.4)' }}>
-          Built by{' '}
-          <a href={whatsappHref} target="_blank" rel="noopener noreferrer"
-            style={{ color: 'rgba(245,240,232,0.6)', textDecoration: 'underline' }}>
-            Phaseline
-          </a>
-        </p>
+        <div style={{ marginTop: 14, display: 'flex', justifyContent: 'center' }}>
+          <PhaselineCredit />
+        </div>
       </div>
     </footer>
   );

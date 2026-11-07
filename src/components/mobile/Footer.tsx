@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import PhaselineCredit from '../PhaselineCredit';
 
 const sections = [
   {
@@ -34,8 +35,6 @@ const sections = [
     ],
   },
 ];
-
-const whatsappHref = `https://wa.me/918595475007?text=${encodeURIComponent("Hello, I’m interested in developing a website.")}`;
 
 function AccordionSection({ title, links }: { title: string; links: { href: string; label: string }[] }) {
   const [open, setOpen] = useState(false);
@@ -83,13 +82,9 @@ export default function MobileFooter() {
       <div style={{ marginTop: 24, textAlign: 'center' }}>
         <p style={{ fontSize: 11, color: 'rgba(245,240,232,0.3)', marginBottom: 4 }}>© 2025 Qotn. All rights reserved.</p>
         <p style={{ fontSize: 11, color: 'rgba(245,240,232,0.3)', marginBottom: 4 }}>Made in India 🇮🇳</p>
-        <p style={{ fontSize: 11, color: 'rgba(245,240,232,0.3)' }}>
-          Built by{' '}
-          <a href={whatsappHref} target="_blank" rel="noopener noreferrer"
-            style={{ color: 'rgba(245,240,232,0.5)', textDecoration: 'underline' }}>
-            Phaseline
-          </a>
-        </p>
+        <div style={{ marginTop: 14, display: 'flex', justifyContent: 'center' }}>
+          <PhaselineCredit />
+        </div>
       </div>
     </footer>
   );
