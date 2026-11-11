@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import Script from 'next/script';
 import { safeJsonLd } from '@/lib/jsonld';
 
 export const metadata: Metadata = {
@@ -67,9 +66,9 @@ const breadcrumbJsonLd = {
 export default function ContactLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <Script id="contact-page-schema" type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(contactPageJsonLd) }} />
-      <Script id="contact-local-business" type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(localBusinessJsonLd) }} />
-      <Script id="contact-breadcrumb" type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbJsonLd) }} />
+      <script id="contact-page-schema" type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(contactPageJsonLd) }} />
+      <script id="contact-local-business" type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(localBusinessJsonLd) }} />
+      <script id="contact-breadcrumb" type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbJsonLd) }} />
       {children}
     </>
   );

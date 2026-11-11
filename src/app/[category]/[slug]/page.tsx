@@ -26,7 +26,9 @@ export async function generateMetadata({
   const product = res?.data;
   if (!product) return { title: 'QOTN — Product' };
 
-  const title = `${product.name} — 100% Pure Cotton`;
+  // Whole title incl. the layout's ' | QOTN' must stay within 60 characters, so the tagline is dropped when too long
+  const fullTitle = `${product.name} — 100% Pure Cotton`;
+  const title = fullTitle.length + ' | QOTN'.length <= 60 ? fullTitle : product.name;
   const description = cleanText(`${cleanText(product.description || '', 95)} 100% pure cotton, made in India.`, 155);
   const url = `https://www.qotn.in/${category}/${slug}`;
   const imageUrl = product.images?.[0]?.url || (typeof product.images?.[0] === 'string' ? product.images[0] : '');

@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Collections — Pure Cotton Curated Sets',
-  description: 'Explore QOTN curated collections of 100% pure cotton apparel for men, women and kids. Each collection is thoughtfully put together — no blends, no shortcuts.',
+  description: 'Explore QOTN curated collections of 100% pure cotton apparel for men, women and kids. Each collection is put together with care. No blends, no shortcuts.',
   alternates: { canonical: 'https://www.qotn.in/collections' },
   openGraph: {
     title: 'Collections — Pure Cotton Curated Sets | QOTN',
