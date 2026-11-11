@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import Script from 'next/script';
 import './globals.css';
 import { AuthProvider } from '@/context/AuthContext';
 import { CartProvider } from '@/context/CartContext';
@@ -11,7 +10,7 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://www.qotn.in'),
 
   title: {
-    default: 'QOTN — Pure Cotton Clothing for Men, Women & Kids | Made in India',
+    default: 'QOTN — Pure Cotton Clothing for Men, Women & Kids',
     template: '%s | QOTN',
   },
   description:
@@ -148,12 +147,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="alternate" type="application/rss+xml" title="QOTN Cotton Journal" href="https://www.qotn.in/rss.xml" />
-        <Script
+        <script
           id="schema-org-organization"
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: safeJsonLd(organizationJsonLd) }}
         />
-        <Script
+        <script
           id="schema-org-website"
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: safeJsonLd(websiteJsonLd) }}

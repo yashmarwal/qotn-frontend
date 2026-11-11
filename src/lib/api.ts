@@ -123,3 +123,15 @@ export async function fetchPublic<T>(path: string, revalidate = 60): Promise<T |
     return null;
   }
 }
+
+// The products API rejects limit > 48, so the whole catalogue is read page by page. Returns null when the first read fails.
+export async function fetchAllProducts(revalidate = 3600): Promise<any[] | null> {
+  const all: any[] = [];
+  for (let page = 1; page <= 20; page++) {
+    const res = await fetchPublic<any>(`/products?limit=48&page=${page}`, revalidate);
+    if (!res?.data) return page === 1 ? null : all;
+    all.push(...res.data);
+    if (res.data.length === 0 || page >= (res.meta?.totalPages ?? 1)) break;
+  }
+  return all;
+}

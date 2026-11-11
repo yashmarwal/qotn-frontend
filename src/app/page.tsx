@@ -5,7 +5,7 @@ import { fetchPublic } from '@/lib/api';
 export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: 'QOTN — Pure Cotton Clothing for Men, Women & Kids | Made in India',
+  title: 'QOTN — Pure Cotton Clothing for Men, Women & Kids',
   description:
     'Shop 100% pure cotton clothing online. No blends. Kurtas, dresses and shirts for men, women and kids. Free shipping above ₹1499. Made in India.',
   alternates: { canonical: 'https://www.qotn.in' },

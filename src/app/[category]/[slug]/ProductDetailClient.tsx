@@ -39,11 +39,11 @@ function AccordionItem({ title, children }: { title: string; children: React.Rea
   const [open, setOpen] = useState(false);
   return (
     <div style={{ borderBottom: '1px solid var(--border)' }}>
-      <button onClick={() => setOpen(!open)}
+      <h2 style={{ margin: 0, font: 'inherit' }}><button aria-expanded={open} onClick={() => setOpen(!open)}
         style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 0', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
         <span style={{ fontSize: 11, letterSpacing: '0.12em', fontWeight: 500, textTransform: 'uppercase' }}>{title}</span>
         {open ? <ChevronUp size={13} strokeWidth={1.5} color="var(--dust)" /> : <ChevronDown size={13} strokeWidth={1.5} color="var(--dust)" />}
-      </button>
+      </button></h2>
       <AnimatePresence initial={false}>
         {open && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }} style={{ overflow: 'hidden' }}>

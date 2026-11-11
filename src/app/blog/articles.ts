@@ -81,7 +81,7 @@ export const articles: Article[] = [
     slug: 'poplin-vs-voile-understanding-cotton-weaves',
     title: 'Poplin vs Voile: Understanding Cotton Weaves',
     description:
-      'Not all cotton feels the same. The weave determines the drape, breathability, and weight of a fabric. Here\'s a plain-language guide to the main cotton weaves QOTN uses.',
+      'Not all cotton feels the same. The weave sets the drape, breathability and weight of a fabric. A plain-language guide to the main cotton weaves QOTN uses.',
     publishedAt: '2025-11-01',
     readTime: 6,
     category: 'Fabric Guide',

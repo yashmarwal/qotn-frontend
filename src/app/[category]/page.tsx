@@ -46,12 +46,12 @@ const categoryIntro: Record<string, { heading: string; body: string; others: [st
   women: {
     heading: "About QOTN women's cotton clothing",
     body: "Every women's piece here is made from 100% cotton, with no polyester or other blends. Dresses, kurtas, tops and co-ord sets are stitched in Jaipur, Rajasthan. Orders above ₹1499 ship free across India, cash on delivery is available, and custom stitching is offered on select products.",
-    others: [['/men', "Men's clothing"], ['/kids', "Kids' clothing"]],
+    others: [['/men', "Men's clothing"], ['/kids', "Kids' clothing"], ['/co-ord-sets', 'Cotton co-ord sets']],
   },
   kids: {
     heading: "About QOTN kids' cotton clothing",
     body: "Every kids' piece here is made from 100% cotton, with no polyester or other blends, so it stays soft and breathable against young skin. Orders above ₹1499 ship free across India and cash on delivery is available.",
-    others: [['/men', "Men's clothing"], ['/women', "Women's clothing"]],
+    others: [['/men', "Men's clothing"], ['/women', "Women's clothing"], ['/co-ord-sets', 'Cotton co-ord sets']],
   },
 };
 
