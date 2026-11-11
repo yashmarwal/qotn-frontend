@@ -1,29 +1,16 @@
 import type { MetadataRoute } from 'next';
-import { fetchPublic } from '@/lib/api';
+import { fetchPublic, fetchAllProducts } from '@/lib/api';
+import { coordSets, MIN_COORD_SETS } from '@/lib/coordSets';
 import { articles } from './blog/articles';
 
 const SITE = 'https://www.qotn.in';
-// The products API rejects limit > 48, so the catalogue is read page by page
-const PAGE_SIZE = 48;
-const MAX_PAGES = 20;
-
-async function fetchAllProducts(): Promise<any[]> {
-  const all: any[] = [];
-  for (let page = 1; page <= MAX_PAGES; page++) {
-    const res = await fetchPublic<any>(`/products?limit=${PAGE_SIZE}&page=${page}`, 3600);
-    const batch: any[] = res?.data || [];
-    all.push(...batch);
-    const totalPages = res?.meta?.totalPages ?? 1;
-    if (batch.length === 0 || page >= totalPages) break;
-  }
-  return all;
-}
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [products, collectionsRes] = await Promise.all([
+  const [allProducts, collectionsRes] = await Promise.all([
     fetchAllProducts(),
     fetchPublic<any>('/collections?limit=100', 3600),
   ]);
+  const products = allProducts ?? [];
   const collections: any[] = collectionsRes?.data || [];
 
   // No lastModified on static pages: a made-up date is worse than none, because Google
@@ -33,6 +20,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/faq', '/blog', '/shipping-policy', '/return-policy', '/terms-and-conditions', '/privacy-policy',
   ];
   const staticPages: MetadataRoute.Sitemap = staticPaths.map((path) => ({ url: `${SITE}${path}` }));
+
+  // Listed only when live data shows enough co-ord sets (the page itself is noindex below that)
+  if (coordSets(products).length >= MIN_COORD_SETS) staticPages.push({ url: `${SITE}/co-ord-sets` });
 
   const productPages: MetadataRoute.Sitemap = products
     .filter((p) => p.slug && p.category?.slug)
