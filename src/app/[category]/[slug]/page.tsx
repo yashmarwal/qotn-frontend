@@ -30,7 +30,7 @@ export async function generateMetadata({
   const fullTitle = `${product.name} — 100% Pure Cotton`;
   const title = fullTitle.length + ' | QOTN'.length <= 60 ? fullTitle : product.name;
   const description = cleanText(`${cleanText(product.description || '', 95)} 100% pure cotton, made in India.`, 155);
-  const url = `https://www.qotn.in/${category}/${slug}`;
+  const url = `https://www.qotn.in/${category}/${encodeURIComponent(slug)}`;
   const imageUrl = product.images?.[0]?.url || (typeof product.images?.[0] === 'string' ? product.images[0] : '');
 
   return {
@@ -74,7 +74,7 @@ export default async function ProductPage({
   const imageUrl = raw?.images?.[0]?.url || (typeof raw?.images?.[0] === 'string' ? raw.images[0] : '');
   const inStock = variants.some((v: any) => (v.stock ?? 0) > 0);
   const categoryLabel = categoryLabels[category] || category;
-  const productUrl = `https://www.qotn.in/${category}/${slug}`;
+  const productUrl = `https://www.qotn.in/${category}/${encodeURIComponent(slug)}`;
 
   const singlePrice = minPrice === maxPrice;
   const availability = inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock';
