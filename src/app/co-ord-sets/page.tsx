@@ -61,7 +61,7 @@ export default async function CoordSetsPage() {
       itemListElement: raw.map((p, i) => ({
         '@type': 'ListItem',
         position: i + 1,
-        url: `${SITE}/${p.category?.slug}/${p.slug}`,
+        url: `${SITE}/${p.category?.slug}/${encodeURIComponent(p.slug)}`,
         name: p.name,
       })),
     },
