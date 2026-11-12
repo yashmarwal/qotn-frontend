@@ -14,7 +14,8 @@ import { adaptApiProductList } from '@/lib/adapters';
 import { Product } from '@/types';
 
 const categoryLabels: Record<string, string> = { men: 'Men', women: 'Women', kids: 'Kids' };
-const allSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '2-3Y', '3-4Y', '4-5Y', '5-6Y', '6-7Y', '7-8Y'];
+const adultSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+const kidsSizes = ['2-3Y', '3-4Y', '4-5Y', '5-6Y', '6-7Y', '7-8Y'];
 const allColors = ['White', 'Black', 'Cream', 'Olive', 'Blue', 'Beige', 'Grey', 'Navy', 'Terracotta', 'Sage', 'Blush'];
 
 interface Props {
@@ -27,6 +28,7 @@ interface Props {
 export default function CategoryPageClient({ params, initialProducts, initialTotal = 0 }: Props) {
   const { category } = use(params);
   const isMobile = useIsMobile();
+  const allSizes = category === 'kids' ? kidsSizes : adultSizes;
   const router = useRouter();
   const pathname = usePathname();
 

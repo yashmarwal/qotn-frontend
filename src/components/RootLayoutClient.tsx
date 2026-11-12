@@ -28,7 +28,7 @@ export default function RootLayoutClient({ children }: { children: React.ReactNo
     <>
       <AnnouncementBar />
       {isMobile ? <MobileNavbar /> : <DesktopNavbar />}
-      <main>
+      <main id="main-content">
         {children}
       </main>
       {isMobile ? <MobileFooter /> : <DesktopFooter />}

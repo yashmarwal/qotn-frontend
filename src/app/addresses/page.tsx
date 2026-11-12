@@ -40,7 +40,7 @@ export default function AddressesPage() {
   const [formError, setFormError] = useState('');
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) router.replace('/account');
+    if (!isLoading && !isAuthenticated) router.replace('/account?redirect=/addresses');
   }, [isLoading, isAuthenticated, router]);
 
   useEffect(() => {

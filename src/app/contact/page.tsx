@@ -64,7 +64,7 @@ interface FormProps {
   subject: string; setSubject: (v: string) => void;
   message: string; setMessage: (v: string) => void;
   status: 'idle' | 'sending' | 'success' | 'error';
-  onSubmit: (e: React.FormEvent) => void;
+  onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   onReset: () => void;
   isMobile: boolean;
 }
@@ -87,6 +87,7 @@ function ContactForm({ name, setName, email, setEmail, subject, setSubject, mess
 
   return (
     <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+      <input type="checkbox" name="botcheck" tabIndex={-1} aria-hidden="true" style={{ display: 'none' }} />
       <div>
         <label style={labelStyle}>Name</label>
         <input style={inputStyle} value={name} onChange={e => setName(e.target.value)} required />
@@ -132,8 +133,10 @@ export default function ContactPage() {
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    // Hidden trap field: people never tick it, bots that fill every field do
+    if ((e.currentTarget.elements.namedItem('botcheck') as HTMLInputElement | null)?.checked) { setStatus('success'); return; }
     setStatus('sending');
     try {
       const res = await fetch('https://api.web3forms.com/submit', {
@@ -143,7 +146,7 @@ export default function ContactPage() {
           access_key: '131505da-95fe-467f-ae42-2a3b109ef5ff',
           subject: 'New Contact Form Submission — QOTN',
           from_name: 'QOTN Website',
-          name, email, subject_line: subject, message,
+          name, email, subject_line: subject, message, botcheck: '',
         }),
       });
       const data = await res.json();

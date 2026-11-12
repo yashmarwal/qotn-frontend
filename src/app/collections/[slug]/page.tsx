@@ -168,7 +168,8 @@ function CollectionProductCard({ product }: { product: any }) {
   const prices = variants.map((v: any) => v.price).filter(Boolean);
   const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
   const maxOriginal = variants.map((v: any) => v.originalPrice).filter(Boolean);
-  const originalPrice = maxOriginal.length > 0 ? Math.max(...maxOriginal) : null;
+  const topOriginal = maxOriginal.length > 0 ? Math.max(...maxOriginal) : 0;
+  const originalPrice = topOriginal > minPrice ? topOriginal : null; // no strike-through when MRP equals the price
   const discount = originalPrice && minPrice ? Math.round(((originalPrice - minPrice) / originalPrice) * 100) : null;
   const categorySlug = product.category?.slug || product.categoryId || 'men';
 

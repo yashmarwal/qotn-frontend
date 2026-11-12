@@ -24,6 +24,14 @@ export default function AccountPage() {
   const { user, isLoading, isAuthenticated, login, register, logout } = useAuth();
   const router = useRouter();
 
+  // Return the customer to the page that asked them to sign in (e.g. /account?redirect=/orders); same-site paths only,
+  // and not until a new account has verified its email
+  useEffect(() => {
+    if (!isAuthenticated || user?.isVerified === false) return;
+    const to = new URLSearchParams(window.location.search).get('redirect');
+    if (to && to.startsWith('/') && !to.startsWith('//') && !to.includes('\\')) router.replace(to);
+  }, [isAuthenticated, user?.isVerified, router]);
+
   const [mode, setMode] = useState<Mode>('login');
   const [step, setStep] = useState<Step>('form');
   const [phraseIdx, setPhraseIdx] = useState(0);

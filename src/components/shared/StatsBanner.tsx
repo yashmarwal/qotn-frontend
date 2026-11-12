@@ -7,12 +7,13 @@ function AnimatedStat({
 }: {
   value: number; label: string; prefix?: string; suffix?: string; duration?: number;
 }) {
-  const [count, setCount] = useState(0);
+  const [count, setCount] = useState(value); // real number in the server HTML; counts up from 0 only once on screen
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-80px' });
 
   useEffect(() => {
     if (!isInView) return;
+    setCount(0);
     let startTime: number | null = null;
     const animate = (timestamp: number) => {
       if (startTime === null) startTime = timestamp;

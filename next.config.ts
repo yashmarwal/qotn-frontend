@@ -40,6 +40,7 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'res.cloudinary.com',
+        pathname: '/dydswsgdg/**', // only this store's cloud, so the image optimiser cannot be used to proxy other people's images
       },
       {
         protocol: 'https',

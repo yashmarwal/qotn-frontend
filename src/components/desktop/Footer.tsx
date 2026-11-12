@@ -64,7 +64,7 @@ export default function DesktopFooter() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <span style={{ fontSize: 11, letterSpacing: '0.12em', fontWeight: 500, textTransform: 'uppercase', color: 'rgba(245,240,232,0.5)' }}>Follow</span>
-          <a href="https://www.instagram.com/qotn.in?igsh=MWcyaTl2bjRqenppNg==" target="_blank" rel="noopener noreferrer"
+          <a href="https://www.instagram.com/qotn.in/" target="_blank" rel="noopener noreferrer"
             style={{ ...linkStyle, display: 'flex', alignItems: 'center', gap: 8 }}
             onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
             onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.8')}>

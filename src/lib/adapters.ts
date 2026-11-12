@@ -76,7 +76,7 @@ export function adaptApiProduct(p: ApiProduct): Product {
     name: p.name,
     slug: p.slug,
     price: cheapest?.price ?? 0,
-    originalPrice: cheapest?.originalPrice ?? null,
+    originalPrice: cheapest?.originalPrice && cheapest.originalPrice > cheapest.price ? cheapest.originalPrice : null,
     category: categorySlug as 'men' | 'women' | 'kids',
     subcategory: '',
     sizes: uniqueSizes,

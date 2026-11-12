@@ -54,12 +54,12 @@ const faqs = [
   {
     question: 'How do I find the right size?',
     answer:
-      'Visit our Size Guide page for detailed measurements. As a general rule, QOTN garments are cut slightly relaxed — if you are between sizes, size down for a fitted look or size up for a relaxed fit. Cotton also softens and relaxes slightly after the first wash.',
+      'Visit our Size Guide page for detailed measurements. As a general rule, QOTN garments are cut slightly relaxed — if you are between sizes, we recommend choosing the larger size. Cotton also softens and relaxes slightly after the first wash.',
   },
   {
     question: 'What is custom stitching?',
     answer:
-      'Custom stitching means we tailor the garment to your measurements before shipping. On eligible products you will see a "Custom Stitch" button on the product page. It adds ₹249 per piece and takes an extra 2–3 business days.',
+      'Custom stitching means we tailor the garment to your measurements before shipping. On eligible products you will see a "Custom Stitch" button on the product page. It adds ₹249 per piece and takes 3–5 additional business days.',
   },
   {
     question: 'How should I wash and care for cotton clothing?',
@@ -153,10 +153,8 @@ export default function FAQPage() {
             <p style={{ fontSize: 14, color: 'var(--dust)', marginBottom: 16, lineHeight: 1.6 }}>
               Still have a question? We&rsquo;re happy to help.
             </p>
-            <Link href="/contact">
-              <button style={{ padding: '12px 32px', background: 'var(--black)', color: 'var(--cream)', border: 'none', fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
-                Contact Us
-              </button>
+            <Link href="/contact" style={{ padding: '12px 32px', background: 'var(--black)', color: 'var(--cream)', fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase',  fontFamily: 'DM Sans, sans-serif', display: 'inline-block', textDecoration: 'none' }}>
+              Contact Us
             </Link>
           </div>
         </div>

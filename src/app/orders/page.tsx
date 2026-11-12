@@ -177,7 +177,7 @@ export default function OrdersPage() {
   const [inlineMsg, setInlineMsg] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) router.replace('/account');
+    if (!isLoading && !isAuthenticated) router.replace('/account?redirect=/orders');
   }, [isLoading, isAuthenticated, router]);
 
   useEffect(() => {
