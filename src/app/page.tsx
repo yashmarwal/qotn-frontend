@@ -7,12 +7,13 @@ import { readyHeroTiles } from '@/lib/heroTiles.server';
 
 export const revalidate = 300;
 
-const HOME_TITLE = 'Pure Cotton Clothing for Men, Women & Kids'; // layout template adds " | QOTN"
+const HOME_TITLE = 'Pure Cotton Clothing for Men, Women & Kids';
 const HOME_DESCRIPTION =
   'Shop 100% pure cotton kurta sets, kurtis, sarees, shirts and kids’ wear. No blends, made in India. Free shipping above ₹1,499. COD available.';
 
 export const metadata: Metadata = {
-  title: HOME_TITLE,
+  // absolute: the root layout's " | QOTN" template does not apply to the page in the same folder as the layout
+  title: { absolute: `${HOME_TITLE} | QOTN` },
   description: HOME_DESCRIPTION,
   alternates: { canonical: 'https://www.qotn.in' },
   openGraph: {
