@@ -41,8 +41,11 @@ export default function AdminOrdersPage() {
   const handleStatusUpdate = async (orderId: string, status: string) => {
     try {
       await adminService.updateOrderStatus(orderId, { status });
-      fetchOrders();
-    } catch (err) { console.error(err); }
+    } catch (err: any) {
+      // The server refuses a move the order cannot make (or one someone else just beat you to); say so instead of failing silently
+      window.alert(err?.message || 'Could not change the order status.');
+    }
+    fetchOrders(); // also puts the dropdown back to the order's real status after a refusal
   };
 
   const handleStitchingStatusUpdate = async (stitchingId: string, status: string) => {
@@ -122,7 +125,7 @@ export default function AdminOrdersPage() {
                         <td style={{ padding: '13px 16px' }}>
                           <select value={order.status} onChange={(e) => handleStatusUpdate(order.id, e.target.value)}
                             style={{ padding: '4px 8px', background: statusBg[statusKey] ?? '#F0EDE8', color: statusColors[statusKey] ?? 'var(--dust)', border: 'none', fontSize: 11, fontWeight: 600, letterSpacing: '0.06em', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
-                            {ALL_STATUSES.map((s) => (
+                            {(order.allowedStatuses ?? ALL_STATUSES).map((s: string) => (
                               <option key={s} value={s} style={{ background: 'white', color: 'black' }}>{s.charAt(0) + s.slice(1).toLowerCase()}</option>
                             ))}
                           </select>

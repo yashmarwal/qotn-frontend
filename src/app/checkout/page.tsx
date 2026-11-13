@@ -121,6 +121,11 @@ export default function CheckoutPage() {
   const [otpError, setOtpError] = useState('');
   const [otpVerified, setOtpVerified] = useState(false);
   const codTokenRef = useRef('');
+  // The guest account made for this checkout. Kept so that if the order fails and is retried, the retry reuses it
+  // instead of registering the same email again and getting stuck on "an account already exists".
+  const guestRef = useRef<{ email: string; addressId: string } | null>(null);
+  // Set while an order or payment is in progress, so a second click cannot start another one
+  const busyRef = useRef(false);
 
   // ── Computed prices (all in paise) ───────────────────────────────────────
   const stitchingCharge = items.filter(i => i.customStitchingId).length * 24900;
@@ -255,6 +260,7 @@ export default function CheckoutPage() {
 
     if (guestMode) {
       // For guest, just advance — address is stored in state, saved at order time
+      if (guestRef.current) guestRef.current.addressId = ''; // the address may have been edited: save it again
       setStep(2);
       return;
     }
@@ -299,6 +305,19 @@ export default function CheckoutPage() {
     }
   };
 
+  const ensureGuestAddress = async (): Promise<string> => {
+    const email = guestEmail.trim().toLowerCase();
+    if (guestRef.current && guestRef.current.email !== email) {
+      throw new Error('Your account was already created with a different email. Use that same email, or reload the page to start again.');
+    }
+    if (!guestRef.current) {
+      await registerAndLoginGuest();
+      guestRef.current = { email, addressId: '' };
+    }
+    if (!guestRef.current.addressId) guestRef.current.addressId = await createGuestAddress();
+    return guestRef.current.addressId;
+  };
+
   const createGuestAddress = async (): Promise<string> => {
     const res: any = await usersService.createAddress({
       firstName: addrForm.firstName.trim(), lastName: addrForm.lastName.trim(),
@@ -323,16 +342,15 @@ export default function CheckoutPage() {
   };
 
   const placeCODOrder = async () => {
+    if (busyRef.current) return;
+    busyRef.current = true;
     setLoading(true); setOrderError('');
     try {
       if (items.length === 0) throw new Error('Your cart is empty.');
 
       let addressId = selectedAddr?.id;
 
-      if (guestMode) {
-        await registerAndLoginGuest();
-        addressId = await createGuestAddress();
-      }
+      if (guestMode) addressId = await ensureGuestAddress();
 
       const synced = await syncCartToBackend(items);
       if (synced === 0) throw new Error('Could not process cart. Please re-add your items.');
@@ -352,21 +370,22 @@ export default function CheckoutPage() {
       if (/verif/i.test(err?.message ?? '')) { codTokenRef.current = ''; setOtpVerified(false); }
       setOrderError(err.message || 'Failed to place order. Please try again.');
       setLoading(false);
+    } finally {
+      busyRef.current = false;
     }
   };
 
   // ── Online payment ────────────────────────────────────────────────────────
   const handleProceedToPayment = async () => {
+    if (busyRef.current) return;
+    busyRef.current = true;
     setLoading(true); setOrderError('');
     try {
       if (items.length === 0) throw new Error('Your cart is empty.');
 
       let addressId = selectedAddr?.id;
 
-      if (guestMode) {
-        await registerAndLoginGuest();
-        addressId = await createGuestAddress();
-      }
+      if (guestMode) addressId = await ensureGuestAddress();
 
       const synced = await syncCartToBackend(items);
       if (synced === 0) throw new Error('Could not process cart. Please re-add your items.');
@@ -405,6 +424,7 @@ export default function CheckoutPage() {
             },
           },
           handler: async (response: any) => {
+            setOrderError('');
             try {
               const captureRes: any = await paymentsService.confirmOrder({
                 razorpayOrderId: response.razorpay_order_id,
@@ -418,12 +438,18 @@ export default function CheckoutPage() {
               router.push(`/order-confirmation?order=${captureRes.data.order.orderNumber}`);
               resolve();
             } catch (err: any) {
-              reject(new Error(err.message || 'Payment verification failed. Contact support.'));
+              // No answer (offline, or the server is waking up and returns a 5xx): the payment went through, and the server
+              // finishes the order by itself from Razorpay's own notice, so the customer must not pay a second time.
+              reject(new Error(err?.status && err.status < 500
+                ? err.message
+                : 'Your payment was received, but we could not confirm your order just yet. Please do not pay again. Check My Orders in a few minutes, or contact us.'));
             }
           },
         });
+        // A failed attempt leaves Razorpay's window open so the customer can try another way. Show why, and keep
+        // the button locked until they succeed or close the window (closing it unlocks the button).
         rzp.on('payment.failed', (resp: any) => {
-          reject(new Error(resp?.error?.description || 'Payment failed.'));
+          setOrderError(resp?.error?.description || 'Payment failed. You can try another way.');
         });
         rzp.open();
       });
@@ -432,6 +458,8 @@ export default function CheckoutPage() {
       if (err.message === '__dismissed__') return;
       setOrderError(err.message || 'Something went wrong. Please try again.');
       setLoading(false);
+    } finally {
+      busyRef.current = false;
     }
   };
 

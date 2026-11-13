@@ -14,7 +14,14 @@ const ORDER_STEPS = [
 ];
 
 const STATUS_INDEX: Record<string, number> = {
-  PENDING: 0, CONFIRMED: 1, PROCESSING: 2, SHIPPED: 3, DELIVERED: 4, CANCELLED: -1,
+  PENDING: 0, CONFIRMED: 1, PROCESSING: 2, SHIPPED: 3, DELIVERED: 4,
+};
+
+// Orders that left the normal path: shown as a message instead of a progress bar (they used to show as "Order Placed")
+const ENDED: Record<string, { title: string; text: string }> = {
+  CANCELLED: { title: 'Order Cancelled', text: 'This order has been cancelled.' },
+  RETURNED: { title: 'Order Returned', text: 'This order has been returned to us.' },
+  REFUNDED: { title: 'Order Refunded', text: 'This order has been refunded. It can take a few days to reach your account.' },
 };
 
 export default function TrackOrderPage() {
@@ -106,10 +113,10 @@ export default function TrackOrderPage() {
                 </button>
               </div>
 
-              {order.status === 'CANCELLED' ? (
+              {ENDED[order.status] ? (
                 <div style={{ textAlign: 'center', padding: '20px 0' }}>
-                  <p style={{ fontSize: 16, color: '#DC2626', fontWeight: 500 }}>Order Cancelled</p>
-                  <p style={{ color: 'var(--dust)', fontSize: 14 }}>This order has been cancelled.</p>
+                  <p style={{ fontSize: 16, color: '#DC2626', fontWeight: 500 }}>{ENDED[order.status].title}</p>
+                  <p style={{ color: 'var(--dust)', fontSize: 14 }}>{ENDED[order.status].text}</p>
                 </div>
               ) : (
                 <div style={{ position: 'relative' }}>
