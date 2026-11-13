@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, use, useCallback, useRef } from 'react';
+import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, SlidersHorizontal, X } from 'lucide-react';
@@ -23,9 +24,26 @@ interface Props {
   // Page 1 of the unfiltered list, rendered on the server; undefined if the API was unreachable
   initialProducts?: Product[];
   initialTotal?: number;
+  // The page's H1 for search engines and screen readers (the big title on screen stays the short label)
+  h1Text?: string;
+  // Links to the type pages (kurta sets, kurtis, ...), shown under the banner
+  typeLinks?: { href: string; label: string }[];
 }
 
-export default function CategoryPageClient({ params, initialProducts, initialTotal = 0 }: Props) {
+function TypeLinks({ links }: { links?: { href: string; label: string }[] }) {
+  if (!links?.length) return null;
+  return (
+    <nav aria-label="Shop by type" style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', padding: '14px 16px', borderBottom: '1px solid var(--border)', backgroundColor: 'var(--cream)' }}>
+      {links.map((l) => (
+        <Link key={l.href} href={l.href} style={{ padding: '7px 16px', border: '1px solid var(--border)', fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--black)', textDecoration: 'none' }}>
+          {l.label}
+        </Link>
+      ))}
+    </nav>
+  );
+}
+
+export default function CategoryPageClient({ params, initialProducts, initialTotal = 0, h1Text, typeLinks }: Props) {
   const { category } = use(params);
   const isMobile = useIsMobile();
   const allSizes = category === 'kids' ? kidsSizes : adultSizes;
@@ -156,11 +174,13 @@ export default function CategoryPageClient({ params, initialProducts, initialTot
       <div style={{ backgroundColor: 'var(--cream)', minHeight: '100vh' }}>
         {/* Hero banner */}
         <div style={{ height: 160, backgroundColor: 'var(--black)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-          <motion.h1 initial={false} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }} style={{ fontSize: 32, fontWeight: 300, letterSpacing: '0.12em', color: 'var(--cream)', textTransform: 'uppercase', textAlign: 'center', lineHeight: 1 }}>{label}<span className="sr-only"> pure cotton clothing</span></motion.h1>
+          <motion.h1 initial={false} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }} style={{ fontSize: 32, fontWeight: 300, letterSpacing: '0.12em', color: 'var(--cream)', textTransform: 'uppercase', textAlign: 'center', lineHeight: 1 }}><span aria-hidden="true">{label}</span>{' '}<span className="sr-only">{h1Text ?? `${label} pure cotton clothing`}</span></motion.h1>
           {!loading && (
             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35, delay: 0.25 }} style={{ fontSize: 11, color: 'rgba(245,240,232,0.55)', marginTop: 6, letterSpacing: '0.06em' }}>{total} products</motion.p>
           )}
         </div>
+
+        <TypeLinks links={typeLinks} />
 
         {/* Sticky filter bar */}
         <div style={{ position: 'sticky', top: 52, zIndex: 30, backgroundColor: 'var(--cream)', borderBottom: '1px solid var(--border)', height: 44, display: 'flex', alignItems: 'center', overflowX: 'auto', gap: 8, paddingLeft: 12, paddingRight: 12, scrollbarWidth: 'none' }}>
@@ -307,10 +327,12 @@ export default function CategoryPageClient({ params, initialProducts, initialTot
       {/* Hero Banner */}
       <div style={{ height: 260, backgroundColor: 'var(--black)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} style={{ textAlign: 'center' }}>
-          <h1 style={{ fontSize: 'clamp(48px, 8vw, 96px)', fontWeight: 300, letterSpacing: '0.12em', color: 'var(--cream)', textTransform: 'uppercase' }}>{label}<span className="sr-only"> pure cotton clothing</span></h1>
+          <h1 style={{ fontSize: 'clamp(48px, 8vw, 96px)', fontWeight: 300, letterSpacing: '0.12em', color: 'var(--cream)', textTransform: 'uppercase' }}><span aria-hidden="true">{label}</span>{' '}<span className="sr-only">{h1Text ?? `${label} pure cotton clothing`}</span></h1>
           <p style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(245,240,232,0.5)', marginTop: 8 }}>Pure Cotton. Nothing Else.</p>
         </motion.div>
       </div>
+
+      <TypeLinks links={typeLinks} />
 
       {/* Filter bar */}
       <div style={{ position: 'sticky', top: 64, zIndex: 40, backgroundColor: 'var(--cream)', borderBottom: '1px solid var(--border)', padding: '0 40px' }}>

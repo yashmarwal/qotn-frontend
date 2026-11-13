@@ -1,3 +1,8 @@
+/** Joins class names, skipping empty ones. (No tailwind-merge: nothing here needs conflicting classes resolved.) */
+export function cn(...parts: Array<string | false | null | undefined>): string {
+  return parts.filter(Boolean).join(' ');
+}
+
 export function formatPrice(paise: number): string {
   if (!paise || isNaN(paise)) return '₹0';
   return '₹' + (paise / 100).toLocaleString('en-IN');

@@ -18,6 +18,7 @@ import { useIsMobile } from '@/hooks/useIsMobile';
 import { productsService } from '@/lib/services/products.service';
 import { adaptApiProductList } from '@/lib/adapters';
 import { formatPrice } from '@/lib/utils';
+import { seoProductAlt } from '@/lib/productSeo';
 import CustomStitchingButton from '@/components/CustomStitching/CustomStitchingButton';
 import FrequentlyBoughtTogether from '@/components/recommendations/FrequentlyBoughtTogether';
 import RecentlyViewed from '@/components/recommendations/RecentlyViewed';
@@ -243,7 +244,7 @@ export default function ProductDetailClient({ product }: Props) {
             >
               {product.images.map((img, i) => (
                 <div key={i} onClick={handleImageTap} style={{ flexShrink: 0, width: '100%', aspectRatio: '3/4', scrollSnapAlign: 'start', position: 'relative', backgroundColor: 'var(--raw-cotton)', overflow: 'hidden', cursor: 'zoom-in' }}>
-                  <Image src={img} alt={`${product.name} ${i + 1}`} fill style={{ objectFit: 'cover', transform: (imgZoomed && i === activeImage) ? 'scale(2.2)' : 'scale(1)', transition: 'transform 0.3s ease', transformOrigin: 'center center' }} sizes="100vw" priority={i === 0} />
+                  <Image src={img} alt={i === 0 ? seoProductAlt(product.name) : `${seoProductAlt(product.name)} (view ${i + 1})`} fill style={{ objectFit: 'cover', transform: (imgZoomed && i === activeImage) ? 'scale(2.2)' : 'scale(1)', transition: 'transform 0.3s ease', transformOrigin: 'center center' }} sizes="100vw" priority={i === 0} />
                 </div>
               ))}
             </div>
@@ -495,7 +496,7 @@ export default function ProductDetailClient({ product }: Props) {
                 {related.slice(0, 2).map((rp) => (
                   <Link key={rp.id} href={`/${rp.category}/${(rp as any).slug}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                     <div style={{ position: 'relative', aspectRatio: '3/4', background: 'var(--cream)', overflow: 'hidden' }}>
-                      <Image src={rp.images[0]} alt={rp.name} fill style={{ objectFit: 'cover' }} sizes="50vw" />
+                      <Image src={rp.images[0]} alt={seoProductAlt(rp.name)} fill style={{ objectFit: 'cover' }} sizes="50vw" />
                     </div>
                     <p style={{ fontSize: 12, fontWeight: 500, marginTop: 6, color: 'var(--black)' }}>{rp.name}</p>
                     <p style={{ fontSize: 11, color: 'var(--dust)', marginTop: 2 }}>{formatPrice(rp.price)}</p>
@@ -567,7 +568,7 @@ export default function ProductDetailClient({ product }: Props) {
                     transition={{ duration: 0.25 }}
                     style={{ position: 'absolute', inset: 0 }}
                   >
-                    <Image src={product.images[activeImage]} alt={product.name} fill style={{ objectFit: 'contain' }} sizes="58vw" priority={activeImage === 0} />
+                    <Image src={product.images[activeImage]} alt={seoProductAlt(product.name)} fill style={{ objectFit: 'contain' }} sizes="58vw" priority={activeImage === 0} />
                   </motion.div>
                 </AnimatePresence>
                 {(product.isNew || product.isBestseller) && (
@@ -580,7 +581,7 @@ export default function ProductDetailClient({ product }: Props) {
                 {product.images.map((img, i) => (
                   <button key={i} onClick={() => setActiveImage(i)}
                     style={{ position: 'relative', width: 72, height: 72, padding: 0, border: activeImage === i ? '1px solid var(--black)' : '1px solid transparent', cursor: 'pointer', background: 'var(--raw-cotton)', overflow: 'hidden', flexShrink: 0, transition: 'border-color 0.15s' }}>
-                    <Image src={img} alt={`${product.name} ${i + 1}`} fill style={{ objectFit: 'contain', opacity: activeImage === i ? 1 : 0.65 }} sizes="72px" />
+                    <Image src={img} alt={i === 0 ? seoProductAlt(product.name) : `${seoProductAlt(product.name)} (view ${i + 1})`} fill style={{ objectFit: 'contain', opacity: activeImage === i ? 1 : 0.65 }} sizes="72px" />
                   </button>
                 ))}
               </div>
@@ -790,7 +791,7 @@ export default function ProductDetailClient({ product }: Props) {
                 {related.slice(0, 2).map((rp) => (
                   <Link key={rp.id} href={`/${rp.category}/${(rp as any).slug}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                     <div style={{ position: 'relative', aspectRatio: '3/4', background: 'var(--cream)', overflow: 'hidden' }}>
-                      <Image src={rp.images[0]} alt={rp.name} fill style={{ objectFit: 'cover', transition: 'transform 0.4s ease' }}
+                      <Image src={rp.images[0]} alt={seoProductAlt(rp.name)} fill style={{ objectFit: 'cover', transition: 'transform 0.4s ease' }}
                         onMouseEnter={e => { (e.currentTarget as HTMLImageElement).style.transform = 'scale(1.04)'; }}
                         onMouseLeave={e => { (e.currentTarget as HTMLImageElement).style.transform = 'scale(1)'; }}
                         sizes="300px" />

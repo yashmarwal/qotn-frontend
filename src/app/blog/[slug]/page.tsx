@@ -73,7 +73,7 @@ export default async function BlogArticlePage({
     url: `https://www.qotn.in/blog/${slug}`,
     mainEntityOfPage: { '@type': 'WebPage', '@id': `https://www.qotn.in/blog/${slug}` },
     keywords: article.category,
-    inLanguage: 'en-IN',
+    inLanguage: article.lang === 'hi' ? 'hi-IN' : 'en-IN',
   };
 
   const breadcrumbJsonLd = {
@@ -100,7 +100,7 @@ export default async function BlogArticlePage({
           <span style={{ fontSize: 9, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(245,240,232,0.45)', border: '1px solid rgba(245,240,232,0.2)', padding: '3px 10px', borderRadius: 2 }}>
             {article.category}
           </span>
-          <h1 style={{ fontSize: 'clamp(22px, 4vw, 40px)', fontWeight: 300, letterSpacing: '0.06em', color: 'var(--cream)', lineHeight: 1.35, maxWidth: 680, margin: '16px auto 12px' }}>
+          <h1 lang={article.lang} style={{ fontSize: 'clamp(22px, 4vw, 40px)', fontWeight: 300, letterSpacing: '0.06em', color: 'var(--cream)', lineHeight: 1.35, maxWidth: 680, margin: '16px auto 12px' }}>
             {article.title}
           </h1>
           <div style={{ display: 'flex', gap: 16, justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -121,13 +121,13 @@ export default async function BlogArticlePage({
           </div>
 
           {/* Lead */}
-          <p style={{ fontSize: 16, lineHeight: 1.8, color: 'var(--dust)', marginBottom: 32 }}>
+          <p lang={article.lang} style={{ fontSize: 16, lineHeight: 1.8, color: 'var(--dust)', marginBottom: 32 }}>
             {article.description}
           </p>
 
           {/* Sections */}
           {article.body.map((section, i) => (
-            <div key={i} style={{ marginBottom: 28 }}>
+            <div key={i} lang={article.lang} style={{ marginBottom: 28 }}>
               {section.heading && (
                 <h2 style={{ fontSize: 14, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--black)', marginBottom: 10 }}>
                   {section.heading}
@@ -138,6 +138,23 @@ export default async function BlogArticlePage({
               </p>
             </div>
           ))}
+
+          {/* Shop pages this article points to */}
+          {article.links && article.links.length > 0 && (
+            <div lang={article.lang} style={{ marginTop: 8 }}>
+              <h2 style={{ fontSize: 14, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--black)', marginBottom: 10 }}>
+                {article.lang === 'hi' ? 'और देखें' : 'Shop and read more'}
+              </h2>
+              <p style={{ fontSize: 15, lineHeight: 2 }}>
+                {article.links.map((l, i) => (
+                  <span key={l.href}>
+                    {i > 0 && ' · '}
+                    <Link href={l.href} style={{ color: 'var(--black)', textDecoration: 'underline' }}>{l.label}</Link>
+                  </span>
+                ))}
+              </p>
+            </div>
+          )}
 
           {/* Divider + CTA */}
           <div style={{ borderTop: '1px solid var(--border)', marginTop: 48, paddingTop: 36, textAlign: 'center' }}>

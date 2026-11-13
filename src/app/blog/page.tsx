@@ -7,7 +7,7 @@ import { safeJsonLd } from '@/lib/jsonld';
 export const metadata: Metadata = {
   title: 'Cotton Journal — Care, Fabric & Sustainability',
   description:
-    'Guides on caring for cotton, understanding fabric weaves, BCI cotton, and why pure cotton outperforms blends. Written by QOTN.',
+    'Guides on cotton fabric and care, how to style kurta sets, sarees and shirts, and why pure cotton beats blends. In English, Hinglish and Hindi.',
   alternates: { canonical: 'https://www.qotn.in/blog' },
   openGraph: {
     title: 'Cotton Journal | QOTN',

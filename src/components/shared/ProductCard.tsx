@@ -10,6 +10,7 @@ import { Product } from '@/types';
 import { useWishlist } from '@/context/WishlistContext';
 import { useCart } from '@/context/CartContext';
 import { formatPrice } from '@/lib/utils';
+import { seoProductAlt } from '@/lib/productSeo';
 import { useBackClose } from '@/hooks/useBackClose';
 
 interface ProductCardProps {
@@ -57,7 +58,7 @@ function QuickAddSheet({ product, onClose }: { product: Product; onClose: () => 
           {/* Header */}
           <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 18 }}>
             <div style={{ position: 'relative', width: 56, height: 72, flexShrink: 0, background: 'var(--raw-cotton)', borderRadius: 4, overflow: 'hidden' }}>
-              <Image src={product.images[0]} alt={product.name} fill style={{ objectFit: 'cover' }} sizes="56px" />
+              <Image src={product.images[0]} alt={seoProductAlt(product.name)} fill style={{ objectFit: 'cover' }} sizes="56px" />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--black)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{product.name}</p>
@@ -140,7 +141,7 @@ export default function ProductCard({ product, variant = 'desktop', priority = f
             <div style={{ position: 'relative', paddingBottom: '133.33%', backgroundColor: 'var(--raw-cotton)', overflow: 'hidden', borderRadius: 4 }}>
               <Image
                 src={product.images[0]}
-                alt={product.name}
+                alt={seoProductAlt(product.name)}
                 fill
                 style={{ objectFit: 'cover' }}
                 sizes="50vw"
@@ -228,7 +229,7 @@ export default function ProductCard({ product, variant = 'desktop', priority = f
       <div style={{ position: 'relative', aspectRatio: '4/5', overflow: 'hidden', backgroundColor: 'var(--raw-cotton)' }}>
         <Image
           src={product.images[0]}
-          alt={product.name}
+          alt={seoProductAlt(product.name)}
           fill
           priority={priority}
           style={{
@@ -242,7 +243,7 @@ export default function ProductCard({ product, variant = 'desktop', priority = f
         {hasSecondImage && (
           <Image
             src={product.images[1]}
-            alt={product.name}
+            alt={seoProductAlt(product.name)}
             fill
             style={{
               objectFit: 'cover',

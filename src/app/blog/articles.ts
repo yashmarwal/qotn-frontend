@@ -1,3 +1,5 @@
+import { seoArticles } from './articles-seo';
+
 export interface Article {
   slug: string;
   title: string;
@@ -6,9 +8,13 @@ export interface Article {
   readTime: number; // minutes
   category: string;
   body: { heading?: string; text: string }[];
+  /** Set to 'hi' for a Hindi (Devanagari) article, so the page marks its language correctly. Default is English (en-IN). */
+  lang?: 'hi';
+  /** Shop pages this article points to, shown under the text. */
+  links?: { href: string; label: string }[];
 }
 
-export const articles: Article[] = [
+const baseArticles: Article[] = [
   {
     slug: 'how-to-care-for-cotton-clothing',
     title: 'How to Care for 100% Cotton Clothing',
@@ -146,6 +152,9 @@ export const articles: Article[] = [
     ],
   },
 ];
+
+// The search-focused posts live in their own file; this is the full list the blog, the sitemap and the RSS feed use
+export const articles: Article[] = [...baseArticles, ...seoArticles];
 
 export function getArticle(slug: string): Article | undefined {
   return articles.find((a) => a.slug === slug);

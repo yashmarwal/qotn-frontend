@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { fetchPublic, fetchAllProducts } from '@/lib/api';
 import { coordSets, MIN_COORD_SETS } from '@/lib/coordSets';
+import { isCottonSaree, isKurti, isKurtaSet, isStripedMenShirt, MIN_PAGE_PRODUCTS } from '@/lib/seoPages';
 import { articles } from './blog/articles';
 
 const SITE = 'https://www.qotn.in';
@@ -23,6 +24,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Listed only when live data shows enough co-ord sets (the page itself is noindex below that)
   if (coordSets(products).length >= MIN_COORD_SETS) staticPages.push({ url: `${SITE}/co-ord-sets` });
+
+  // The same rule for the other search-landing pages
+  const landing: [string, (p: any) => boolean][] = [
+    ['/kurta-sets', isKurtaSet], ['/kurtis', isKurti], ['/cotton-sarees', isCottonSaree], ['/men/striped-shirts', isStripedMenShirt],
+  ];
+  for (const [path, matches] of landing) {
+    if (products.filter(matches).length >= MIN_PAGE_PRODUCTS) staticPages.push({ url: `${SITE}${path}` });
+  }
 
   const productPages: MetadataRoute.Sitemap = products
     .filter((p) => p.slug && p.category?.slug)

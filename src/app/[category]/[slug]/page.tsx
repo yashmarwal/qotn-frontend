@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { fetchPublic } from '@/lib/api';
 import { adaptApiProduct } from '@/lib/adapters';
 import ProductDetailClient from './ProductDetailClient';
 import { cleanText } from '@/lib/seo';
 import { safeJsonLd } from '@/lib/jsonld';
+import { SLUG_REDIRECTS, seoProductTitle } from '@/lib/productSeo';
 
 // Mirrors /shipping-policy and /return-policy. Update both places together.
 const FREE_SHIPPING_FROM_RUPEES = 1499;
@@ -26,10 +27,15 @@ export async function generateMetadata({
   const product = res?.data;
   if (!product) return { title: 'QOTN — Product' };
 
-  // Whole title incl. the layout's ' | QOTN' must stay within 60 characters, so the tagline is dropped when too long
-  const fullTitle = `${product.name} — 100% Pure Cotton`;
-  const title = fullTitle.length + ' | QOTN'.length <= 60 ? fullTitle : product.name;
-  const description = cleanText(`${cleanText(product.description || '', 95)} 100% pure cotton, made in India.`, 155);
+  // "Pink Floral Pure Cotton Co-ord Set for Women": the words shoppers search, typos in the saved name tidied, and
+  // kept within 60 characters with the layout's ' | QOTN' wherever it can be
+  const title = seoProductTitle(product.name, category);
+  // A product saved without a description would otherwise get a one-line meta description, so build one from the title instead
+  const lead = cleanText(product.description || '', 95);
+  const description =
+    lead.length >= 40
+      ? cleanText(`${lead} 100% pure cotton, made in India.`, 155)
+      : cleanText(`Shop ${title} online. 100% pure cotton, no blends, made in India. Free shipping above ₹1,499.`, 155);
   const url = `https://www.qotn.in/${category}/${encodeURIComponent(slug)}`;
   const imageUrl = product.images?.[0]?.url || (typeof product.images?.[0] === 'string' ? product.images[0] : '');
 
@@ -65,7 +71,15 @@ export default async function ProductPage({
   const res = await fetchPublic<any>(`/products/${slug}`, 30);
   const raw = res?.data;
   const product = raw ? adaptApiProduct(raw) : null;
-  if (!product) notFound();
+  if (!product) {
+    // A product whose address had a typo that was fixed in the admin: send the old link (and its search ranking) to the
+    // new one. Only reached when the old address no longer exists, so it cannot hide a live product.
+    let old = slug;
+    try { old = decodeURIComponent(slug); } catch { /* keep as is */ }
+    const moved = SLUG_REDIRECTS[old];
+    if (moved) permanentRedirect(`/${category}/${encodeURIComponent(moved)}`);
+    notFound();
+  }
 
   const variants: any[] = raw?.variants || [];
   const prices = variants.map((v: any) => v.price).filter(Boolean);

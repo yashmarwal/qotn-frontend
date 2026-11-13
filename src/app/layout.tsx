@@ -14,9 +14,7 @@ export const metadata: Metadata = {
     template: '%s | QOTN',
   },
   description:
-    'Shop 100% pure cotton clothing online. No blends, no shortcuts. Premium cotton kurtas, dresses, shirts and more for men, women and kids. Free shipping above ₹1499. Made in India.',
-  keywords:
-    'pure cotton clothing india, cotton kurta online, cotton dress women, cotton shirt men, D2C cotton brand, buy cotton clothes online india, handblock print cotton, QOTN',
+    'Shop 100% pure cotton kurta sets, kurtis, sarees, shirts and kids’ wear. No blends, made in India. Free shipping above ₹1,499. COD available.',
 
   applicationName: 'QOTN',
   authors: [{ name: 'QOTN', url: 'https://www.qotn.in' }],
@@ -122,11 +120,8 @@ const websiteJsonLd = {
   name: 'QOTN',
   url: 'https://www.qotn.in',
   publisher: { '@id': 'https://www.qotn.in/#organization' },
-  potentialAction: {
-    '@type': 'SearchAction',
-    target: { '@type': 'EntryPoint', urlTemplate: 'https://www.qotn.in/men?search={search_term_string}' },
-    'query-input': 'required name=search_term_string',
-  },
+  inLanguage: 'en-IN',
+  // No SearchAction: it advertised a search URL (/men?search=) that the site does not actually support.
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

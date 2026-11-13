@@ -1,17 +1,19 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
-import { ArrowRight, Leaf, Droplets, MapPin, ChevronDown } from 'lucide-react';
+import { ArrowRight, Leaf, Droplets, MapPin } from 'lucide-react';
 
 const FALLBACK_IMAGES = [
   'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800',
   'https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?w=800',
   'https://images.unsplash.com/photo-1622290291468-a28f7a7dc6a8?w=800',
 ];
+import { TiltedGridHero } from '@/components/ui/tilted-grid-hero';
+import { cutoutUrl, type HeroTile } from '@/lib/heroTiles';
 import Marquee from '@/components/shared/Marquee';
 import ProductCard from '@/components/shared/ProductCard';
 import ProductCardSkeleton from '@/components/shared/ProductCardSkeleton';
@@ -34,7 +36,7 @@ import { Product } from '@/types';
 const fadeUp = { initial: { opacity: 0, y: 30 }, animate: { opacity: 1, y: 0 } };
 const stagger = { animate: { transition: { staggerChildren: 0.15 } } };
 
-export default function HomePageClient({ initialHeroImages = [] }: { initialHeroImages?: string[] }) {
+export default function HomePageClient({ initialHeroImages = [], heroTiles = [] }: { initialHeroImages?: string[]; heroTiles?: HeroTile[] }) {
   const isMobile = useIsMobile();
   const [mounted, setMounted] = useState(false);
   const [newArrivals, setNewArrivals] = useState<Product[]>([]);
@@ -47,6 +49,10 @@ export default function HomePageClient({ initialHeroImages = [] }: { initialHero
   const [tabLoading, setTabLoading] = useState(false);
 
   useEffect(() => { setMounted(true); }, []);
+
+  // Desktop hero strip. The server only sends products whose background-removed photo is already made (see page.tsx),
+  // so there is nothing to wait for or retry here. Memoised so the list stays the same object between renders.
+  const stripImages = useMemo(() => heroTiles.map((t) => ({ src: cutoutUrl(t.photo), alt: t.name })), [heroTiles]);
 
   // Hero slideshow state — always declared, only used by mobile branch
   const [heroImages, setHeroImages] = useState<string[]>(initialHeroImages);
@@ -162,7 +168,7 @@ export default function HomePageClient({ initialHeroImages = [] }: { initialHero
           </div>
           <div style={{ flex: '0 0 40%', backgroundColor: 'var(--cream)', padding: '20px 16px 12px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
             <motion.p initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.3 }} style={{ fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--dust)', marginBottom: 6 }}>NEW COLLECTION</motion.p>
-            <motion.h1 initial={false} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.4 }} className="brand-wordmark" style={{ fontSize: 52, lineHeight: 1, color: 'var(--black)', marginBottom: 6 }}>QOTN<span className="sr-only">: pure cotton clothing for men, women and kids</span></motion.h1>
+            <motion.h1 initial={false} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.4 }} className="brand-wordmark" style={{ fontSize: 52, lineHeight: 1, color: 'var(--black)', marginBottom: 6 }}>QOTN<span className="sr-only">: Pure Cotton Clothing for Men, Women &amp; Kids</span></motion.h1>
             <motion.p initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.52 }} style={{ fontSize: 12, color: 'var(--dust)', marginBottom: 18 }}>Pure Cotton. Nothing Else.</motion.p>
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.64 }} style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
               <Link href="/men" style={{ flex: 1, minHeight: 'unset' }}>
@@ -365,28 +371,34 @@ export default function HomePageClient({ initialHeroImages = [] }: { initialHero
     <PageTransition>
     <div style={{ backgroundColor: 'var(--cream)', opacity: mounted ? 1 : 0, transition: 'opacity 0.18s ease' }}>
       {/* Hero */}
-      <section style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', padding: '0 24px' }}>
-        <motion.div variants={stagger} initial={false} animate="animate" style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24 }}>
-          <motion.h1 variants={fadeUp} transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-            className="brand-wordmark"
-            style={{ fontSize: 'clamp(80px, 15vw, 180px)', color: 'var(--black)', lineHeight: 1 }}>
-            QOTN<span className="sr-only">: pure cotton clothing for men, women and kids</span>
-          </motion.h1>
-          <motion.p variants={fadeUp} transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            style={{ fontSize: 13, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--dust)' }}>
-            Pure Cotton. Nothing Else.
-          </motion.p>
-          <motion.div variants={fadeUp} transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}>
+      <section style={{ minHeight: 'max(600px, calc(100vh - 96px))', display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden', padding: '44px 24px 40px' }}>
+        {/* A row of real garments curving across the page. Added only after mount (desktop only), so phones never download these photos. */}
+        {mounted && stripImages.length > 0 && (
+          <div style={{ position: 'absolute', inset: 0 }}>
+            <TiltedGridHero images={stripImages}aspectRatio={0.75} tileHeight={49} axis={55} curve={70} speed={3.5} gap={8} fade={14} className="h-full w-full" />
+          </div>
+        )}
+        <motion.div variants={stagger} initial={false} animate="animate" style={{ position: 'relative', zIndex: 1, flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', textAlign: 'center' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
+            <motion.h1 variants={fadeUp} transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+              className="brand-wordmark"
+              style={{ fontSize: 'clamp(56px, 7.5vw, 112px)', color: 'var(--black)', lineHeight: 1 }}>
+              QOTN<span className="sr-only">: Pure Cotton Clothing for Men, Women &amp; Kids</span>
+            </motion.h1>
+            <motion.p variants={fadeUp} transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+              style={{ fontSize: 13, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--dust)' }}>
+              Pure Cotton. Nothing Else.
+            </motion.p>
+          </div>
+          <motion.div variants={fadeUp} transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
             <Link href="/men">
               <button style={{ padding: '14px 40px', background: 'var(--black)', color: 'var(--cream)', border: 'none', fontSize: 12, letterSpacing: '0.10em', textTransform: 'uppercase', cursor: 'pointer', fontWeight: 500, fontFamily: 'DM Sans, sans-serif' }}>
                 Shop Now
               </button>
             </Link>
-          </motion.div>
-        </motion.div>
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2 }} style={{ position: 'absolute', bottom: 40 }}>
-          <motion.div animate={{ y: [0, 6, 0] }} transition={{ repeat: Infinity, duration: 1.8, ease: 'easeInOut' }}>
-            <ChevronDown size={18} strokeWidth={1.5} color="var(--dust)" />
+            <p style={{ fontSize: 11, letterSpacing: '0.08em', color: 'var(--dust)' }}>
+              100% pure cotton &nbsp;·&nbsp; Free shipping above ₹1,499 &nbsp;·&nbsp; Cash on delivery available
+            </p>
           </motion.div>
         </motion.div>
       </section>

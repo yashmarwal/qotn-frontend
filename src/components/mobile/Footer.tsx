@@ -13,6 +13,11 @@ const sections = [
       { href: '/women', label: 'Women' },
       { href: '/kids', label: 'Kids' },
       { href: '/men?isNew=true', label: 'New Arrivals' },
+      { href: '/kurta-sets', label: 'Kurta Sets' },
+      { href: '/kurtis', label: 'Kurtis' },
+      { href: '/cotton-sarees', label: 'Cotton Sarees' },
+      { href: '/co-ord-sets', label: 'Co-ord Sets' },
+      { href: '/men/striped-shirts', label: 'Striped Shirts' },
     ],
   },
   {
